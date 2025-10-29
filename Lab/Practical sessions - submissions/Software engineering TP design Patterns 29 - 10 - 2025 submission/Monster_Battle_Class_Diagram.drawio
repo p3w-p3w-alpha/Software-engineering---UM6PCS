@@ -1,0 +1,125 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.1.2 Chrome/138.0.7204.243 Electron/37.4.0 Safari/537.36" version="28.1.2">
+  <diagram name="Monster Battle Game - Class Diagram" id="monster-battle-class">
+    <mxGraphModel dx="1612" dy="2424" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="gamemanager" value="&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;b&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&amp;lt;&amp;lt;Singleton&amp;gt;&amp;gt;&lt;/b&gt;&lt;br&gt;&lt;b&gt;GameManager&lt;/b&gt;&lt;hr&gt;- instance: GameManager&lt;br&gt;- player1Score: int&lt;br&gt;- player2Score: int&lt;hr&gt;+ getInstance(): GameManager&lt;br&gt;+ startGame(): void&lt;br&gt;+ updateScore(String): void&lt;br&gt;+ displayScores(): void" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;strokeWidth=2;fontColor=#FFFFFF;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="70" y="90" width="280" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="gameclient" value="&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;b&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;GameClient&lt;/b&gt;&lt;hr&gt;+ runGame(): void" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;strokeWidth=2;fontColor=#FFFFFF;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="1020" y="80" width="280" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="monsterfactory" value="&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;b&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&amp;lt;&amp;lt;Factory&amp;gt;&amp;gt;&lt;/b&gt;&lt;br&gt;&lt;b&gt;MonsterFactory&lt;/b&gt;&lt;hr&gt;+ createMonster(String): Monster" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;strokeWidth=2;fontColor=#FFFFFF;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="1020" y="320" width="280" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="monster" value="&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;b&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&amp;lt;&amp;lt;interface&amp;gt;&amp;gt;&lt;/b&gt;&lt;br&gt;&lt;b&gt;Monster&lt;/b&gt;&lt;hr&gt;+ attack(Monster): void&lt;br&gt;+ getHealth(): int&lt;br&gt;+ takeDamage(int): void&lt;br&gt;+ getName(): String&lt;br&gt;+ isAlive(): boolean" style="swimlane;fontStyle=2;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;strokeWidth=2;fontColor=#FFFFFF;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="520" y="280" width="280" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="abstractmonster" value="&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;b&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&amp;lt;&amp;lt;abstract&amp;gt;&amp;gt;&lt;/b&gt;&lt;br&gt;&lt;b&gt;AbstractMonster&lt;/b&gt;&lt;hr&gt;# name: String&lt;br&gt;# health: int&lt;br&gt;# attackPower: int&lt;hr&gt;+ AbstractMonster(String, int, int)&lt;br&gt;+ getHealth(): int&lt;br&gt;+ getName(): String&lt;br&gt;+ takeDamage(int): void&lt;br&gt;+ isAlive(): boolean&lt;br&gt;+ attack(Monster): void" style="swimlane;fontStyle=2;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;strokeWidth=2;fontColor=#FFFFFF;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="520" y="540" width="280" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="dragon" value="&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;b&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;Dragon&lt;/b&gt;&lt;hr&gt;HP: 150&lt;br&gt;ATK: 30&lt;hr&gt;+ Dragon()&lt;br&gt;+ attack(Monster): void" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;strokeWidth=2;fontColor=#FFFFFF;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="120" y="820" width="240" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="goblin" value="&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;b&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;Goblin&lt;/b&gt;&lt;hr&gt;HP: 80&lt;br&gt;ATK: 15&lt;hr&gt;+ Goblin()&lt;br&gt;+ attack(Monster): void" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;strokeWidth=2;fontColor=#FFFFFF;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="540" y="820" width="240" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="wizard" value="&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;b&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;Wizard&lt;/b&gt;&lt;hr&gt;HP: 100&lt;br&gt;ATK: 25&lt;hr&gt;+ Wizard()&lt;br&gt;+ attack(Monster): void" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;strokeWidth=2;fontColor=#FFFFFF;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="960" y="820" width="240" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="client-gm" value="&amp;lt;&amp;lt;uses&amp;gt;&amp;gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;dashed=1;strokeColor=#FFFFFF;strokeWidth=2;fontColor=#FFFFFF;" parent="1" source="gameclient" target="gamemanager" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="client-factory" value="&amp;lt;&amp;lt;uses&amp;gt;&amp;gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;dashed=1;strokeColor=#FFFFFF;strokeWidth=2;fontColor=#FFFFFF;" parent="1" source="gameclient" target="monsterfactory" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="client-monster" value="&amp;lt;&amp;lt;depends&amp;gt;&amp;gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.25;entryDx=0;entryDy=0;dashed=1;strokeColor=#FFFFFF;strokeWidth=2;fontColor=#FFFFFF;" parent="1" source="gameclient" target="monster" edge="1">
+          <mxGeometry x="-0.2" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="factory-monster" value="&amp;lt;&amp;lt;creates&amp;gt;&amp;gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;dashed=1;strokeColor=#FFFFFF;strokeWidth=2;fontColor=#FFFFFF;" parent="1" source="monsterfactory" target="monster" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="abstract-interface" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;dashed=1;strokeColor=#FFFFFF;strokeWidth=2;endArrow=block;endFill=0;endSize=12;" parent="1" source="abstractmonster" target="monster" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="abstract-interface-label" value="&amp;lt;&amp;lt;implements&amp;gt;&amp;gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontColor=#FFFFFF;" parent="abstract-interface" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="2" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dragon-abstract" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.2;entryY=1;entryDx=0;entryDy=0;strokeColor=#FFFFFF;strokeWidth=2;endArrow=block;endFill=0;endSize=12;" parent="1" source="dragon" target="abstractmonster" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dragon-abstract-label" value="&amp;lt;&amp;lt;extends&amp;gt;&amp;gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontColor=#FFFFFF;" parent="dragon-abstract" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="goblin-abstract" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;strokeColor=#FFFFFF;strokeWidth=2;endArrow=block;endFill=0;endSize=12;" parent="1" source="goblin" target="abstractmonster" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="goblin-abstract-label" value="&amp;lt;&amp;lt;extends&amp;gt;&amp;gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontColor=#FFFFFF;" parent="goblin-abstract" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="wizard-abstract" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.8;entryY=1;entryDx=0;entryDy=0;strokeColor=#FFFFFF;strokeWidth=2;endArrow=block;endFill=0;endSize=12;" parent="1" source="wizard" target="abstractmonster" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wizard-abstract-label" value="&amp;lt;&amp;lt;extends&amp;gt;&amp;gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontColor=#FFFFFF;" parent="wizard-abstract" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="factory-dragon" value="&amp;lt;&amp;lt;instantiates&amp;gt;&amp;gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;dashed=1;strokeColor=#FFFFFF;strokeWidth=2;fontColor=#FFFFFF;" parent="1" source="monsterfactory" target="dragon" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1020" y="450" />
+              <mxPoint x="240" y="450" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="factory-goblin" value="&amp;lt;&amp;lt;instantiates&amp;gt;&amp;gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;dashed=1;strokeColor=#FFFFFF;strokeWidth=2;fontColor=#FFFFFF;" parent="1" source="monsterfactory" target="goblin" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1160" y="450" />
+              <mxPoint x="660" y="450" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="factory-wizard" value="&amp;lt;&amp;lt;instantiates&amp;gt;&amp;gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;dashed=1;strokeColor=#FFFFFF;strokeWidth=2;fontColor=#FFFFFF;" parent="1" source="monsterfactory" target="wizard" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1300" y="450" />
+              <mxPoint x="1080" y="450" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="title" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b&gt;Monster Battle Game - Class Diagram&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;Design Patterns: Singleton + Factory&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="500" y="10" width="400" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-box" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#FFFFFF;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="80" y="360" width="280" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-title" value="&lt;b&gt;LEGEND&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FFFFFF;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="80" y="365" width="280" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-line1" value="────── (solid): Inheritance" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FFFFFF;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="90" y="400" width="260" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-line2" value="- - - - - (dashed): Dependency" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FFFFFF;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="90" y="425" width="260" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-line3" value="▷ (hollow arrow): implements/extends" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FFFFFF;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="90" y="450" width="260" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-line4" value="▶ (filled arrow): uses/creates" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FFFFFF;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="90" y="475" width="260" height="20" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
