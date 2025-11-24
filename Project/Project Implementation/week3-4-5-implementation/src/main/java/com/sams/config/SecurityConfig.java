@@ -1,0 +1,102 @@
+package com.sams.config;
+
+import com.sams.security.JwtAuthenticationFilter;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.Arrays;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable()) // disable CSRF for stateless JWT
+            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // enable CORS
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // no sessions, use JWT
+            )
+            .authorizeHttpRequests(auth -> auth
+                // public endpoints - no authentication required
+                .requestMatchers("/api/auth/**").permitAll() // login, validate token
+                .requestMatchers("/api/users/register").permitAll() // user registration
+
+                // allow static resources (HTML, CSS, JS) without authentication
+                .requestMatchers("/", "/index.html", "/*.html", "/css/**", "/js/**", "/images/**").permitAll()
+
+                // protected endpoints - authentication required
+                .requestMatchers("/api/users/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN")
+                .requestMatchers("/api/courses/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN")
+                .requestMatchers("/api/enrollments/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN")
+                .requestMatchers("/api/grades/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN") // allow students to view their grades
+
+                // all other API requests require authentication
+                .anyRequest().authenticated()
+            )
+            // add JWT filter before UsernamePasswordAuthenticationFilter
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+    // CORS configuration - allow frontend to access backend APIs
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // allow requests from these origins (update with your frontend URLs)
+        configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:8080",  // Spring Boot webapp (our frontend!)
+            "http://localhost:3000",  // React default
+            "http://localhost:4200",  // Angular default
+            "http://localhost:8081",  // Vue default
+            "http://localhost:5173"   // Vite default
+        ));
+
+        // allow these HTTP methods
+        configuration.setAllowedMethods(Arrays.asList(
+            "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
+        ));
+
+        // allow these headers
+        configuration.setAllowedHeaders(Arrays.asList(
+            "Authorization",
+            "Content-Type",
+            "Accept"
+        ));
+
+        // allow credentials (cookies, authorization headers, etc.)
+        configuration.setAllowCredentials(true);
+
+        // expose these headers to frontend
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+
+        // apply CORS configuration to all endpoints
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
+    }
+}

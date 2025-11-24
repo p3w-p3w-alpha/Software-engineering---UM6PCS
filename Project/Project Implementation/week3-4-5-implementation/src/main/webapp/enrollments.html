@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAMS - My Enrollments</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <div class="toast-container position-fixed top-0 end-0 p-3" id="toastContainer"></div>
+
+    <div class="sidebar">
+        <div class="sidebar-header"><i class="bi bi-mortarboard-fill me-2"></i><span>SAMS</span></div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-link"><i class="bi bi-house-door"></i> Dashboard</a>
+            <a href="courses.html" class="nav-link"><i class="bi bi-book"></i> Courses</a>
+            <a href="enrollments.html" class="nav-link active"><i class="bi bi-journal-check"></i> My Enrollments</a>
+            <a href="assignments.html" class="nav-link"><i class="bi bi-file-earmark-text"></i> Assignments</a>
+            <a href="grades.html" class="nav-link"><i class="bi bi-bar-chart"></i> Grades</a>
+            <a href="study-groups.html" class="nav-link"><i class="bi bi-people"></i> Study Groups</a>
+            <a href="connections.html" class="nav-link"><i class="bi bi-person-lines-fill"></i> Connections</a>
+            <a href="messages.html" class="nav-link"><i class="bi bi-chat-dots"></i> Messages</a>
+            <a href="notifications.html" class="nav-link"><i class="bi bi-bell"></i> Notifications</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info"><i class="bi bi-person-circle me-2"></i><span id="userName">Loading...</span></div>
+            <button class="btn btn-sm btn-outline-light w-100 mt-2" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Logout</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="content-header">
+            <h1>My Enrollments</h1>
+            <div>
+                <span class="badge bg-primary me-2" id="totalCredits">0 Credits</span>
+                <button class="btn btn-primary" onclick="loadEnrollments()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+            </div>
+        </div>
+
+        <div class="content-body">
+            <!-- Semester Filter -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <label class="form-label">Filter by Semester</label>
+                            <select class="form-select" id="semesterFilter" onchange="loadEnrollments()">
+                                <option value="">All Semesters</option>
+                            </select>
+                        </div>
+                        <div class="col-md-8 text-end">
+                            <div id="creditSummary" class="text-muted"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enrollments List -->
+            <div id="enrollmentsContainer">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Drop Confirmation Modal -->
+    <div class="modal fade" id="dropModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Drop Course</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to drop this course?</p>
+                    <p class="text-danger"><strong>Warning:</strong> This action cannot be undone. You may need to re-enroll if you change your mind.</p>
+                    <div id="dropWarnings" class="alert alert-warning" style="display:none;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDrop()">Drop Course</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        checkAuth();
+        const user = getCurrentUser();
+        document.getElementById('userName').textContent = user.username;
+
+        let allEnrollments = [];
+        let currentDropEnrollmentId = null;
+        const dropModal = new bootstrap.Modal(document.getElementById('dropModal'));
+
+        async function loadEnrollments() {
+            try {
+                allEnrollments = await apiCall(`/enrollments/student/${user.id}`);
+                await loadSemesters();
+                displayEnrollments();
+            } catch (error) {
+                console.error('Error loading enrollments:', error);
+                showToast('Error loading enrollments', 'error');
+            }
+        }
+
+        async function loadSemesters() {
+            try {
+                const semesters = await apiCall('/semesters');
+                const select = document.getElementById('semesterFilter');
+
+                // Clear existing options except "All"
+                while (select.options.length > 1) {
+                    select.remove(1);
+                }
+
+                semesters.forEach(sem => {
+                    const option = document.createElement('option');
+                    option.value = sem.id;
+                    option.textContent = sem.name;
+                    if (sem.active) {
+                        option.textContent += ' (Current)';
+                    }
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading semesters:', error);
+            }
+        }
+
+        function displayEnrollments() {
+            const container = document.getElementById('enrollmentsContainer');
+            const semesterFilter = document.getElementById('semesterFilter').value;
+
+            let filtered = allEnrollments;
+            if (semesterFilter) {
+                filtered = allEnrollments.filter(e => e.course?.semesterId?.toString() === semesterFilter);
+            }
+
+            if (!filtered || filtered.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">No enrollments found</div>';
+                updateCreditSummary([]);
+                return;
+            }
+
+            // Group by status
+            const active = filtered.filter(e => e.status === 'ACTIVE');
+            const dropped = filtered.filter(e => e.status === 'DROPPED');
+            const waitlisted = filtered.filter(e => e.status === 'WAITLISTED');
+
+            let html = '';
+
+            if (active.length > 0) {
+                html += '<h5 class="mb-3">Active Enrollments</h5>';
+                html += '<div class="row g-3 mb-4">';
+                active.forEach(enrollment => {
+                    html += createEnrollmentCard(enrollment);
+                });
+                html += '</div>';
+            }
+
+            if (waitlisted.length > 0) {
+                html += '<h5 class="mb-3 mt-4">Waitlisted</h5>';
+                html += '<div class="row g-3 mb-4">';
+                waitlisted.forEach(enrollment => {
+                    html += createEnrollmentCard(enrollment);
+                });
+                html += '</div>';
+            }
+
+            if (dropped.length > 0) {
+                html += '<h5 class="mb-3 mt-4">Dropped Courses</h5>';
+                html += '<div class="row g-3 mb-4">';
+                dropped.forEach(enrollment => {
+                    html += createEnrollmentCard(enrollment);
+                });
+                html += '</div>';
+            }
+
+            container.innerHTML = html;
+            updateCreditSummary(active);
+        }
+
+        function createEnrollmentCard(enrollment) {
+            const course = enrollment.course;
+            const statusBadge = getStatusBadge(enrollment.status);
+            const canDrop = enrollment.status === 'ACTIVE' && canDropCourse(enrollment);
+
+            return `
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title mb-0">${course.courseCode}</h5>
+                                ${statusBadge}
+                            </div>
+                            <h6 class="card-subtitle mb-3 text-muted">${course.courseName}</h6>
+
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-clock"></i> ${course.creditHours} Credits<br>
+                                    <i class="bi bi-person"></i> ${course.instructor || 'TBA'}<br>
+                                    ${course.daysOfWeek ? `<i class="bi bi-calendar"></i> ${course.daysOfWeek} ${course.startTime}-${course.endTime}<br>` : ''}
+                                    ${course.location ? `<i class="bi bi-geo-alt"></i> ${course.location}<br>` : ''}
+                                </small>
+                            </div>
+
+                            ${enrollment.enrollmentDate ? `<small class="text-muted">Enrolled: ${formatDate(enrollment.enrollmentDate)}</small>` : ''}
+                            ${enrollment.dropDate ? `<small class="text-muted"><br>Dropped: ${formatDate(enrollment.dropDate)}</small>` : ''}
+                        </div>
+                        ${canDrop ? `
+                        <div class="card-footer bg-transparent">
+                            <button class="btn btn-sm btn-danger w-100" onclick="showDropModal(${enrollment.id})">
+                                <i class="bi bi-x-circle"></i> Drop Course
+                            </button>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function getStatusBadge(status) {
+            const badges = {
+                'ACTIVE': '<span class="badge bg-success">Active</span>',
+                'DROPPED': '<span class="badge bg-secondary">Dropped</span>',
+                'WAITLISTED': '<span class="badge bg-warning">Waitlisted</span>',
+                'COMPLETED': '<span class="badge bg-info">Completed</span>'
+            };
+            return badges[status] || `<span class="badge bg-secondary">${status}</span>`;
+        }
+
+        function canDropCourse(enrollment) {
+            // Check if drop deadline has passed
+            if (enrollment.course?.semester?.dropDeadline) {
+                const dropDeadline = new Date(enrollment.course.semester.dropDeadline);
+                if (new Date() > dropDeadline) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function updateCreditSummary(activeEnrollments) {
+            const totalCredits = activeEnrollments.reduce((sum, e) => sum + (e.course?.creditHours || 0), 0);
+            document.getElementById('totalCredits').textContent = `${totalCredits} Credits`;
+
+            let summary = `Total: ${totalCredits} credits enrolled`;
+            if (totalCredits < 12) {
+                summary += ' <span class="text-warning">(Below minimum)</span>';
+            } else if (totalCredits > 18) {
+                summary += ' <span class="text-danger">(Above maximum)</span>';
+            } else {
+                summary += ' <span class="text-success">(Within limits)</span>';
+            }
+
+            document.getElementById('creditSummary').innerHTML = summary;
+        }
+
+        function showDropModal(enrollmentId) {
+            currentDropEnrollmentId = enrollmentId;
+            const enrollment = allEnrollments.find(e => e.id === enrollmentId);
+
+            // Check for warnings
+            const warnings = [];
+            const totalCredits = allEnrollments
+                .filter(e => e.status === 'ACTIVE' && e.id !== enrollmentId)
+                .reduce((sum, e) => sum + (e.course?.creditHours || 0), 0);
+
+            if (totalCredits < 12) {
+                warnings.push('Dropping this course will bring you below the minimum 12 credit hours.');
+            }
+
+            const warningsDiv = document.getElementById('dropWarnings');
+            if (warnings.length > 0) {
+                warningsDiv.innerHTML = warnings.join('<br>');
+                warningsDiv.style.display = 'block';
+            } else {
+                warningsDiv.style.display = 'none';
+            }
+
+            dropModal.show();
+        }
+
+        async function confirmDrop() {
+            if (!currentDropEnrollmentId) return;
+
+            try {
+                await apiCall(`/enrollments/${currentDropEnrollmentId}/drop`, 'PUT');
+                showToast('Course dropped successfully', 'success');
+                dropModal.hide();
+                currentDropEnrollmentId = null;
+                loadEnrollments();
+            } catch (error) {
+                showToast('Error dropping course: ' + error.message, 'error');
+            }
+        }
+
+        loadEnrollments();
+    </script>
+</body>
+</html>

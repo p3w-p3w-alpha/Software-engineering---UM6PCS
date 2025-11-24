@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAMS - Connections</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <div class="toast-container position-fixed top-0 end-0 p-3" id="toastContainer"></div>
+
+    <div class="sidebar">
+        <div class="sidebar-header"><i class="bi bi-mortarboard-fill me-2"></i><span>SAMS</span></div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-link"><i class="bi bi-house-door"></i> Dashboard</a>
+            <a href="courses.html" class="nav-link"><i class="bi bi-book"></i> Courses</a>
+            <a href="enrollments.html" class="nav-link"><i class="bi bi-journal-check"></i> My Enrollments</a>
+            <a href="assignments.html" class="nav-link"><i class="bi bi-file-earmark-text"></i> Assignments</a>
+            <a href="grades.html" class="nav-link"><i class="bi bi-bar-chart"></i> Grades</a>
+            <a href="study-groups.html" class="nav-link"><i class="bi bi-people"></i> Study Groups</a>
+            <a href="connections.html" class="nav-link active"><i class="bi bi-person-lines-fill"></i> Connections</a>
+            <a href="messages.html" class="nav-link"><i class="bi bi-chat-dots"></i> Messages</a>
+            <a href="notifications.html" class="nav-link"><i class="bi bi-bell"></i> Notifications</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info"><i class="bi bi-person-circle me-2"></i><span id="userName">Loading...</span></div>
+            <button class="btn btn-sm btn-outline-light w-100 mt-2" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Logout</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="content-header">
+            <h1>Connections</h1>
+            <button class="btn btn-primary" onclick="loadConnections()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+        </div>
+
+        <div class="content-body">
+            <!-- Stats -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="stats-card">
+                        <div class="stats-icon bg-primary">
+                            <i class="bi bi-person-check"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3 id="connectedCount">0</h3>
+                            <p>Connected</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stats-card">
+                        <div class="stats-icon bg-warning">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3 id="pendingCount">0</h3>
+                            <p>Pending Requests</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stats-card">
+                        <div class="stats-icon bg-danger">
+                            <i class="bi bi-x-circle"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3 id="blockedCount">0</h3>
+                            <p>Blocked Users</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <ul class="nav nav-tabs mb-4">
+                <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#myConnections">My Connections</a></li>
+                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#requests">Requests</a></li>
+                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#discover">Discover</a></li>
+                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#blocked">Blocked</a></li>
+            </ul>
+
+            <div class="tab-content">
+                <!-- My Connections Tab -->
+                <div class="tab-pane fade show active" id="myConnections">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <input type="text" class="form-control" id="searchConnections" placeholder="Search connections...">
+                        </div>
+                    </div>
+                    <div id="connectionsContainer">
+                        <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+                    </div>
+                </div>
+
+                <!-- Requests Tab -->
+                <div class="tab-pane fade" id="requests">
+                    <h5 class="mb-3">Received Requests</h5>
+                    <div id="receivedRequestsContainer">
+                        <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+                    </div>
+
+                    <h5 class="mb-3 mt-4">Sent Requests</h5>
+                    <div id="sentRequestsContainer">
+                        <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+                    </div>
+                </div>
+
+                <!-- Discover Tab -->
+                <div class="tab-pane fade" id="discover">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="row g-2">
+                                <div class="col-md-8">
+                                    <input type="text" class="form-control" id="searchUsers" placeholder="Search by name or username...">
+                                </div>
+                                <div class="col-md-4">
+                                    <button class="btn btn-primary w-100" onclick="searchUsers()"><i class="bi bi-search"></i> Search</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="discoverContainer">
+                        <p class="text-muted">Use the search box to find new connections</p>
+                    </div>
+                </div>
+
+                <!-- Blocked Tab -->
+                <div class="tab-pane fade" id="blocked">
+                    <div id="blockedContainer">
+                        <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        checkAuth();
+        const user = getCurrentUser();
+        document.getElementById('userName').textContent = user.username;
+
+        let allConnections = {
+            connected: [],
+            received: [],
+            sent: [],
+            blocked: []
+        };
+
+        async function loadConnections() {
+            try {
+                const [connected, received, sent, blocked] = await Promise.all([
+                    apiCall(`/connections/user/${user.id}/connected`),
+                    apiCall(`/connections/user/${user.id}/received`),
+                    apiCall(`/connections/user/${user.id}/sent`),
+                    apiCall(`/connections/user/${user.id}/blocked`)
+                ]);
+
+                allConnections = { connected, received, sent, blocked };
+
+                displayConnections(connected);
+                displayReceivedRequests(received);
+                displaySentRequests(sent);
+                displayBlocked(blocked);
+                updateStats();
+
+            } catch (error) {
+                console.error('Error loading connections:', error);
+                showToast('Error loading connections', 'error');
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('connectedCount').textContent = allConnections.connected.length;
+            document.getElementById('pendingCount').textContent = allConnections.received.length;
+            document.getElementById('blockedCount').textContent = allConnections.blocked.length;
+        }
+
+        function displayConnections(connections) {
+            const container = document.getElementById('connectionsContainer');
+
+            if (!connections || connections.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">No connections yet</div>';
+                return;
+            }
+
+            let html = '<div class="row g-3">';
+            connections.forEach(conn => {
+                const otherUser = getOtherUser(conn);
+                html += `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="stats-icon bg-primary me-3" style="width: 50px; height: 50px; font-size: 1.2rem;">
+                                        <i class="bi bi-person"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">${otherUser.firstName} ${otherUser.lastName}</h6>
+                                        <small class="text-muted">@${otherUser.username}</small>
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <small class="text-muted">
+                                        <i class="bi bi-envelope"></i> ${otherUser.email}<br>
+                                        <i class="bi bi-calendar"></i> Connected: ${formatDate(conn.connectedAt)}
+                                    </small>
+                                </div>
+                                <div class="btn-group w-100" role="group">
+                                    <a href="messages.html?user=${otherUser.id}" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-chat"></i> Message
+                                    </a>
+                                    <button class="btn btn-sm btn-danger" onclick="blockUser(${conn.id}, ${otherUser.id})">
+                                        <i class="bi bi-x-circle"></i> Block
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function displayReceivedRequests(requests) {
+            const container = document.getElementById('receivedRequestsContainer');
+
+            if (!requests || requests.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">No pending requests</div>';
+                return;
+            }
+
+            let html = '<div class="row g-3">';
+            requests.forEach(req => {
+                const requester = req.requester;
+                html += `
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6>${requester.firstName} ${requester.lastName}</h6>
+                                        <small class="text-muted">@${requester.username}</small><br>
+                                        <small class="text-muted">${formatDate(req.requestedAt)}</small>
+                                    </div>
+                                    <div class="btn-group-vertical">
+                                        <button class="btn btn-sm btn-success" onclick="acceptRequest(${req.id})">
+                                            <i class="bi bi-check"></i> Accept
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" onclick="rejectRequest(${req.id})">
+                                            <i class="bi bi-x"></i> Reject
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function displaySentRequests(requests) {
+            const container = document.getElementById('sentRequestsContainer');
+
+            if (!requests || requests.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">No sent requests</div>';
+                return;
+            }
+
+            let html = '<div class="list-group">';
+            requests.forEach(req => {
+                const receiver = req.receiver;
+                html += `
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">${receiver.firstName} ${receiver.lastName}</h6>
+                                <small class="text-muted">@${receiver.username} - Sent: ${formatDate(req.requestedAt)}</small>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="cancelRequest(${req.id})">
+                                <i class="bi bi-x"></i> Cancel
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function displayBlocked(blocked) {
+            const container = document.getElementById('blockedContainer');
+
+            if (!blocked || blocked.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">No blocked users</div>';
+                return;
+            }
+
+            let html = '<div class="list-group">';
+            blocked.forEach(conn => {
+                const blockedUser = getOtherUser(conn);
+                html += `
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">${blockedUser.firstName} ${blockedUser.lastName}</h6>
+                                <small class="text-muted">@${blockedUser.username}</small>
+                            </div>
+                            <button class="btn btn-sm btn-success" onclick="unblockUser(${conn.id})">
+                                <i class="bi bi-check-circle"></i> Unblock
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        async function searchUsers() {
+            const query = document.getElementById('searchUsers').value.trim();
+            if (!query) {
+                showToast('Please enter a search term', 'error');
+                return;
+            }
+
+            try {
+                const users = await apiCall(`/users/search?query=${encodeURIComponent(query)}`);
+                const container = document.getElementById('discoverContainer');
+
+                // Filter out current user and existing connections
+                const existingIds = new Set([
+                    user.id,
+                    ...allConnections.connected.map(c => getOtherUser(c).id),
+                    ...allConnections.received.map(c => c.requester.id),
+                    ...allConnections.sent.map(c => c.receiver.id),
+                    ...allConnections.blocked.map(c => getOtherUser(c).id)
+                ]);
+
+                const available = users.filter(u => !existingIds.has(u.id));
+
+                if (available.length === 0) {
+                    container.innerHTML = '<div class="alert alert-info">No users found</div>';
+                    return;
+                }
+
+                let html = '<div class="row g-3">';
+                available.forEach(foundUser => {
+                    html += `
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="stats-icon bg-secondary me-3" style="width: 50px; height: 50px; font-size: 1.2rem;">
+                                            <i class="bi bi-person"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">${foundUser.firstName} ${foundUser.lastName}</h6>
+                                            <small class="text-muted">@${foundUser.username}</small>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <small class="text-muted">
+                                            <i class="bi bi-envelope"></i> ${foundUser.email}
+                                        </small>
+                                    </div>
+                                    <button class="btn btn-sm btn-primary w-100" onclick="sendRequest(${foundUser.id})">
+                                        <i class="bi bi-person-plus"></i> Send Request
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error searching users:', error);
+                showToast('Error searching users', 'error');
+            }
+        }
+
+        async function sendRequest(receiverId) {
+            try {
+                await apiCall(`/connections/send-request?requesterId=${user.id}&receiverId=${receiverId}`, 'POST');
+                showToast('Connection request sent!', 'success');
+                searchUsers(); // Refresh search results
+                loadConnections(); // Refresh all data
+            } catch (error) {
+                showToast('Error sending request: ' + error.message, 'error');
+            }
+        }
+
+        async function acceptRequest(connectionId) {
+            try {
+                await apiCall(`/connections/${connectionId}/accept`, 'PUT');
+                showToast('Connection accepted!', 'success');
+                loadConnections();
+            } catch (error) {
+                showToast('Error accepting request: ' + error.message, 'error');
+            }
+        }
+
+        async function rejectRequest(connectionId) {
+            try {
+                await apiCall(`/connections/${connectionId}/reject`, 'PUT');
+                showToast('Connection rejected', 'success');
+                loadConnections();
+            } catch (error) {
+                showToast('Error rejecting request: ' + error.message, 'error');
+            }
+        }
+
+        async function cancelRequest(connectionId) {
+            try {
+                await apiCall(`/connections/${connectionId}`, 'DELETE');
+                showToast('Request cancelled', 'success');
+                loadConnections();
+            } catch (error) {
+                showToast('Error cancelling request: ' + error.message, 'error');
+            }
+        }
+
+        async function blockUser(connectionId, userId) {
+            if (!confirm('Are you sure you want to block this user?')) return;
+
+            try {
+                await apiCall(`/connections/${connectionId}/block?blockerId=${user.id}`, 'PUT');
+                showToast('User blocked', 'success');
+                loadConnections();
+            } catch (error) {
+                showToast('Error blocking user: ' + error.message, 'error');
+            }
+        }
+
+        async function unblockUser(connectionId) {
+            try {
+                await apiCall(`/connections/${connectionId}/unblock`, 'PUT');
+                showToast('User unblocked', 'success');
+                loadConnections();
+            } catch (error) {
+                showToast('Error unblocking user: ' + error.message, 'error');
+            }
+        }
+
+        function getOtherUser(connection) {
+            return connection.requester.id === user.id ? connection.receiver : connection.requester;
+        }
+
+        // Search connections
+        document.getElementById('searchConnections').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = allConnections.connected.filter(conn => {
+                const otherUser = getOtherUser(conn);
+                return otherUser.firstName.toLowerCase().includes(query) ||
+                       otherUser.lastName.toLowerCase().includes(query) ||
+                       otherUser.username.toLowerCase().includes(query);
+            });
+            displayConnections(filtered);
+        });
+
+        loadConnections();
+    </script>
+</body>
+</html>

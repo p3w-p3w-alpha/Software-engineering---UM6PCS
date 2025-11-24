@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAMS - Grades</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <div class="toast-container position-fixed top-0 end-0 p-3" id="toastContainer"></div>
+
+    <div class="sidebar">
+        <div class="sidebar-header"><i class="bi bi-mortarboard-fill me-2"></i><span>SAMS</span></div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-link"><i class="bi bi-house-door"></i> Dashboard</a>
+            <a href="courses.html" class="nav-link"><i class="bi bi-book"></i> Courses</a>
+            <a href="enrollments.html" class="nav-link"><i class="bi bi-journal-check"></i> My Enrollments</a>
+            <a href="assignments.html" class="nav-link"><i class="bi bi-file-earmark-text"></i> Assignments</a>
+            <a href="grades.html" class="nav-link active"><i class="bi bi-bar-chart"></i> Grades</a>
+            <a href="study-groups.html" class="nav-link"><i class="bi bi-people"></i> Study Groups</a>
+            <a href="connections.html" class="nav-link"><i class="bi bi-person-lines-fill"></i> Connections</a>
+            <a href="messages.html" class="nav-link"><i class="bi bi-chat-dots"></i> Messages</a>
+            <a href="notifications.html" class="nav-link"><i class="bi bi-bell"></i> Notifications</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info"><i class="bi bi-person-circle me-2"></i><span id="userName">Loading...</span></div>
+            <button class="btn btn-sm btn-outline-light w-100 mt-2" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Logout</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="content-header">
+            <h1>My Grades</h1>
+            <button class="btn btn-primary" onclick="loadGrades()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+        </div>
+
+        <div class="content-body">
+            <!-- GPA Summary Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-icon bg-primary">
+                            <i class="bi bi-trophy"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3 id="cumulativeGPA">0.00</h3>
+                            <p>Cumulative GPA</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-icon bg-success">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3 id="semesterGPA">0.00</h3>
+                            <p>Current Semester GPA</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-icon bg-info">
+                            <i class="bi bi-book"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3 id="totalCredits">0</h3>
+                            <p>Total Credits</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-icon bg-warning">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3 id="completedCourses">0</h3>
+                            <p>Courses Completed</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Semester Filter -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <label class="form-label">Filter by Semester</label>
+                            <select class="form-select" id="semesterFilter" onchange="displayGrades()">
+                                <option value="">All Semesters</option>
+                            </select>
+                        </div>
+                        <div class="col-md-8 text-end">
+                            <div class="btn-group" role="group">
+                                <input type="radio" class="btn-check" name="viewMode" id="cardView" value="card" checked>
+                                <label class="btn btn-outline-primary" for="cardView"><i class="bi bi-grid"></i> Cards</label>
+                                <input type="radio" class="btn-check" name="viewMode" id="tableView" value="table">
+                                <label class="btn btn-outline-primary" for="tableView"><i class="bi bi-table"></i> Table</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grades Container -->
+            <div id="gradesContainer">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grade Details Modal -->
+    <div class="modal fade" id="gradeModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="gradeModalTitle">Grade Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="gradeModalBody">
+                    <!-- Content will be loaded dynamically -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        checkAuth();
+        const user = getCurrentUser();
+        document.getElementById('userName').textContent = user.username;
+
+        let allGrades = [];
+        const gradeModal = new bootstrap.Modal(document.getElementById('gradeModal'));
+
+        // Add event listeners for view mode
+        document.querySelectorAll('input[name="viewMode"]').forEach(radio => {
+            radio.addEventListener('change', displayGrades);
+        });
+
+        async function loadGrades() {
+            try {
+                allGrades = await apiCall(`/grades/student/${user.id}`);
+                await loadSemesters();
+                displayGrades();
+                calculateGPAStats();
+            } catch (error) {
+                console.error('Error loading grades:', error);
+                showToast('Error loading grades', 'error');
+            }
+        }
+
+        async function loadSemesters() {
+            try {
+                const semesters = await apiCall('/semesters');
+                const select = document.getElementById('semesterFilter');
+
+                while (select.options.length > 1) {
+                    select.remove(1);
+                }
+
+                semesters.forEach(sem => {
+                    const option = document.createElement('option');
+                    option.value = sem.id;
+                    option.textContent = sem.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading semesters:', error);
+            }
+        }
+
+        function displayGrades() {
+            const container = document.getElementById('gradesContainer');
+            const semesterFilter = document.getElementById('semesterFilter').value;
+            const viewMode = document.querySelector('input[name="viewMode"]:checked').value;
+
+            let filtered = allGrades;
+            if (semesterFilter) {
+                filtered = allGrades.filter(g => g.enrollment?.course?.semesterId?.toString() === semesterFilter);
+            }
+
+            if (!filtered || filtered.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">No grades available yet</div>';
+                return;
+            }
+
+            if (viewMode === 'card') {
+                displayCardsView(filtered, container);
+            } else {
+                displayTableView(filtered, container);
+            }
+        }
+
+        function displayCardsView(grades, container) {
+            let html = '<div class="row g-3">';
+            grades.forEach(grade => {
+                const course = grade.enrollment?.course;
+                const gradeClass = getGradeClass(grade.letterGrade);
+                const isReleased = grade.released;
+
+                html += `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title mb-0">${course?.courseCode || 'N/A'}</h5>
+                                    ${isReleased ?
+                                        `<span class="badge ${gradeClass} fs-5">${grade.letterGrade || 'N/A'}</span>` :
+                                        '<span class="badge bg-secondary">Not Released</span>'
+                                    }
+                                </div>
+                                <h6 class="card-subtitle mb-3 text-muted">${course?.courseName || 'Course'}</h6>
+
+                                ${isReleased ? `
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>Grade Points:</span>
+                                        <strong>${grade.gradePoints?.toFixed(2) || '0.00'} / 4.00</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>Credits:</span>
+                                        <strong>${course?.creditHours || 0}</strong>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar ${gradeClass}" style="width: ${(grade.gradePoints / 4.0 * 100) || 0}%"></div>
+                                    </div>
+                                </div>
+
+                                <div class="text-muted small mb-2">
+                                    <i class="bi bi-person"></i> ${course?.instructor || 'TBA'}<br>
+                                    <i class="bi bi-calendar"></i> ${grade.semester || 'Current'}
+                                </div>
+
+                                ${grade.comments ? `
+                                <div class="alert alert-info small py-2 mb-2">
+                                    <i class="bi bi-info-circle"></i> ${grade.comments}
+                                </div>
+                                ` : ''}
+
+                                <button class="btn btn-sm btn-outline-primary w-100" onclick="showGradeDetails(${grade.id})">
+                                    <i class="bi bi-eye"></i> View Details
+                                </button>
+                                ` : '<p class="text-muted">Grade will be released soon</p>'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function displayTableView(grades, container) {
+            let html = `
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Course Code</th>
+                                        <th>Course Name</th>
+                                        <th>Credits</th>
+                                        <th>Letter Grade</th>
+                                        <th>Grade Points</th>
+                                        <th>Semester</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+            `;
+
+            grades.forEach(grade => {
+                const course = grade.enrollment?.course;
+                const gradeClass = getGradeClass(grade.letterGrade);
+                const isReleased = grade.released;
+
+                html += `
+                    <tr>
+                        <td><strong>${course?.courseCode || 'N/A'}</strong></td>
+                        <td>${course?.courseName || 'Course'}</td>
+                        <td>${course?.creditHours || 0}</td>
+                        <td>
+                            ${isReleased ?
+                                `<span class="badge ${gradeClass}">${grade.letterGrade || 'N/A'}</span>` :
+                                '<span class="badge bg-secondary">Not Released</span>'
+                            }
+                        </td>
+                        <td>${isReleased ? (grade.gradePoints?.toFixed(2) || '0.00') : '-'}</td>
+                        <td>${grade.semester || 'Current'}</td>
+                        <td>
+                            ${grade.finalizedAt ?
+                                '<span class="badge bg-success">Finalized</span>' :
+                                '<span class="badge bg-warning">Pending</span>'
+                            }
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="showGradeDetails(${grade.id})">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        function getGradeClass(letterGrade) {
+            if (!letterGrade) return 'bg-secondary';
+            if (letterGrade.startsWith('A')) return 'bg-success';
+            if (letterGrade.startsWith('B')) return 'bg-primary';
+            if (letterGrade.startsWith('C')) return 'bg-info';
+            if (letterGrade.startsWith('D')) return 'bg-warning';
+            return 'bg-danger';
+        }
+
+        async function showGradeDetails(gradeId) {
+            try {
+                const grade = await apiCall(`/grades/${gradeId}`);
+                const course = grade.enrollment?.course;
+
+                let html = `
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6>Course Information</h6>
+                            <p><strong>Code:</strong> ${course?.courseCode || 'N/A'}</p>
+                            <p><strong>Name:</strong> ${course?.courseName || 'Course'}</p>
+                            <p><strong>Instructor:</strong> ${course?.instructor || 'TBA'}</p>
+                            <p><strong>Credits:</strong> ${course?.creditHours || 0}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Grade Information</h6>
+                            <p><strong>Letter Grade:</strong> <span class="badge ${getGradeClass(grade.letterGrade)}">${grade.letterGrade || 'N/A'}</span></p>
+                            <p><strong>Grade Points:</strong> ${grade.gradePoints?.toFixed(2) || '0.00'} / 4.00</p>
+                            <p><strong>Status:</strong> ${grade.released ? 'Released' : 'Not Released'}</p>
+                            ${grade.finalizedAt ? `<p><strong>Finalized:</strong> ${formatDate(grade.finalizedAt)}</p>` : ''}
+                        </div>
+                    </div>
+                `;
+
+                if (grade.comments) {
+                    html += `
+                        <div class="mb-3">
+                            <h6>Comments</h6>
+                            <div class="alert alert-info">${grade.comments}</div>
+                        </div>
+                    `;
+                }
+
+                if (grade.gradeHistory && grade.gradeHistory.length > 0) {
+                    html += `
+                        <div class="mb-3">
+                            <h6>Grade History</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Old Grade</th>
+                                            <th>New Grade</th>
+                                            <th>Changed By</th>
+                                            <th>Reason</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                    `;
+
+                    grade.gradeHistory.forEach(history => {
+                        html += `
+                            <tr>
+                                <td>${formatDate(history.changedAt)}</td>
+                                <td><span class="badge ${getGradeClass(history.oldLetterGrade)}">${history.oldLetterGrade || '-'}</span></td>
+                                <td><span class="badge ${getGradeClass(history.newLetterGrade)}">${history.newLetterGrade || '-'}</span></td>
+                                <td>${history.changedByName || 'System'}</td>
+                                <td>${history.reason || '-'}</td>
+                            </tr>
+                        `;
+                    });
+
+                    html += `
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                document.getElementById('gradeModalTitle').textContent = `${course?.courseCode} - Grade Details`;
+                document.getElementById('gradeModalBody').innerHTML = html;
+                gradeModal.show();
+
+            } catch (error) {
+                console.error('Error loading grade details:', error);
+                showToast('Error loading grade details', 'error');
+            }
+        }
+
+        function calculateGPAStats() {
+            const releasedGrades = allGrades.filter(g => g.released && g.gradePoints != null);
+
+            if (releasedGrades.length === 0) {
+                document.getElementById('cumulativeGPA').textContent = 'N/A';
+                document.getElementById('semesterGPA').textContent = 'N/A';
+                document.getElementById('totalCredits').textContent = '0';
+                document.getElementById('completedCourses').textContent = '0';
+                return;
+            }
+
+            // Calculate cumulative GPA
+            let totalPoints = 0;
+            let totalCredits = 0;
+
+            releasedGrades.forEach(grade => {
+                const credits = grade.enrollment?.course?.creditHours || 0;
+                totalPoints += (grade.gradePoints || 0) * credits;
+                totalCredits += credits;
+            });
+
+            const cumulativeGPA = totalCredits > 0 ? (totalPoints / totalCredits).toFixed(2) : '0.00';
+            document.getElementById('cumulativeGPA').textContent = cumulativeGPA;
+            document.getElementById('totalCredits').textContent = totalCredits;
+            document.getElementById('completedCourses').textContent = releasedGrades.length;
+
+            // Calculate current semester GPA (using first active semester found)
+            const currentSemesterGrades = releasedGrades.filter(g => {
+                // Assuming current semester has most recent grades
+                return g.semester; // This could be improved with actual semester data
+            });
+
+            if (currentSemesterGrades.length > 0) {
+                let semPoints = 0;
+                let semCredits = 0;
+
+                currentSemesterGrades.forEach(grade => {
+                    const credits = grade.enrollment?.course?.creditHours || 0;
+                    semPoints += (grade.gradePoints || 0) * credits;
+                    semCredits += credits;
+                });
+
+                const semesterGPA = semCredits > 0 ? (semPoints / semCredits).toFixed(2) : '0.00';
+                document.getElementById('semesterGPA').textContent = semesterGPA;
+            } else {
+                document.getElementById('semesterGPA').textContent = 'N/A';
+            }
+        }
+
+        loadGrades();
+    </script>
+</body>
+</html>

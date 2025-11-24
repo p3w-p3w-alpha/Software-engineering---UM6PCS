@@ -1,0 +1,539 @@
+{
+  "info": {
+    "name": "SAMS - Course & Enrollment Management API",
+    "description": "Complete API collection for testing SAMS course management and enrollment operations (Week 5)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Courses",
+      "item": [
+        {
+          "name": "Create Course - CS101",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"CS101\",\n  \"courseName\": \"Introduction to Computer Science\",\n  \"description\": \"Basic programming concepts and problem solving\",\n  \"credits\": 3,\n  \"capacity\": 30,\n  \"instructorId\": 2\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/courses",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "courses"]
+            },
+            "description": "Create a new course - Should return 201 Created"
+          }
+        },
+        {
+          "name": "Create Course - MATH201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"MATH201\",\n  \"courseName\": \"Calculus I\",\n  \"description\": \"Differential and integral calculus\",\n  \"credits\": 4,\n  \"capacity\": 25\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/courses",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "courses"]
+            },
+            "description": "Create a new course without instructor - Should return 201 Created"
+          }
+        },
+        {
+          "name": "Get All Courses",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/courses",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "courses"]
+            },
+            "description": "Retrieve all courses - Should return 200 OK with array of courses"
+          }
+        },
+        {
+          "name": "Get Course By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/courses/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "courses", "1"]
+            },
+            "description": "Get specific course by ID - Change ID as needed - Should return 200 OK"
+          }
+        },
+        {
+          "name": "Get Course By Code",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/courses/code/CS101",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "courses", "code", "CS101"]
+            },
+            "description": "Get course by course code - Should return 200 OK"
+          }
+        },
+        {
+          "name": "Search Courses By Name",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/courses/search/name?query=Computer",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "courses", "search", "name"],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "Computer"
+                }
+              ]
+            },
+            "description": "Search courses by name - Should return 200 OK with matching courses"
+          }
+        },
+        {
+          "name": "Search Courses By Code",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/courses/search/code?query=CS",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "courses", "search", "code"],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "CS"
+                }
+              ]
+            },
+            "description": "Search courses by code - Should return 200 OK with matching courses"
+          }
+        },
+        {
+          "name": "Get Courses By Instructor",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/courses/instructor/2",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "courses", "instructor", "2"]
+            },
+            "description": "Get all courses by instructor ID - Should return 200 OK"
+          }
+        },
+        {
+          "name": "Get Courses By Credits",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/courses/credits/3",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "courses", "credits", "3"]
+            },
+            "description": "Get courses by credit hours - Should return 200 OK"
+          }
+        },
+        {
+          "name": "Update Course",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"CS101\",\n  \"courseName\": \"Intro to CS - Updated\",\n  \"description\": \"Updated course description\",\n  \"credits\": 3,\n  \"capacity\": 35,\n  \"instructorId\": 2\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/courses/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "courses", "1"]
+            },
+            "description": "Update course details - Change ID as needed - Should return 200 OK"
+          }
+        },
+        {
+          "name": "Assign Instructor to Course",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/courses/2/instructor/2",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "courses", "2", "instructor", "2"]
+            },
+            "description": "Assign instructor (faculty user) to course - Should return 200 OK"
+          }
+        },
+        {
+          "name": "Delete Course",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/courses/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "courses", "1"]
+            },
+            "description": "Delete course by ID - Should return 204 No Content"
+          }
+        },
+        {
+          "name": "Create Course - Duplicate Code (Error Test)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"CS101\",\n  \"courseName\": \"Another CS Course\",\n  \"description\": \"Duplicate test\",\n  \"credits\": 3,\n  \"capacity\": 20\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/courses",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "courses"]
+            },
+            "description": "Try to create course with duplicate code - Should return 400 Bad Request"
+          }
+        },
+        {
+          "name": "Get Course - Invalid ID (Error Test)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/courses/9999",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "courses", "9999"]
+            },
+            "description": "Try to get non-existent course - Should return 404 Not Found"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Enrollments",
+      "item": [
+        {
+          "name": "Create Enrollment - Student 1 in CS101",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": 1,\n  \"courseId\": 1\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/enrollments",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "enrollments"]
+            },
+            "description": "Enroll student in course - Should return 201 Created"
+          }
+        },
+        {
+          "name": "Create Enrollment - Student 1 in MATH201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": 1,\n  \"courseId\": 2\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/enrollments",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "enrollments"]
+            },
+            "description": "Enroll student in another course - Should return 201 Created"
+          }
+        },
+        {
+          "name": "Get All Enrollments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/enrollments",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "enrollments"]
+            },
+            "description": "Retrieve all enrollments - Should return 200 OK"
+          }
+        },
+        {
+          "name": "Get Enrollment By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/enrollments/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "enrollments", "1"]
+            },
+            "description": "Get specific enrollment by ID - Should return 200 OK"
+          }
+        },
+        {
+          "name": "Get Enrollments By Student",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/enrollments/student/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "enrollments", "student", "1"]
+            },
+            "description": "Get all enrollments for a student - Should return 200 OK"
+          }
+        },
+        {
+          "name": "Get Enrollments By Course",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/enrollments/course/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "enrollments", "course", "1"]
+            },
+            "description": "Get all enrollments for a course - Should return 200 OK"
+          }
+        },
+        {
+          "name": "Get Enrollments By Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/enrollments/status/ACTIVE",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "enrollments", "status", "ACTIVE"]
+            },
+            "description": "Get enrollments by status (ACTIVE, DROPPED, COMPLETED) - Should return 200 OK"
+          }
+        },
+        {
+          "name": "Update Enrollment Status",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/enrollments/1/status?status=COMPLETED",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "enrollments", "1", "status"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "COMPLETED"
+                }
+              ]
+            },
+            "description": "Update enrollment status - Should return 200 OK"
+          }
+        },
+        {
+          "name": "Drop Enrollment",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/enrollments/1/drop",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "enrollments", "1", "drop"]
+            },
+            "description": "Drop enrollment (set status to DROPPED) - Should return 200 OK"
+          }
+        },
+        {
+          "name": "Get Enrollment Count for Course",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/enrollments/course/1/count",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "enrollments", "course", "1", "count"]
+            },
+            "description": "Get enrollment count for a course - Should return 200 OK with count"
+          }
+        },
+        {
+          "name": "Check If Student Is Enrolled",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/enrollments/check?studentId=1&courseId=1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "enrollments", "check"],
+              "query": [
+                {
+                  "key": "studentId",
+                  "value": "1"
+                },
+                {
+                  "key": "courseId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Check if student is enrolled in course - Should return 200 OK with boolean"
+          }
+        },
+        {
+          "name": "Delete Enrollment",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/enrollments/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "enrollments", "1"]
+            },
+            "description": "Delete enrollment by ID - Should return 204 No Content"
+          }
+        },
+        {
+          "name": "Enroll Already Enrolled Student (Error Test)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": 1,\n  \"courseId\": 1\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/enrollments",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "enrollments"]
+            },
+            "description": "Try to enroll already enrolled student - Should return 400 Bad Request"
+          }
+        },
+        {
+          "name": "Enroll Non-Student (Error Test)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": 2,\n  \"courseId\": 1\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/enrollments",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "enrollments"]
+            },
+            "description": "Try to enroll faculty/admin (non-student) - Should return 400 Bad Request"
+          }
+        }
+      ]
+    }
+  ]
+}
