@@ -25,11 +25,16 @@ public class Enrollment {
     private LocalDateTime enrollmentDate;
 
     @Column(length = 20)
-    private String status = "ACTIVE"; // ACTIVE, DROPPED, COMPLETED, WAITLISTED
+    private String status = "PENDING_PAYMENT"; // PENDING_PAYMENT, ACTIVE, DROPPED, COMPLETED, WAITLISTED
 
     // position in waitlist (null if not waitlisted)
     @Column(name = "waitlist_position")
     private Integer waitlistPosition;
+
+    // payment associated with this enrollment (for billing integration)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_id")
+    private Payment payment;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -64,7 +69,7 @@ public class Enrollment {
     public Enrollment(User student, Course course) {
         this.student = student;
         this.course = course;
-        this.status = "ACTIVE";
+        this.status = "PENDING_PAYMENT"; // default status, changes to ACTIVE after payment approval
     }
 
     // getters and setters
@@ -156,5 +161,13 @@ public class Enrollment {
 
     public void setDeletedBy(Long deletedBy) {
         this.deletedBy = deletedBy;
+    }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
     }
 }

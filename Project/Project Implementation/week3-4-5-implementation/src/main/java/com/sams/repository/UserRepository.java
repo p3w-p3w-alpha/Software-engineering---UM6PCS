@@ -39,4 +39,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT COUNT(u) > 0 FROM User u WHERE u.email = :email AND u.active = true AND u.id != :excludeId")
     boolean existsByEmailAndActiveTrueExcludingId(@Param("email") String email, @Param("excludeId") Long excludeId);
+
+    // Dashboard statistics
+    long countByRole(String role);
+
+    long countByRoleAndActive(String role, boolean active);
 }

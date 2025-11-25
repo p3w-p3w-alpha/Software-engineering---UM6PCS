@@ -3,6 +3,7 @@ package com.sams.config;
 import com.sams.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -17,6 +18,7 @@ import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true) // Enable @PreAuthorize annotations
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -40,17 +42,34 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                 // public endpoints - no authentication required
-                .requestMatchers("/api/auth/**").permitAll() // login, validate token
-                .requestMatchers("/api/users/register").permitAll() // user registration
+                .requestMatchers("/api/auth/login", "/api/auth/validate").permitAll() // login and token validation only
 
                 // allow static resources (HTML, CSS, JS) without authentication
                 .requestMatchers("/", "/index.html", "/*.html", "/css/**", "/js/**", "/images/**").permitAll()
 
+                // WebSocket endpoints - require authentication (handled at method level with @PreAuthorize)
+                .requestMatchers("/ws/**").permitAll() // WebSocket endpoint for initial connection
+                .requestMatchers("/app/**").authenticated() // Application destination prefix for messages
+                .requestMatchers("/topic/**", "/queue/**").authenticated() // Message broker destinations
+
+                // admin endpoints - only ADMIN and SUPER_ADMIN roles
+                .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+
+                // attendance endpoints - ADMIN, SUPER_ADMIN, and FACULTY
+                .requestMatchers("/api/attendance/**").hasAnyRole("ADMIN", "SUPER_ADMIN", "FACULTY")
+
+                // dashboard analytics endpoints - ADMIN and SUPER_ADMIN
+                .requestMatchers("/api/dashboard/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+
                 // protected endpoints - authentication required
-                .requestMatchers("/api/users/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN")
-                .requestMatchers("/api/courses/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN")
-                .requestMatchers("/api/enrollments/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN")
-                .requestMatchers("/api/grades/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN") // allow students to view their grades
+                .requestMatchers("/api/users/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN", "SUPER_ADMIN")
+                .requestMatchers("/api/courses/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN", "SUPER_ADMIN")
+                .requestMatchers("/api/enrollments/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN", "SUPER_ADMIN")
+                .requestMatchers("/api/grades/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN", "SUPER_ADMIN")
+                .requestMatchers("/api/payments/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN", "SUPER_ADMIN")
+                .requestMatchers("/api/files/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN", "SUPER_ADMIN")
+                .requestMatchers("/api/degree-progress/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN", "SUPER_ADMIN")
+                .requestMatchers("/api/notifications/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN", "SUPER_ADMIN")
 
                 // all other API requests require authentication
                 .anyRequest().authenticated()
@@ -84,7 +103,9 @@ public class SecurityConfig {
         configuration.setAllowedHeaders(Arrays.asList(
             "Authorization",
             "Content-Type",
-            "Accept"
+            "Accept",
+            "X-Requested-With",
+            "Cache-Control"
         ));
 
         // allow credentials (cookies, authorization headers, etc.)

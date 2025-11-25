@@ -63,4 +63,8 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
     // get total credits for active grades only
     @Query("SELECT SUM(c.credits) FROM Grade g JOIN g.course c WHERE g.student.id = :studentId AND g.active = true")
     Integer getTotalActiveCreditsCompleted(@Param("studentId") Long studentId);
+
+    // Dashboard - Get grade distribution
+    @Query("SELECT g.gradeValue, COUNT(g) FROM Grade g WHERE g.active = true GROUP BY g.gradeValue")
+    List<Object[]> getGradeDistribution();
 }

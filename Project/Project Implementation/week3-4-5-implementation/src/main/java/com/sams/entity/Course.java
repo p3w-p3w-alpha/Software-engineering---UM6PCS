@@ -40,6 +40,10 @@ public class Course {
     @Column(nullable = false)
     private Integer capacity = 30; // default capacity
 
+    // course fee (for billing/payment integration)
+    @Column(name = "course_fee", precision = 10, scale = 2)
+    private java.math.BigDecimal courseFee = new java.math.BigDecimal("500.00"); // default fee
+
     // relationship with instructor (faculty user)
     // many courses can be taught by one instructor
     @ManyToOne(fetch = FetchType.LAZY)
@@ -298,5 +302,13 @@ public class Course {
 
     public void setSemester(Semester semester) {
         this.semester = semester;
+    }
+
+    public java.math.BigDecimal getCourseFee() {
+        return courseFee;
+    }
+
+    public void setCourseFee(java.math.BigDecimal courseFee) {
+        this.courseFee = courseFee;
     }
 }

@@ -1,5 +1,7 @@
 package com.sams.dto;
 
+import java.util.List;
+
 public class LoginResponse {
 
     private String token;
@@ -7,6 +9,7 @@ public class LoginResponse {
     private String email;
     private String role;
     private Long userId;
+    private List<String> permissions;
 
     public LoginResponse() {
     }
@@ -17,6 +20,15 @@ public class LoginResponse {
         this.email = email;
         this.role = role;
         this.userId = userId;
+    }
+
+    public LoginResponse(String token, String username, String email, String role, Long userId, List<String> permissions) {
+        this.token = token;
+        this.username = username;
+        this.email = email;
+        this.role = role;
+        this.userId = userId;
+        this.permissions = permissions;
     }
 
     // getters and setters
@@ -58,5 +70,13 @@ public class LoginResponse {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public List<String> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(List<String> permissions) {
+        this.permissions = permissions;
     }
 }

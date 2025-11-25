@@ -22,6 +22,7 @@ public class EnrollmentService {
     private final CourseService courseService;
     private final UserService userService;
     private final SemesterRepository semesterRepository;
+    private final NotificationService notificationService;
 
     @Value("${enrollment.max.credits.per.semester:18}")
     private int maxCreditsPerSemester;
@@ -33,11 +34,13 @@ public class EnrollmentService {
     public EnrollmentService(EnrollmentRepository enrollmentRepository,
                             CourseService courseService,
                             UserService userService,
-                            SemesterRepository semesterRepository) {
+                            SemesterRepository semesterRepository,
+                            NotificationService notificationService) {
         this.enrollmentRepository = enrollmentRepository;
         this.courseService = courseService;
         this.userService = userService;
         this.semesterRepository = semesterRepository;
+        this.notificationService = notificationService;
     }
 
     // create new enrollment (enroll student in course)
@@ -112,12 +115,27 @@ public class EnrollmentService {
             enrollment.setWaitlistPosition((int) (waitlistCount + 1));
 
         } else {
-            // course has space - enroll student normally
-            enrollment.setStatus("ACTIVE");
+            // course has space - enrollment starts as PENDING_PAYMENT
+            // will be changed to ACTIVE after payment is approved by admin
+            enrollment.setStatus("PENDING_PAYMENT");
             enrollment.setWaitlistPosition(null);
         }
 
-        return enrollmentRepository.save(enrollment);
+        Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
+
+        // Create notification for student about enrollment pending payment
+        notificationService.createNotification(
+                student,
+                "ENROLLMENT",
+                "Enrollment Pending Payment",
+                String.format("You have been enrolled in %s. Please complete payment to activate your enrollment.",
+                        course.getCourseCode()),
+                "/student/payments",
+                "Course",
+                course.getId()
+        );
+
+        return savedEnrollment;
     }
 
     // validate that student has completed all prerequesite courses

@@ -38,6 +38,11 @@ public class User {
     @Column(nullable = false)
     private String role = "STUDENT"; // default role
 
+    // Permissions for fine-grained access control (JSON string for flexibility)
+    // Example: ["USER_CREATE", "USER_DELETE", "COURSE_CREATE", "GRADE_MANAGE"]
+    @Column(columnDefinition = "TEXT")
+    private String permissions;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -178,5 +183,13 @@ public class User {
 
     public void setDeletedBy(Long deletedBy) {
         this.deletedBy = deletedBy;
+    }
+
+    public String getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(String permissions) {
+        this.permissions = permissions;
     }
 }

@@ -12,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -50,60 +53,33 @@ public class AuthController {
         // generate JWT token
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
 
+        // parse permissions
+        List<String> permissions = new ArrayList<>();
+        if (user.getPermissions() != null && !user.getPermissions().isEmpty()) {
+            try {
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                permissions = mapper.readValue(user.getPermissions(),
+                    mapper.getTypeFactory().constructCollectionType(List.class, String.class));
+            } catch (Exception e) {
+                permissions = new ArrayList<>();
+            }
+        }
+
         // create response
         LoginResponse response = new LoginResponse(
             token,
             user.getUsername(),
             user.getEmail(),
             user.getRole(),
-            user.getId()
+            user.getId(),
+            permissions
         );
 
         return ResponseEntity.ok(response);
     }
 
-    // register endpoint - POST /api/auth/register
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
-        // check if username already exists
-        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Username already exists");
-        }
-
-        // check if email already exists
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Email already exists");
-        }
-
-        // create new user
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(request.getRole() != null ? request.getRole() : "STUDENT");
-        user.setActive(true);
-
-        // save user
-        user = userRepository.save(user);
-
-        // generate JWT token
-        String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
-
-        // create response
-        LoginResponse response = new LoginResponse(
-            token,
-            user.getUsername(),
-            user.getEmail(),
-            user.getRole(),
-            user.getId()
-        );
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
+    // REMOVED: Public registration is disabled
+    // Only admins can create user accounts via /api/admin/users endpoint
 
     // endpoint to validate token - GET /api/auth/validate
     @GetMapping("/validate")
