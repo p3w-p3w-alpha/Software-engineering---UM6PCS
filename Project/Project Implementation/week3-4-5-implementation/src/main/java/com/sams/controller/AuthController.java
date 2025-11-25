@@ -32,8 +32,9 @@ public class AuthController {
     // login endpoint - POST /api/auth/login
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
-        // find user by username
+        // find user by username or email
         User user = userRepository.findByUsername(request.getUsername())
+                .or(() -> userRepository.findByEmail(request.getUsername()))
                 .orElse(null);
 
         if (user == null) {
@@ -77,6 +78,13 @@ public class AuthController {
                     .body("Email already exists");
         }
 
+        // validate role - only STUDENT and FACULTY allowed for public registration
+        String role = request.getRole();
+        if (role != null && !role.equals("STUDENT") && !role.equals("FACULTY")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Invalid role. Only STUDENT and FACULTY roles are allowed for registration.");
+        }
+
         // create new user
         User user = new User();
         user.setUsername(request.getUsername());
@@ -84,7 +92,7 @@ public class AuthController {
         user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(request.getRole() != null ? request.getRole() : "STUDENT");
+        user.setRole(role != null ? role : "STUDENT");
         user.setActive(true);
 
         // save user
