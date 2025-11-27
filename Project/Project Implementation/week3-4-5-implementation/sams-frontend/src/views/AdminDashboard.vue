@@ -12,11 +12,12 @@
             <nav class="hidden md:flex items-center gap-2">
               <router-link to="/admin" class="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">Dashboard</router-link>
               <router-link to="/admin/analytics" class="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">Analytics</router-link>
+              <router-link to="/admin/advanced-analytics" class="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">Advanced</router-link>
+              <router-link to="/admin/system-health" class="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">System Health</router-link>
               <router-link to="/admin/users" class="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">Users</router-link>
               <router-link to="/admin/teachers" class="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">Teachers</router-link>
               <router-link to="/admin/payments" class="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">Payments</router-link>
               <router-link to="/admin/fees" class="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">Fees</router-link>
-              <router-link to="/admin/attendance" class="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">Attendance</router-link>
             </nav>
             <button
               @click="handleLogout"

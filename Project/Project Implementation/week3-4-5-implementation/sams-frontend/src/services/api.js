@@ -563,5 +563,596 @@ export default {
 
   getTeacherSchedule(teacherId) {
     return apiClient.get(`/teachers/schedule/${teacherId}`)
+  },
+
+  // ========================================
+  // PHASE 2: ASSIGNMENT SUBMISSIONS
+  // ========================================
+  getAssignmentById(assignmentId) {
+    return apiClient.get(`/assignments/${assignmentId}`)
+  },
+
+  getStudentSubmissions(studentId) {
+    return apiClient.get(`/submissions/student/${studentId}`)
+  },
+
+  getAssignmentSubmissions(assignmentId) {
+    return apiClient.get(`/submissions/assignment/${assignmentId}`)
+  },
+
+  getSubmissionById(submissionId) {
+    return apiClient.get(`/submissions/${submissionId}`)
+  },
+
+  submitAssignment(data) {
+    return apiClient.post('/submissions/submit', data)
+  },
+
+  gradeSubmission(submissionId, data) {
+    return apiClient.post(`/submissions/${submissionId}/grade`, data)
+  },
+
+  getAssignmentsByCourse(courseId) {
+    return apiClient.get(`/assignments/course/${courseId}`)
+  },
+
+  // ========================================
+  // PHASE 2: PRIVATE MESSAGES
+  // ========================================
+  sendMessage(data) {
+    return apiClient.post('/messages/send', data)
+  },
+
+  getConversation(userId1, userId2) {
+    return apiClient.get(`/messages/conversation/${userId1}/${userId2}`)
+  },
+
+  getUserConversations(userId) {
+    return apiClient.get(`/messages/user/${userId}/conversations`)
+  },
+
+  markMessageAsRead(messageId) {
+    return apiClient.patch(`/messages/${messageId}/read`)
+  },
+
+  markConversationAsRead(userId, otherUserId) {
+    return apiClient.patch(`/messages/conversation/${otherUserId}/read-all`, null, {
+      params: { userId }
+    })
+  },
+
+  deleteMessage(messageId) {
+    return apiClient.delete(`/messages/${messageId}`)
+  },
+
+  // ========================================
+  // PHASE 2: GRADE MANAGEMENT
+  // ========================================
+  getEnrollmentById(enrollmentId) {
+    return apiClient.get(`/enrollments/${enrollmentId}`)
+  },
+
+  updateEnrollmentGrades(enrollmentId, data) {
+    return apiClient.put(`/enrollments/${enrollmentId}/grades`, data)
+  },
+
+  getSemesterById(semesterId) {
+    return apiClient.get(`/semesters/${semesterId}`)
+  },
+
+  // ========================================
+  // PHASE 2: STUDY GROUPS
+  // ========================================
+  getAllStudyGroups() {
+    return apiClient.get('/study-groups')
+  },
+
+  getPublicStudyGroups() {
+    return apiClient.get('/study-groups/public')
+  },
+
+  getStudyGroupsCreatedByUser(userId) {
+    return apiClient.get(`/study-groups/created-by/${userId}`)
+  },
+
+  getStudyGroupsByCourse(courseId) {
+    return apiClient.get(`/study-groups/course/${courseId}`)
+  },
+
+  searchStudyGroups(name) {
+    return apiClient.get(`/study-groups/search?name=${encodeURIComponent(name)}`)
+  },
+
+  updateStudyGroup(groupId, userId, data) {
+    return apiClient.put(`/study-groups/${groupId}?userId=${userId}`, data)
+  },
+
+  joinStudyGroup(groupId, userId) {
+    return apiClient.post(`/study-groups/${groupId}/join?userId=${userId}`)
+  },
+
+  leaveStudyGroup(groupId, userId) {
+    return apiClient.post(`/study-groups/${groupId}/leave?userId=${userId}`)
+  },
+
+  approveJoinRequest(groupId, requesterId, approverId) {
+    return apiClient.post(`/study-groups/${groupId}/approve?requesterId=${requesterId}&approverId=${approverId}`)
+  },
+
+  rejectJoinRequest(groupId, requesterId, rejecterId) {
+    return apiClient.post(`/study-groups/${groupId}/reject?requesterId=${requesterId}&rejecterId=${rejecterId}`)
+  },
+
+  getPendingJoinRequests(groupId) {
+    return apiClient.get(`/study-groups/${groupId}/pending-requests`)
+  },
+
+  promoteToModerator(groupId, memberId, adminId) {
+    return apiClient.post(`/study-groups/${groupId}/promote-moderator?memberId=${memberId}&adminId=${adminId}`)
+  },
+
+  promoteToAdmin(groupId, memberId, adminId) {
+    return apiClient.post(`/study-groups/${groupId}/promote-admin?memberId=${memberId}&adminId=${adminId}`)
+  },
+
+  demoteMember(groupId, memberId, adminId) {
+    return apiClient.post(`/study-groups/${groupId}/demote?memberId=${memberId}&adminId=${adminId}`)
+  },
+
+  deleteStudyGroup(groupId, userId) {
+    return apiClient.delete(`/study-groups/${groupId}?userId=${userId}`)
+  },
+
+  getStudyGroupMembers(groupId) {
+    return apiClient.get(`/study-groups/${groupId}/members`)
+  },
+
+  removeStudyGroupMember(groupId, memberId, removerId) {
+    return apiClient.delete(`/study-groups/${groupId}/members/${memberId}?removerId=${removerId}`)
+  },
+
+  getStudyGroupMessages(groupId, userId, page = 0, size = 50) {
+    return apiClient.get(`/study-groups/${groupId}/messages?userId=${userId}&page=${page}&size=${size}`)
+  },
+
+  getRecentStudyGroupMessages(groupId, userId, limit = 50) {
+    return apiClient.get(`/study-groups/${groupId}/recent-messages?userId=${userId}&limit=${limit}`)
+  },
+
+  sendStudyGroupMessage(groupId, senderId, content) {
+    return apiClient.post(`/study-groups/${groupId}/messages?senderId=${senderId}`, { content })
+  },
+
+  deleteStudyGroupMessage(messageId, userId) {
+    return apiClient.delete(`/study-groups/messages/${messageId}?userId=${userId}`)
+  },
+
+  searchStudyGroupMessages(groupId, userId, query) {
+    return apiClient.get(`/study-groups/${groupId}/messages/search?userId=${userId}&query=${encodeURIComponent(query)}`)
+  },
+
+  getStudyGroupFiles(groupId, userId) {
+    return apiClient.get(`/study-groups/${groupId}/files?userId=${userId}`)
+  },
+
+  sendGroupMessage(data) {
+    return apiClient.post('/study-groups/messages', data)
+  },
+
+  getStudyGroupResources(groupId) {
+    return apiClient.get(`/study-groups/${groupId}/resources`)
+  },
+
+  addStudyGroupResource(groupId, data) {
+    return apiClient.post(`/study-groups/${groupId}/resources`, data)
+  },
+
+  // ========================================
+  // MISSING: CONNECTION MANAGEMENT
+  // ========================================
+  sendConnectionRequest(requesterId, receiverId) {
+    return apiClient.post(`/connections/send?requesterId=${requesterId}&receiverId=${receiverId}`)
+  },
+
+  acceptConnectionRequest(connectionId, receiverId) {
+    return apiClient.post(`/connections/${connectionId}/accept?receiverId=${receiverId}`)
+  },
+
+  rejectConnectionRequest(connectionId, receiverId) {
+    return apiClient.post(`/connections/${connectionId}/reject?receiverId=${receiverId}`)
+  },
+
+  cancelConnectionRequest(connectionId, requesterId) {
+    return apiClient.delete(`/connections/${connectionId}/cancel?requesterId=${requesterId}`)
+  },
+
+  removeConnection(connectionId, userId) {
+    return apiClient.delete(`/connections/${connectionId}?userId=${userId}`)
+  },
+
+  blockUser(blockerId, blockedUserId) {
+    return apiClient.post(`/connections/block?blockerId=${blockerId}&blockedUserId=${blockedUserId}`)
+  },
+
+  unblockUser(blockerId, blockedUserId) {
+    return apiClient.post(`/connections/unblock?blockerId=${blockerId}&blockedUserId=${blockedUserId}`)
+  },
+
+  getConnectionById(connectionId) {
+    return apiClient.get(`/connections/${connectionId}`)
+  },
+
+  getSentConnectionRequests(userId) {
+    return apiClient.get(`/connections/user/${userId}/sent`)
+  },
+
+  getReceivedConnectionRequests(userId) {
+    return apiClient.get(`/connections/user/${userId}/received`)
+  },
+
+  getBlockedUsers(userId) {
+    return apiClient.get(`/connections/user/${userId}/blocked`)
+  },
+
+  checkIfConnected(user1Id, user2Id) {
+    return apiClient.get(`/connections/check?user1Id=${user1Id}&user2Id=${user2Id}`)
+  },
+
+  searchConnectedUsers(userId, query) {
+    return apiClient.get(`/connections/user/${userId}/search?query=${encodeURIComponent(query)}`)
+  },
+
+  // ========================================
+  // MISSING: ADVANCED COURSE MANAGEMENT
+  // ========================================
+  searchCoursesByName(name) {
+    return apiClient.get(`/courses/search/name?name=${encodeURIComponent(name)}`)
+  },
+
+  searchCoursesByCode(code) {
+    return apiClient.get(`/courses/search/code?code=${encodeURIComponent(code)}`)
+  },
+
+  getCoursesByCredits(credits) {
+    return apiClient.get(`/courses/credits/${credits}`)
+  },
+
+  addCoursePrerequisite(courseId, prerequisiteId) {
+    return apiClient.post(`/courses/${courseId}/prerequisites/${prerequisiteId}`)
+  },
+
+  removeCoursePrerequisite(courseId, prerequisiteId) {
+    return apiClient.delete(`/courses/${courseId}/prerequisites/${prerequisiteId}`)
+  },
+
+  getCoursePrerequisites(courseId) {
+    return apiClient.get(`/courses/${courseId}/prerequisites`)
+  },
+
+  updateCourseSchedule(courseId, scheduleData) {
+    return apiClient.put(`/courses/${courseId}/schedule`, scheduleData)
+  },
+
+  // ========================================
+  // MISSING: ADVANCED ENROLLMENT MANAGEMENT
+  // ========================================
+  checkIfEnrolled(studentId, courseId) {
+    return apiClient.get(`/enrollments/check?studentId=${studentId}&courseId=${courseId}`)
+  },
+
+  getEnrollmentsByStatus(status) {
+    return apiClient.get(`/enrollments/status/${status}`)
+  },
+
+  getCourseEnrollmentCount(courseId) {
+    return apiClient.get(`/enrollments/course/${courseId}/count`)
+  },
+
+  // ========================================
+  // MISSING: ADVANCED ASSIGNMENT MANAGEMENT
+  // ========================================
+  getUpcomingAssignments() {
+    return apiClient.get('/assignments/upcoming')
+  },
+
+  getOverdueAssignments() {
+    return apiClient.get('/assignments/overdue')
+  },
+
+  getAssignmentsDueBetween(startDate, endDate) {
+    return apiClient.get(`/assignments/due-between?startDate=${startDate}&endDate=${endDate}`)
+  },
+
+  searchAssignments(title) {
+    return apiClient.get(`/assignments/search?title=${encodeURIComponent(title)}`)
+  },
+
+  updateAssignment(assignmentId, facultyId, data) {
+    return apiClient.put(`/assignments/${assignmentId}?facultyId=${facultyId}`, data)
+  },
+
+  deleteAssignment(assignmentId, facultyId) {
+    return apiClient.delete(`/assignments/${assignmentId}?facultyId=${facultyId}`)
+  },
+
+  getAllActiveAssignments() {
+    return apiClient.get('/assignments')
+  },
+
+  // ========================================
+  // MISSING: ADVANCED SUBMISSION MANAGEMENT
+  // ========================================
+  resubmitAssignment(assignmentId, studentId, data) {
+    return apiClient.post(`/submissions/resubmit?assignmentId=${assignmentId}&studentId=${studentId}`, data)
+  },
+
+  returnGradedSubmission(submissionId, facultyId, data) {
+    return apiClient.post(`/submissions/${submissionId}/return?facultyId=${facultyId}`, data)
+  },
+
+  downloadSubmissionFile(submissionId, userId) {
+    return apiClient.get(`/submissions/${submissionId}/download?userId=${userId}`, {
+      responseType: 'blob'
+    })
+  },
+
+  deleteSubmission(submissionId, userId) {
+    return apiClient.delete(`/submissions/${submissionId}?userId=${userId}`)
+  },
+
+  getStudentSubmissionForAssignment(studentId, assignmentId) {
+    return apiClient.get(`/submissions/student/${studentId}/assignment/${assignmentId}`)
+  },
+
+  getLateSubmissions(assignmentId) {
+    return apiClient.get(`/submissions/assignment/${assignmentId}/late`)
+  },
+
+  getUngradedSubmissionsForCourse(courseId) {
+    return apiClient.get(`/submissions/course/${courseId}/ungraded`)
+  },
+
+  getSubmissionsByStatus(status) {
+    return apiClient.get(`/submissions/status/${status}`)
+  },
+
+  getSubmissionsByStudentAndCourse(studentId, courseId) {
+    return apiClient.get(`/submissions/student/${studentId}/course/${courseId}`)
+  },
+
+  checkIfSubmitted(studentId, assignmentId) {
+    return apiClient.get(`/submissions/check?studentId=${studentId}&assignmentId=${assignmentId}`)
+  },
+
+  getSubmissionCounts(assignmentId) {
+    return apiClient.get(`/submissions/assignment/${assignmentId}/count`)
+  },
+
+  // ========================================
+  // MISSING: ADVANCED GRADE MANAGEMENT
+  // ========================================
+  getGradeById(gradeId) {
+    return apiClient.get(`/grades/${gradeId}`)
+  },
+
+  getAllGrades() {
+    return apiClient.get('/grades')
+  },
+
+  updateGrade(gradeId, gradeValue) {
+    return apiClient.put(`/grades/${gradeId}?gradeValue=${gradeValue}`)
+  },
+
+  deleteGrade(gradeId) {
+    return apiClient.delete(`/grades/${gradeId}`)
+  },
+
+  getGradeScale() {
+    return apiClient.get('/grades/scale')
+  },
+
+  getStudentGPASummary(studentId) {
+    return apiClient.get(`/grades/student/${studentId}/summary`)
+  },
+
+  calculateStudentGPA(studentId) {
+    return apiClient.get(`/grades/student/${studentId}/gpa`)
+  },
+
+  // ========================================
+  // MISSING: ADVANCED DEGREE PROGRESS
+  // ========================================
+  updateDegreeProgram(programId, data) {
+    return apiClient.put(`/degree-progress/programs/${programId}`, data)
+  },
+
+  getActiveDegreePrograms() {
+    return apiClient.get('/degree-progress/programs/active')
+  },
+
+  getDegreeProgramById(programId) {
+    return apiClient.get(`/degree-progress/programs/${programId}`)
+  },
+
+  addProgramRequirement(programId, requirementData) {
+    return apiClient.post(`/degree-progress/programs/${programId}/requirements`, requirementData)
+  },
+
+  updateProgramRequirement(requirementId, data) {
+    return apiClient.put(`/degree-progress/requirements/${requirementId}`, data)
+  },
+
+  getProgramRequirements(programId) {
+    return apiClient.get(`/degree-progress/programs/${programId}/requirements`)
+  },
+
+  deleteProgramRequirement(requirementId) {
+    return apiClient.delete(`/degree-progress/requirements/${requirementId}`)
+  },
+
+  checkGraduationEligibility(studentId) {
+    return apiClient.get(`/degree-progress/students/${studentId}/graduation-eligible`)
+  },
+
+  getStudentsInProgram(programId) {
+    return apiClient.get(`/degree-progress/programs/${programId}/students`)
+  },
+
+  updateStudentProgressStatus(studentId, status) {
+    return apiClient.patch(`/degree-progress/students/${studentId}/status`, { status })
+  },
+
+  getStudentProgressReport(studentId) {
+    return apiClient.get(`/degree-progress/students/${studentId}/report`)
+  },
+
+  // ========================================
+  // MISSING: ADVANCED NOTIFICATION MANAGEMENT
+  // ========================================
+  getUnreadNotifications(userId) {
+    return apiClient.get(`/notifications/unread?userId=${userId}`)
+  },
+
+  markAllNotificationsAsRead(userId) {
+    return apiClient.patch(`/notifications/read-all?userId=${userId}`)
+  },
+
+  deleteNotification(notificationId) {
+    return apiClient.delete(`/notifications/${notificationId}`)
+  },
+
+  deleteReadNotifications(userId) {
+    return apiClient.delete(`/notifications/read?userId=${userId}`)
+  },
+
+  getNotificationPreferences(userId) {
+    return apiClient.get(`/notifications/preferences?userId=${userId}`)
+  },
+
+  updateNotificationPreferences(userId, preferences) {
+    return apiClient.put(`/notifications/preferences?userId=${userId}`, preferences)
+  },
+
+  // ========================================
+  // MISSING: ADVANCED MESSAGE MANAGEMENT
+  // ========================================
+  markMessageAsReadByUser(messageId, userId) {
+    return apiClient.post(`/messages/${messageId}/read?userId=${userId}`)
+  },
+
+  markConversationAsReadByUsers(user1Id, user2Id) {
+    return apiClient.post(`/messages/conversation/read?user1Id=${user1Id}&user2Id=${user2Id}`)
+  },
+
+  getMessageById(messageId) {
+    return apiClient.get(`/messages/${messageId}`)
+  },
+
+  getConversationBetweenUsers(user1Id, user2Id) {
+    return apiClient.get(`/messages/conversation?user1Id=${user1Id}&user2Id=${user2Id}`)
+  },
+
+  getPaginatedConversation(user1Id, user2Id, page = 0, size = 50) {
+    return apiClient.get(`/messages/conversation/paginated?user1Id=${user1Id}&user2Id=${user2Id}&page=${page}&size=${size}`)
+  },
+
+  getRecentConversationMessages(user1Id, user2Id, limit = 50) {
+    return apiClient.get(`/messages/conversation/recent?user1Id=${user1Id}&user2Id=${user2Id}&limit=${limit}`)
+  },
+
+  getUnreadMessagesForUser(userId) {
+    return apiClient.get(`/messages/user/${userId}/unread`)
+  },
+
+  getUnreadCountFromUser(receiverId, senderId) {
+    return apiClient.get(`/messages/unread-count?receiverId=${receiverId}&senderId=${senderId}`)
+  },
+
+  searchConversation(user1Id, user2Id, query) {
+    return apiClient.get(`/messages/conversation/search?user1Id=${user1Id}&user2Id=${user2Id}&query=${encodeURIComponent(query)}`)
+  },
+
+  deleteMessageByUser(messageId, userId) {
+    return apiClient.delete(`/messages/${messageId}?userId=${userId}`)
+  },
+
+  // ========================================
+  // MISSING: ADVANCED PAYMENT MANAGEMENT
+  // ========================================
+  deletePayment(paymentId) {
+    return apiClient.delete(`/payments/${paymentId}`)
+  },
+
+  getPaymentsBySemester(semesterId) {
+    return apiClient.get(`/payments/semester/${semesterId}`)
+  },
+
+  getStudentPaymentForSemester(studentId, semesterId) {
+    return apiClient.get(`/payments/student/${studentId}/semester/${semesterId}`)
+  },
+
+  checkIfPaymentApproved(studentId, semesterId) {
+    return apiClient.get(`/payments/student/${studentId}/semester/${semesterId}/approved`)
+  },
+
+  getOverduePayments() {
+    return apiClient.get('/payments/overdue')
+  },
+
+  // ========================================
+  // MISSING: ADVANCED FILE MANAGEMENT
+  // ========================================
+  deleteSubmissionFiles(assignmentId, studentId) {
+    return apiClient.delete(`/files/delete-submission?assignmentId=${assignmentId}&studentId=${studentId}`)
+  },
+
+  checkFileExists(filePath) {
+    return apiClient.get(`/files/exists?filePath=${encodeURIComponent(filePath)}`)
+  },
+
+  getFileSize(filePath) {
+    return apiClient.get(`/files/size?filePath=${encodeURIComponent(filePath)}`)
+  },
+
+  // ========================================
+  // MISSING: ADVANCED SEMESTER MANAGEMENT
+  // ========================================
+  getSemesterByCode(code) {
+    return apiClient.get(`/semesters/code/${code}`)
+  },
+
+  getCurrentSemester() {
+    return apiClient.get('/semesters/current')
+  },
+
+  activateSemester(semesterId) {
+    return apiClient.post(`/semesters/${semesterId}/activate`)
+  },
+
+  openSemesterRegistration(semesterId) {
+    return apiClient.post(`/semesters/${semesterId}/open-registration`)
+  },
+
+  closeSemesterRegistration(semesterId) {
+    return apiClient.post(`/semesters/${semesterId}/close-registration`)
+  },
+
+  deleteSemester(semesterId) {
+    return apiClient.delete(`/semesters/${semesterId}`)
+  },
+
+  searchSemesters(name) {
+    return apiClient.get(`/semesters/search?name=${encodeURIComponent(name)}`)
+  },
+
+  // ========================================
+  // MISSING: ADVANCED USER MANAGEMENT
+  // ========================================
+  getUserByEmail(email) {
+    return apiClient.get(`/users/email/${encodeURIComponent(email)}`)
+  },
+
+  getUsersByRole(role) {
+    return apiClient.get(`/users/role/${role}`)
   }
 }

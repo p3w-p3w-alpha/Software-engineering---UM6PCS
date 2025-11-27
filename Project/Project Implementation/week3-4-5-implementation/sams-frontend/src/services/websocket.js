@@ -141,6 +141,54 @@ class WebSocketService {
     }))
   }
 
+  // Subscribe to specific conversation
+  subscribeToConversation(userId, otherUserId, callback) {
+    if (!this.connected || !this.stompClient) {
+      console.error('WebSocket not connected')
+      return null
+    }
+
+    const destination = `/user/${userId}/queue/conversation/${otherUserId}`
+    const subscription = this.stompClient.subscribe(destination, (message) => {
+      const msg = JSON.parse(message.body)
+      callback(msg)
+    })
+
+    this.subscriptions.set(`conversation-${otherUserId}`, subscription)
+    return subscription
+  }
+
+  // Subscribe to typing indicators
+  subscribeToTyping(otherUserId, callback) {
+    if (!this.connected || !this.stompClient) {
+      console.error('WebSocket not connected')
+      return null
+    }
+
+    const destination = `/user/queue/typing/${otherUserId}`
+    const subscription = this.stompClient.subscribe(destination, (message) => {
+      const typingData = JSON.parse(message.body)
+      callback(typingData.isTyping)
+    })
+
+    this.subscriptions.set(`typing-${otherUserId}`, subscription)
+    return subscription
+  }
+
+  // Send typing indicator
+  sendTypingIndicator(senderId, recipientId, isTyping) {
+    if (!this.connected || !this.stompClient) {
+      console.error('WebSocket not connected')
+      return
+    }
+
+    this.stompClient.send('/app/typing', {}, JSON.stringify({
+      senderId,
+      recipientId,
+      isTyping
+    }))
+  }
+
   unsubscribe(key) {
     const subscription = this.subscriptions.get(key)
     if (subscription) {

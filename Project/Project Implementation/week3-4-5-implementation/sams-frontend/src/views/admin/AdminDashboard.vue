@@ -26,25 +26,25 @@
             <StatCard
               title="Total Users"
               :value="stats.totalUsers"
-              icon="users"
+              :icon="UsersIcon"
               color="blue"
             />
             <StatCard
               title="Active Courses"
               :value="stats.activeCourses"
-              icon="academic-cap"
+              :icon="AcademicCapIcon"
               color="green"
             />
             <StatCard
               title="Pending Payments"
               :value="stats.pendingPayments"
-              icon="currency-dollar"
-              color="yellow"
+              :icon="CurrencyDollarIcon"
+              color="orange"
             />
             <StatCard
               title="Total Revenue"
               :value="`$${stats.totalRevenue}`"
-              icon="chart-bar"
+              :icon="ChartBarIcon"
               color="purple"
             />
           </div>
@@ -153,6 +153,7 @@ import Sidebar from '../../components/Sidebar.vue'
 import StatCard from '../../components/StatCard.vue'
 import LoadingSpinner from '../../components/LoadingSpinner.vue'
 import NotificationPanel from '../../components/NotificationPanel.vue'
+import { UsersIcon, AcademicCapIcon, CurrencyDollarIcon, ChartBarIcon } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
 const authStore = useAuthStore()

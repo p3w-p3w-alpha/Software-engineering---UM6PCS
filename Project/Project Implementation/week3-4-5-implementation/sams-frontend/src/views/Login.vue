@@ -1,154 +1,274 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
-    <div class="w-full max-w-md">
-      <!-- Logo Section -->
-      <div class="text-center mb-8">
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-primary-600 rounded-2xl mb-4 shadow-lg">
-          <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-          </svg>
-        </div>
-        <h1 class="text-3xl font-bold text-gray-900">SAMS</h1>
-        <p class="text-gray-600 mt-1">Student Academic Management System</p>
+  <div class="login-container min-h-screen relative overflow-hidden">
+    <!-- Animated Background -->
+    <div class="absolute inset-0 gradient-aurora opacity-80"></div>
+    <div class="morphing-bg">
+      <div class="floating-shapes">
+        <div v-for="n in 6" :key="n" :class="`shape shape-${n}`"></div>
       </div>
+    </div>
 
-      <!-- Login Card -->
-      <div class="bg-white rounded-2xl shadow-xl p-8">
-        <form @submit.prevent="handleLogin" class="space-y-6">
-          <!-- Error Alert -->
-          <div v-if="errorMessage" class="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-            <svg class="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-            </svg>
-            <div class="flex-1">
-              <p class="text-sm font-medium text-red-800">{{ errorMessage }}</p>
+    <!-- Main Content -->
+    <div class="relative z-10 min-h-screen flex items-center justify-center px-4 py-8">
+      <div class="w-full max-w-md animate-fade-in-scale">
+        <!-- Logo Section with Animation -->
+        <div class="text-center mb-8 animate-slide-in-up" style="animation-delay: 0.1s">
+          <div class="logo-container inline-block relative">
+            <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full blur-2xl opacity-50 animate-pulse-slow"></div>
+            <div class="relative inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl shadow-2xl transform hover:rotate-12 transition-all duration-500">
+              <i class="pi pi-graduation-cap text-3xl text-white"></i>
             </div>
           </div>
-
-          <!-- Username Field -->
-          <div>
-            <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
-            <input
-              id="username"
-              v-model="credentials.username"
-              type="text"
-              required
-              :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors.username}"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-              placeholder="Enter your username"
-              @input="errors.username = ''"
-            />
-            <p v-if="errors.username" class="mt-1.5 text-sm text-red-600">{{ errors.username }}</p>
+          <h1 class="text-5xl font-bold text-white mt-6 mb-2 text-gradient">SAMS</h1>
+          <p class="text-white/80 text-lg font-medium">Student Academic Management System</p>
+          <div class="flex justify-center gap-1 mt-3">
+            <span v-for="n in 3" :key="n" class="w-2 h-2 bg-white/60 rounded-full animate-bounce-subtle" :style="`animation-delay: ${n * 0.2}s`"></span>
           </div>
+        </div>
 
-          <!-- Password Field -->
-          <div>
-            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-            <div class="relative">
-              <input
-                id="password"
-                v-model="credentials.password"
-                :type="showPassword ? 'text' : 'password'"
-                required
-                :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors.password}"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all pr-12"
-                placeholder="Enter your password"
-                @input="errors.password = ''"
-              />
-              <button
-                type="button"
-                @click="showPassword = !showPassword"
-                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <svg v-if="!showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                </svg>
-                <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
-                </svg>
-              </button>
-            </div>
-            <p v-if="errors.password" class="mt-1.5 text-sm text-red-600">{{ errors.password }}</p>
-          </div>
-
-          <!-- Submit Button -->
-          <button
-            type="submit"
-            :disabled="loading"
-            class="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            <svg v-if="loading" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span>{{ loading ? 'Signing in...' : 'Sign In' }}</span>
-          </button>
-        </form>
-
-        <!-- Test Accounts -->
-        <div class="mt-6">
-          <button
-            @click="showTestAccounts = !showTestAccounts"
-            class="text-sm text-gray-600 hover:text-gray-900 font-medium flex items-center gap-1.5 mx-auto"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            Demo Credentials
-            <svg class="w-4 h-4 transition-transform" :class="{'rotate-180': showTestAccounts}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-            </svg>
-          </button>
-
-          <div v-if="showTestAccounts" class="mt-4 space-y-2">
-            <button
-              v-for="account in testAccounts"
-              :key="account.username"
-              @click="fillCredentials(account)"
-              class="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
-            >
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm font-medium text-gray-900">{{ account.role }}</p>
-                  <p class="text-xs text-gray-500 mt-0.5">{{ account.username }}</p>
-                </div>
-                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                </svg>
+        <!-- Login Card with Glass Morphism -->
+        <Card class="glass-card border-0 shadow-2xl animate-slide-in-up" style="animation-delay: 0.2s">
+          <template #content>
+            <form @submit.prevent="handleLogin" class="space-y-6 p-4">
+              <!-- Welcome Message -->
+              <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Welcome Back!</h2>
+                <p class="text-gray-600 mt-1">Please sign in to continue</p>
               </div>
-            </button>
+
+              <!-- Error Message with Animation -->
+              <Transition name="slide-up">
+                <Message v-if="errorMessage" severity="error" :closable="true" @close="errorMessage = ''" class="mb-4">
+                  <template #icon>
+                    <i class="pi pi-exclamation-triangle"></i>
+                  </template>
+                  {{ errorMessage }}
+                </Message>
+              </Transition>
+
+              <!-- Username Field -->
+              <div class="space-y-2">
+                <label for="username" class="block text-sm font-semibold text-gray-700">
+                  <i class="pi pi-user mr-2"></i>Username
+                </label>
+                <div class="relative group">
+                  <InputText
+                    id="username"
+                    v-model="credentials.username"
+                    type="text"
+                    required
+                    placeholder="Enter your username"
+                    class="w-full modern-input pl-12 pr-4 py-3 text-lg"
+                    :class="{'border-red-500': errors.username}"
+                    @input="errors.username = ''"
+                    @focus="fieldFocus.username = true"
+                    @blur="fieldFocus.username = false"
+                  />
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-all duration-300"
+                        :class="{'text-indigo-600': fieldFocus.username}">
+                    <i class="pi pi-user text-xl"></i>
+                  </span>
+                  <div v-if="fieldFocus.username" class="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-indigo-600 to-purple-600 transform origin-left animate-slide-in-right"></div>
+                </div>
+                <small v-if="errors.username" class="text-red-600 flex items-center gap-1 animate-fade-in">
+                  <i class="pi pi-exclamation-circle"></i>{{ errors.username }}
+                </small>
+              </div>
+
+              <!-- Password Field -->
+              <div class="space-y-2">
+                <label for="password" class="block text-sm font-semibold text-gray-700">
+                  <i class="pi pi-lock mr-2"></i>Password
+                </label>
+                <div class="relative group">
+                  <Password
+                    id="password"
+                    v-model="credentials.password"
+                    :feedback="false"
+                    required
+                    placeholder="Enter your password"
+                    :toggleMask="true"
+                    class="w-full"
+                    inputClass="w-full modern-input pl-12 pr-12 py-3 text-lg"
+                    :inputProps="{ autocomplete: 'current-password' }"
+                    :class="{'border-red-500': errors.password}"
+                    @input="errors.password = ''"
+                    @focus="fieldFocus.password = true"
+                    @blur="fieldFocus.password = false"
+                  />
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-all duration-300"
+                        :class="{'text-indigo-600': fieldFocus.password}">
+                    <i class="pi pi-lock text-xl"></i>
+                  </span>
+                  <div v-if="fieldFocus.password" class="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-indigo-600 to-purple-600 transform origin-left animate-slide-in-right"></div>
+                </div>
+                <small v-if="errors.password" class="text-red-600 flex items-center gap-1 animate-fade-in">
+                  <i class="pi pi-exclamation-circle"></i>{{ errors.password }}
+                </small>
+              </div>
+
+              <!-- Remember Me & Forgot Password -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <Checkbox v-model="rememberMe" inputId="remember" :binary="true" class="mr-2" />
+                  <label for="remember" class="text-sm text-gray-600 cursor-pointer hover:text-gray-800">Remember me</label>
+                </div>
+                <a href="#" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors">
+                  Forgot password?
+                </a>
+              </div>
+
+              <!-- Submit Button with Gradient and Animation -->
+              <Button
+                type="submit"
+                :loading="loading"
+                :disabled="loading"
+                label="Sign In"
+                icon="pi pi-sign-in"
+                class="w-full btn-gradient py-3 text-lg font-semibold transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+                :pt="{
+                  root: { class: 'bg-gradient-to-r from-indigo-600 to-purple-700 border-0 rounded-xl shadow-lg hover:shadow-xl' },
+                  label: { class: 'flex-1' }
+                }"
+              />
+
+              <!-- OR Divider -->
+              <div class="relative my-6">
+                <div class="absolute inset-0 flex items-center">
+                  <div class="w-full border-t border-gray-300"></div>
+                </div>
+                <div class="relative flex justify-center text-sm">
+                  <span class="px-4 bg-white text-gray-500">Or continue with</span>
+                </div>
+              </div>
+
+              <!-- Social Login Buttons -->
+              <div class="grid grid-cols-3 gap-3">
+                <Button
+                  v-for="provider in socialProviders"
+                  :key="provider.name"
+                  :icon="`pi pi-${provider.icon}`"
+                  :title="`Sign in with ${provider.name}`"
+                  @click="socialLogin(provider.name)"
+                  class="p-3 bg-white hover:bg-gray-50 border border-gray-300 rounded-xl transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1"
+                  :style="{ color: provider.color }"
+                />
+              </div>
+            </form>
+
+            <!-- Demo Accounts Section -->
+            <Divider />
+            <div class="px-4 pb-4">
+              <Button
+                @click="showTestAccounts = !showTestAccounts"
+                icon="pi pi-info-circle"
+                label="Demo Credentials"
+                class="w-full p-button-text p-button-sm"
+                :iconPos="showTestAccounts ? 'right' : 'left'"
+              />
+
+              <Transition name="slide-up">
+                <div v-if="showTestAccounts" class="mt-4 space-y-2 animate-fade-in">
+                  <div
+                    v-for="account in testAccounts"
+                    :key="account.username"
+                    @click="fillCredentials(account)"
+                    class="p-4 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-purple-50 rounded-xl cursor-pointer transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg group"
+                  >
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <span class="inline-flex items-center gap-2">
+                          <i :class="account.icon" class="text-indigo-600"></i>
+                          <p class="font-semibold text-gray-900 group-hover:text-indigo-700">{{ account.role }}</p>
+                        </span>
+                        <p class="text-sm text-gray-600 mt-1">
+                          <i class="pi pi-user text-xs mr-1"></i>{{ account.username }}
+                          <span class="text-gray-400 ml-2">
+                            <i class="pi pi-lock text-xs mr-1"></i>{{ account.password }}
+                          </span>
+                        </p>
+                      </div>
+                      <i class="pi pi-arrow-right text-gray-400 group-hover:text-indigo-600 transition-all duration-300 transform group-hover:translate-x-1"></i>
+                    </div>
+                  </div>
+                </div>
+              </Transition>
+            </div>
+          </template>
+        </Card>
+
+        <!-- Footer -->
+        <div class="text-center mt-8 animate-fade-in" style="animation-delay: 0.4s">
+          <p class="text-white/80 text-sm">
+            © 2024 SAMS. All rights reserved.
+          </p>
+          <div class="flex justify-center gap-4 mt-3">
+            <a href="#" class="text-white/60 hover:text-white transition-colors">
+              <i class="pi pi-question-circle"></i> Help
+            </a>
+            <a href="#" class="text-white/60 hover:text-white transition-colors">
+              <i class="pi pi-shield"></i> Privacy
+            </a>
+            <a href="#" class="text-white/60 hover:text-white transition-colors">
+              <i class="pi pi-file-edit"></i> Terms
+            </a>
           </div>
         </div>
       </div>
-
-      <!-- Footer -->
-      <p class="text-center text-sm text-gray-600 mt-6">
-        © 2024 SAMS. All rights reserved.
-      </p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import Button from 'primevue/button'
+import Card from 'primevue/card'
+import InputText from 'primevue/inputtext'
+import Password from 'primevue/password'
+import Checkbox from 'primevue/checkbox'
+import Message from 'primevue/message'
+import Divider from 'primevue/divider'
+import { useToast } from 'primevue/usetoast'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const toast = useToast()
 
 const credentials = ref({ username: '', password: '' })
 const loading = ref(false)
 const errorMessage = ref('')
-const showPassword = ref(false)
 const showTestAccounts = ref(false)
+const rememberMe = ref(false)
 const errors = ref({ username: '', password: '' })
+const fieldFocus = ref({ username: false, password: false })
 
 const testAccounts = [
-  { role: 'Super Admin', username: 'superadmin', password: 'Admin@123' },
-  { role: 'Student', username: 'student1', password: 'password123' },
-  { role: 'Faculty', username: 'faculty1', password: 'password123' }
+  {
+    role: 'Super Admin',
+    username: 'superadmin',
+    password: 'Admin@123',
+    icon: 'pi pi-shield'
+  },
+  {
+    role: 'Student',
+    username: 'student1',
+    password: 'password123',
+    icon: 'pi pi-graduation-cap'
+  },
+  {
+    role: 'Faculty',
+    username: 'faculty1',
+    password: 'password123',
+    icon: 'pi pi-book'
+  }
+]
+
+const socialProviders = [
+  { name: 'Google', icon: 'google', color: '#4285F4' },
+  { name: 'GitHub', icon: 'github', color: '#333' },
+  { name: 'Microsoft', icon: 'microsoft', color: '#0078D4' }
 ]
 
 const validateForm = () => {
@@ -173,6 +293,22 @@ const fillCredentials = (account) => {
   credentials.value.password = account.password
   showTestAccounts.value = false
   errors.value = { username: '', password: '' }
+
+  toast.add({
+    severity: 'info',
+    summary: 'Demo Account Selected',
+    detail: `${account.role} credentials filled`,
+    life: 3000
+  })
+}
+
+const socialLogin = (provider) => {
+  toast.add({
+    severity: 'warn',
+    summary: 'Coming Soon',
+    detail: `${provider} authentication will be available soon`,
+    life: 3000
+  })
 }
 
 const handleLogin = async () => {
@@ -185,18 +321,190 @@ const handleLogin = async () => {
     const result = await authStore.login(credentials.value)
 
     if (result.success) {
+      toast.add({
+        severity: 'success',
+        summary: 'Welcome!',
+        detail: 'Login successful. Redirecting...',
+        life: 2000
+      })
+
       setTimeout(() => {
         if (authStore.isAdmin) router.push('/admin')
         else if (authStore.isStudent) router.push('/student')
         else if (authStore.isFaculty) router.push('/faculty')
-      }, 200)
+      }, 500)
     } else {
       errorMessage.value = result.message || 'Invalid credentials'
+      toast.add({
+        severity: 'error',
+        summary: 'Login Failed',
+        detail: errorMessage.value,
+        life: 5000
+      })
     }
   } catch (error) {
     errorMessage.value = 'An error occurred. Please try again.'
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: errorMessage.value,
+      life: 5000
+    })
   } finally {
     loading.value = false
   }
 }
+
+onMounted(() => {
+  // Add entrance animation to body
+  document.body.classList.add('overflow-hidden')
+  setTimeout(() => {
+    document.body.classList.remove('overflow-hidden')
+  }, 1000)
+})
 </script>
+
+<style scoped>
+.login-container {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+}
+
+/* Floating Shapes Animation */
+.floating-shapes {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.shape {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  border-radius: 50%;
+  animation: float-random 20s infinite ease-in-out;
+}
+
+.shape-1 {
+  width: 80px;
+  height: 80px;
+  top: 10%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.shape-2 {
+  width: 120px;
+  height: 120px;
+  top: 60%;
+  right: 10%;
+  animation-delay: 2s;
+}
+
+.shape-3 {
+  width: 60px;
+  height: 60px;
+  bottom: 10%;
+  left: 20%;
+  animation-delay: 4s;
+}
+
+.shape-4 {
+  width: 100px;
+  height: 100px;
+  top: 30%;
+  right: 30%;
+  animation-delay: 6s;
+}
+
+.shape-5 {
+  width: 70px;
+  height: 70px;
+  bottom: 30%;
+  right: 20%;
+  animation-delay: 8s;
+}
+
+.shape-6 {
+  width: 90px;
+  height: 90px;
+  top: 70%;
+  left: 40%;
+  animation-delay: 10s;
+}
+
+@keyframes float-random {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(100px, -100px) rotate(90deg);
+  }
+  50% {
+    transform: translate(-100px, 100px) rotate(180deg);
+  }
+  75% {
+    transform: translate(50px, 50px) rotate(270deg);
+  }
+}
+
+/* Custom Input Focus Effects */
+:deep(.p-inputtext:focus),
+:deep(.p-password-input:focus) {
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+  border-color: #6366f1;
+}
+
+/* Custom Button Styles */
+:deep(.p-button) {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:deep(.p-button:not(:disabled):hover) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Glass Card Enhancement */
+.glass-card {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Logo Container Animation */
+.logo-container {
+  animation: rotate-slow 20s linear infinite;
+}
+
+@keyframes rotate-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Additional Animations */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-slide-in-up {
+  animation: slideInUp 0.5s ease-out;
+  animation-fill-mode: both;
+}
+
+.animate-fade-in-scale {
+  animation: fadeInScale 0.5s ease-out;
+}
+</style>
