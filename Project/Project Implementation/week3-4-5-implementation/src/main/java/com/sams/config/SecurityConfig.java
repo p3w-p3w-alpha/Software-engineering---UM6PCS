@@ -55,11 +55,20 @@ public class SecurityConfig {
                 // admin endpoints - only ADMIN and SUPER_ADMIN roles
                 .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
 
-                // attendance endpoints - ADMIN, SUPER_ADMIN, and FACULTY
+                // attendance endpoints - students can view their own attendance
+                .requestMatchers("/api/attendance/user/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN", "SUPER_ADMIN")
+                .requestMatchers("/api/attendance/statistics/user/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN", "SUPER_ADMIN")
+                .requestMatchers("/api/attendance/percentage/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN", "SUPER_ADMIN")
                 .requestMatchers("/api/attendance/**").hasAnyRole("ADMIN", "SUPER_ADMIN", "FACULTY")
 
                 // dashboard analytics endpoints - ADMIN and SUPER_ADMIN
                 .requestMatchers("/api/dashboard/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+
+                // reports endpoints - ADMIN and SUPER_ADMIN
+                .requestMatchers("/api/reports/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+
+                // system metrics and health endpoints - ADMIN and SUPER_ADMIN only
+                .requestMatchers("/api/system/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
 
                 // protected endpoints - authentication required
                 .requestMatchers("/api/users/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN", "SUPER_ADMIN")
@@ -70,6 +79,11 @@ public class SecurityConfig {
                 .requestMatchers("/api/files/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN", "SUPER_ADMIN")
                 .requestMatchers("/api/degree-progress/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN", "SUPER_ADMIN")
                 .requestMatchers("/api/notifications/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN", "SUPER_ADMIN")
+                .requestMatchers("/api/messages/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN", "SUPER_ADMIN")
+                .requestMatchers("/api/connections/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN", "SUPER_ADMIN")
+                .requestMatchers("/api/study-groups/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN", "SUPER_ADMIN")
+                .requestMatchers("/api/assignments/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN", "SUPER_ADMIN")
+                .requestMatchers("/api/submissions/**").hasAnyRole("STUDENT", "FACULTY", "ADMIN", "SUPER_ADMIN")
 
                 // all other API requests require authentication
                 .anyRequest().authenticated()
@@ -91,7 +105,10 @@ public class SecurityConfig {
             "http://localhost:3000",  // React default
             "http://localhost:4200",  // Angular default
             "http://localhost:8081",  // Vue default
-            "http://localhost:5173"   // Vite default
+            "http://localhost:5173",  // Vite default
+            "http://localhost:5174",  // Vite alternate port
+            "http://localhost:5175",  // Vite alternate port 2
+            "http://localhost:5176"   // Vite alternate port 3
         ));
 
         // allow these HTTP methods

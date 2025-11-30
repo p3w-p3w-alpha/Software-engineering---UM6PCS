@@ -9,10 +9,16 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
-@Table(name = "courses")
+@Table(name = "courses", indexes = {
+    @Index(name = "idx_course_instructor", columnList = "instructor_id"),
+    @Index(name = "idx_course_semester", columnList = "semester_id"),
+    @Index(name = "idx_course_active", columnList = "active"),
+    @Index(name = "idx_course_code", columnList = "courseCode")
+})
 public class Course {
 
     @Id
@@ -310,5 +316,18 @@ public class Course {
 
     public void setCourseFee(java.math.BigDecimal courseFee) {
         this.courseFee = courseFee;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Course course = (Course) o;
+        return id != null && Objects.equals(id, course.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

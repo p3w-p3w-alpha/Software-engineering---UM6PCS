@@ -1,5 +1,22 @@
 <template>
   <div class="min-h-screen bg-gray-50">
+    <!-- Toast Notification -->
+    <div v-if="showToast" class="fixed top-4 right-4 z-50 max-w-sm">
+      <div :class="[
+        'rounded-lg px-4 py-3 shadow-lg',
+        toastType === 'success' ? 'bg-green-100 border border-green-400 text-green-700' : 'bg-red-100 border border-red-400 text-red-700'
+      ]">
+        <div class="flex items-center justify-between">
+          <span>{{ toastMessage }}</span>
+          <button @click="showToast = false" class="ml-4">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Loading State -->
     <div v-if="loading" class="flex justify-center items-center py-12">
       <LoadingSpinner size="large" />
@@ -256,7 +273,7 @@
               <div class="flex items-center justify-between">
                 <h3 class="text-lg font-semibold text-gray-900">Resources</h3>
                 <button
-                  @click="showResourceModal = true"
+                  @click="openResourceModal"
                   class="text-blue-600 hover:text-blue-700"
                   title="Add resource"
                 >
@@ -281,16 +298,15 @@
                         Shared by {{ resource.sharedBy }} • {{ formatDate(resource.createdAt) }}
                       </p>
                     </div>
-                    <a
-                      :href="resource.url"
-                      target="_blank"
+                    <button
+                      @click="downloadResource(resource)"
                       class="text-blue-600 hover:text-blue-700"
-                      title="Open resource"
+                      title="Download resource"
                     >
                       <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                       </svg>
-                    </a>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -301,7 +317,7 @@
                 </svg>
                 <p class="mt-2 text-sm text-gray-500">No resources yet</p>
                 <button
-                  @click="showResourceModal = true"
+                  @click="openResourceModal"
                   class="mt-2 text-sm text-blue-600 hover:text-blue-700"
                 >
                   Add the first resource
@@ -312,6 +328,90 @@
         </div>
       </div>
     </div>
+
+    <!-- Resource Upload Modal -->
+    <Teleport to="body">
+      <div v-if="showResourceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+          <h3 class="text-lg font-semibold text-gray-900">Share a Resource</h3>
+          <button @click="showResourceModal = false" class="text-gray-400 hover:text-gray-500">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="p-6 space-y-4">
+          <!-- File Upload Area -->
+          <div
+            @dragover.prevent="isDragging = true"
+            @dragleave="isDragging = false"
+            @drop.prevent="handleFileDrop"
+            :class="[
+              'border-2 border-dashed rounded-lg p-8 text-center transition-colors',
+              isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
+            ]"
+          >
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            <p class="mt-2 text-sm text-gray-600">Drag and drop a file here, or</p>
+            <label class="mt-2 inline-block px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md cursor-pointer hover:bg-blue-700">
+              Browse Files
+              <input
+                type="file"
+                class="hidden"
+                @change="handleFileSelect"
+                accept=".pdf,.doc,.docx,.txt,.zip,.java,.py,.cpp,.c,.js,.html,.css"
+              />
+            </label>
+            <p class="mt-2 text-xs text-gray-500">PDF, DOC, TXT, ZIP (max 10MB)</p>
+          </div>
+
+          <!-- Selected File Preview -->
+          <div v-if="selectedFile" class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div class="flex items-center space-x-3">
+              <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <div>
+                <p class="text-sm font-medium text-gray-900">{{ selectedFile.name }}</p>
+                <p class="text-xs text-gray-500">{{ formatFileSize(selectedFile.size) }}</p>
+              </div>
+            </div>
+            <button @click="selectedFile = null" class="text-red-600 hover:text-red-700">
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Error Message -->
+          <div v-if="uploadError" class="p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p class="text-sm text-red-600">{{ uploadError }}</p>
+          </div>
+        </div>
+
+        <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+          <button
+            @click="showResourceModal = false"
+            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+          <button
+            @click="uploadResource"
+            :disabled="!selectedFile || uploading"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+          >
+            <LoadingSpinner v-if="uploading" size="small" color="white" class="mr-2" />
+            {{ uploading ? 'Uploading...' : 'Share Resource' }}
+          </button>
+        </div>
+      </div>
+    </div>
+    </Teleport>
   </div>
 </template>
 
@@ -332,6 +432,24 @@ const loadingMessages = ref(false)
 const sending = ref(false)
 const showEditModal = ref(false)
 const showResourceModal = ref(false)
+
+// Toast notification state
+const showToast = ref(false)
+const toastMessage = ref('')
+const toastType = ref('success')
+
+function showNotification(message, type = 'success') {
+  toastMessage.value = message
+  toastType.value = type
+  showToast.value = true
+  setTimeout(() => { showToast.value = false }, 5000)
+}
+
+// File upload state
+const selectedFile = ref(null)
+const isDragging = ref(false)
+const uploading = ref(false)
+const uploadError = ref('')
 
 const groupInfo = ref({})
 const members = ref([])
@@ -363,16 +481,34 @@ async function loadGroupData() {
     const groupResponse = await api.getStudyGroupById(groupId)
     groupInfo.value = groupResponse.data
 
-    // Load group members
-    const membersResponse = await api.getStudyGroupMembers(groupId)
-    members.value = membersResponse.data || []
+    // Load group members (fail gracefully)
+    try {
+      const membersResponse = await api.getStudyGroupMembers(groupId)
+      const rawMembers = membersResponse.data || []
 
-    // Load resources
-    const resourcesResponse = await api.getStudyGroupResources(groupId)
-    resources.value = resourcesResponse.data || []
+      // Transform member data to expected format
+      members.value = rawMembers.map(m => ({
+        id: m.userId || m.id,
+        name: m.userName || m.name || `User ${m.userId || m.id}`,
+        email: m.userEmail || m.email || '',
+        online: false
+      }))
+    } catch (memberError) {
+      console.warn('Could not load members:', memberError)
+      members.value = []
+    }
+
+    // Load resources (fail gracefully if not available)
+    try {
+      const resourcesResponse = await api.getStudyGroupResources(groupId)
+      resources.value = resourcesResponse.data || []
+    } catch (resourceError) {
+      console.warn('Could not load resources:', resourceError)
+      resources.value = []
+    }
   } catch (error) {
     console.error('Error loading group data:', error)
-    alert('Failed to load group data. Please try again.')
+    // Don't show alert - just log the error
   } finally {
     loading.value = false
   }
@@ -383,12 +519,23 @@ async function loadMessages() {
     loadingMessages.value = true
 
     const groupId = route.params.id
-    const messagesResponse = await api.getStudyGroupMessages(groupId)
-    messages.value = messagesResponse.data || []
+    // Get userId from auth store or localStorage as fallback
+    const userId = authStore.userId || JSON.parse(localStorage.getItem('user'))?.userId
+
+    if (!userId) {
+      console.warn('No userId available for loading messages')
+      messages.value = []
+      return
+    }
+
+    const messagesResponse = await api.getStudyGroupMessages(groupId, userId)
+    // API returns paginated response with content array
+    messages.value = messagesResponse.data?.content || messagesResponse.data || []
 
     scrollToBottom()
   } catch (error) {
     console.error('Error loading messages:', error)
+    messages.value = []
   } finally {
     loadingMessages.value = false
   }
@@ -408,21 +555,24 @@ async function sendMessage() {
   try {
     sending.value = true
 
-    const messageData = {
-      groupId: groupInfo.value.id,
-      senderId: authStore.userId,
-      content: newMessage.value.trim(),
-      createdAt: new Date().toISOString()
+    const groupId = groupInfo.value.id
+    const senderId = authStore.userId || JSON.parse(localStorage.getItem('user'))?.userId
+    const content = newMessage.value.trim()
+
+    if (!senderId) {
+      console.error('No userId available for sending message')
+      showNotification('Unable to send message. Please log in again.', 'error')
+      return
     }
 
-    const response = await api.sendGroupMessage(messageData)
+    const response = await api.sendGroupMessage(groupId, senderId, content)
     messages.value.push(response.data)
 
     newMessage.value = ''
     scrollToBottom()
   } catch (error) {
     console.error('Error sending message:', error)
-    alert('Failed to send message. Please try again.')
+    showNotification('Failed to send message. Please try again.', 'error')
   } finally {
     sending.value = false
   }
@@ -437,11 +587,11 @@ async function leaveGroup() {
 
   try {
     await api.leaveStudyGroup(groupInfo.value.id, authStore.userId)
-    alert('Successfully left the study group.')
+    showNotification('Successfully left the study group.', 'success')
     router.push('/studygroups')
   } catch (error) {
     console.error('Error leaving group:', error)
-    alert('Failed to leave group. Please try again.')
+    showNotification('Failed to leave group. Please try again.', 'error')
   }
 }
 
@@ -450,11 +600,11 @@ async function deleteGroup() {
 
   try {
     await api.deleteStudyGroup(groupInfo.value.id)
-    alert('Study group deleted successfully.')
+    showNotification('Study group deleted successfully.', 'success')
     router.push('/studygroups')
   } catch (error) {
     console.error('Error deleting group:', error)
-    alert('Failed to delete group. Please try again.')
+    showNotification('Failed to delete group. Please try again.', 'error')
   }
 }
 
@@ -464,17 +614,17 @@ async function removeMember(memberId) {
   try {
     await api.removeStudyGroupMember(groupInfo.value.id, memberId)
     members.value = members.value.filter(m => m.id !== memberId)
-    alert('Member removed successfully.')
+    showNotification('Member removed successfully.', 'success')
   } catch (error) {
     console.error('Error removing member:', error)
-    alert('Failed to remove member. Please try again.')
+    showNotification('Failed to remove member. Please try again.', 'error')
   }
 }
 
 function copyInviteLink() {
   const link = `${window.location.origin}/studygroups/${groupInfo.value.id}`
   navigator.clipboard.writeText(link)
-  alert('Invite link copied to clipboard!')
+  showNotification('Invite link copied to clipboard!', 'success')
 }
 
 function scrollToBottom() {
@@ -521,5 +671,121 @@ function formatMessageTime(dateString) {
 
   // Different day - show date
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+// File upload functions
+function handleFileSelect(event) {
+  const file = event.target.files[0]
+  if (file) {
+    validateAndSetFile(file)
+  }
+}
+
+function handleFileDrop(event) {
+  isDragging.value = false
+  const file = event.dataTransfer.files[0]
+  if (file) {
+    validateAndSetFile(file)
+  }
+}
+
+function validateAndSetFile(file) {
+  uploadError.value = ''
+
+  // Check file size (10MB max)
+  const maxSize = 10 * 1024 * 1024
+  if (file.size > maxSize) {
+    uploadError.value = 'File size exceeds 10MB limit'
+    return
+  }
+
+  // Check file type
+  const allowedTypes = ['pdf', 'doc', 'docx', 'txt', 'zip', 'java', 'py', 'cpp', 'c', 'js', 'html', 'css']
+  const extension = file.name.split('.').pop().toLowerCase()
+  if (!allowedTypes.includes(extension)) {
+    uploadError.value = `File type .${extension} is not allowed`
+    return
+  }
+
+  selectedFile.value = file
+}
+
+function openResourceModal() {
+  showResourceModal.value = true
+}
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+}
+
+async function uploadResource() {
+  if (!selectedFile.value || uploading.value) return
+
+  try {
+    uploading.value = true
+    uploadError.value = ''
+
+    const groupId = groupInfo.value.id
+    const userId = authStore.userId || JSON.parse(localStorage.getItem('user'))?.userId
+
+    // Upload the file
+    const uploadResponse = await api.uploadStudyGroupFile(selectedFile.value, groupId, userId)
+    const { filePath, fileName } = uploadResponse.data
+
+    // Share the file as a message in the group
+    const messageResponse = await api.sendGroupMessage(groupId, userId, `Shared a file: ${fileName}`)
+
+    // Add the file message to local resources list
+    const user = authStore.user || JSON.parse(localStorage.getItem('user')) || {}
+    const sharedByName = user.firstName && user.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : user.username || 'You'
+
+    resources.value.push({
+      id: Date.now(),
+      title: fileName,
+      url: `/api/files/download?filePath=${encodeURIComponent(filePath)}`,
+      sharedBy: sharedByName,
+      createdAt: new Date().toISOString(),
+      filePath: filePath
+    })
+
+    // Also add to messages
+    messages.value.push(messageResponse.data)
+    scrollToBottom()
+
+    // Reset and close modal
+    selectedFile.value = null
+    showResourceModal.value = false
+
+    showNotification('Resource shared successfully!', 'success')
+  } catch (error) {
+    console.error('Error uploading resource:', error)
+    uploadError.value = error.response?.data?.error || 'Failed to upload file. Please try again.'
+  } finally {
+    uploading.value = false
+  }
+}
+
+async function downloadResource(resource) {
+  try {
+    const response = await api.downloadFile(resource.filePath)
+
+    // Create a blob URL and trigger download
+    const blob = new Blob([response.data])
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = resource.title
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+  } catch (error) {
+    console.error('Error downloading file:', error)
+    showNotification('Failed to download file. Please try again.', 'error')
+  }
 }
 </script>

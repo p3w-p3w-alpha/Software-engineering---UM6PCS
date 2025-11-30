@@ -57,6 +57,7 @@
                     v-model="credentials.username"
                     type="text"
                     required
+                    autocomplete="username"
                     placeholder="Enter your username"
                     class="w-full modern-input pl-12 pr-4 py-3 text-lg"
                     :class="{'border-red-500': errors.username}"
@@ -82,7 +83,7 @@
                 </label>
                 <div class="relative group">
                   <Password
-                    id="password"
+                    inputId="password"
                     v-model="credentials.password"
                     :feedback="false"
                     required
@@ -95,6 +96,10 @@
                     @input="errors.password = ''"
                     @focus="fieldFocus.password = true"
                     @blur="fieldFocus.password = false"
+                    :pt="{
+                      panel: { style: 'display: none !important' },
+                      meter: { style: 'display: none' }
+                    }"
                   />
                   <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-all duration-300"
                         :class="{'text-indigo-600': fieldFocus.password}">
@@ -113,7 +118,7 @@
                   <Checkbox v-model="rememberMe" inputId="remember" :binary="true" class="mr-2" />
                   <label for="remember" class="text-sm text-gray-600 cursor-pointer hover:text-gray-800">Remember me</label>
                 </div>
-                <a href="#" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors">
+                <a @click.prevent="handleForgotPassword" href="#" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors cursor-pointer">
                   Forgot password?
                 </a>
               </div>
@@ -132,28 +137,6 @@
                 }"
               />
 
-              <!-- OR Divider -->
-              <div class="relative my-6">
-                <div class="absolute inset-0 flex items-center">
-                  <div class="w-full border-t border-gray-300"></div>
-                </div>
-                <div class="relative flex justify-center text-sm">
-                  <span class="px-4 bg-white text-gray-500">Or continue with</span>
-                </div>
-              </div>
-
-              <!-- Social Login Buttons -->
-              <div class="grid grid-cols-3 gap-3">
-                <Button
-                  v-for="provider in socialProviders"
-                  :key="provider.name"
-                  :icon="`pi pi-${provider.icon}`"
-                  :title="`Sign in with ${provider.name}`"
-                  @click="socialLogin(provider.name)"
-                  class="p-3 bg-white hover:bg-gray-50 border border-gray-300 rounded-xl transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1"
-                  :style="{ color: provider.color }"
-                />
-              </div>
             </form>
 
             <!-- Demo Accounts Section -->
@@ -252,24 +235,20 @@ const testAccounts = [
     icon: 'pi pi-shield'
   },
   {
-    role: 'Student',
-    username: 'student1',
+    role: 'Student (Nassim)',
+    username: 'nassim',
     password: 'password123',
     icon: 'pi pi-graduation-cap'
   },
   {
-    role: 'Faculty',
-    username: 'faculty1',
+    role: 'Faculty (Karim)',
+    username: 'karim',
     password: 'password123',
-    icon: 'pi pi-book'
+    icon: 'pi pi-briefcase'
   }
 ]
 
-const socialProviders = [
-  { name: 'Google', icon: 'google', color: '#4285F4' },
-  { name: 'GitHub', icon: 'github', color: '#333' },
-  { name: 'Microsoft', icon: 'microsoft', color: '#0078D4' }
-]
+const showForgotPasswordModal = ref(false)
 
 const validateForm = () => {
   errors.value = { username: '', password: '' }
@@ -302,12 +281,12 @@ const fillCredentials = (account) => {
   })
 }
 
-const socialLogin = (provider) => {
+const handleForgotPassword = () => {
   toast.add({
-    severity: 'warn',
+    severity: 'info',
     summary: 'Coming Soon',
-    detail: `${provider} authentication will be available soon`,
-    life: 3000
+    detail: 'Password reset functionality will be available in a future update. Please contact your administrator for assistance.',
+    life: 5000
   })
 }
 

@@ -1,5 +1,21 @@
 <template>
   <div class="max-w-7xl mx-auto">
+    <!-- Toast Notification -->
+    <div v-if="showToast" class="fixed top-4 right-4 z-50 max-w-sm">
+      <div :class="[
+        'rounded-lg px-4 py-3 shadow-lg',
+        toastType === 'success' ? 'bg-green-100 border border-green-400 text-green-700' : 'bg-red-100 border border-red-400 text-red-700'
+      ]">
+        <div class="flex items-center justify-between">
+          <span>{{ toastMessage }}</span>
+          <button @click="showToast = false" class="ml-4">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-gray-900">Payment Approval</h1>
       <p class="mt-2 text-gray-600">Review and approve student payment submissions</p>
@@ -149,13 +165,40 @@
             <div
               v-for="enrollment in selectedPayment.enrollments"
               :key="enrollment.id"
-              class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+              class="flex items-center justify-between p-3 rounded-lg"
+              :class="enrollment.status === 'WAITLISTED' ? 'bg-yellow-50 border border-yellow-200' : 'bg-gray-50'"
             >
               <div>
-                <p class="font-medium text-gray-900">{{ enrollment.course.courseCode }} - {{ enrollment.course.courseName }}</p>
+                <div class="flex items-center gap-2">
+                  <p class="font-medium text-gray-900">{{ enrollment.course.courseCode }} - {{ enrollment.course.courseName }}</p>
+                  <span
+                    v-if="enrollment.status === 'WAITLISTED'"
+                    class="px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800"
+                  >
+                    Waitlisted
+                  </span>
+                </div>
                 <p class="text-sm text-gray-600">{{ enrollment.course.creditHours }} Credits</p>
+                <p v-if="enrollment.status === 'WAITLISTED'" class="text-xs text-yellow-700 mt-1">
+                  <i class="pi pi-info-circle mr-1"></i>
+                  Will be moved to enrolled upon approval
+                </p>
               </div>
               <p class="font-semibold text-gray-900">${{ enrollment.course.courseFee }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Waitlist Notice -->
+        <div v-if="hasWaitlistedEnrollments" class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div class="flex items-start gap-3">
+            <i class="pi pi-exclamation-triangle text-yellow-600 text-xl mt-0.5"></i>
+            <div>
+              <h4 class="font-semibold text-yellow-800">Waitlist Notice</h4>
+              <p class="text-sm text-yellow-700 mt-1">
+                This student has {{ waitlistedCount }} course(s) on the waitlist.
+                Approving this payment will automatically move them from waitlist to enrolled status.
+              </p>
             </div>
           </div>
         </div>
@@ -219,6 +262,18 @@ const showRejectModal = ref(false)
 const selectedPayment = ref(null)
 const rejectionReason = ref('')
 
+// Toast notification state
+const showToast = ref(false)
+const toastMessage = ref('')
+const toastType = ref('success')
+
+function showNotification(message, type = 'success') {
+  toastMessage.value = message
+  toastType.value = type
+  showToast.value = true
+  setTimeout(() => { showToast.value = false }, 5000)
+}
+
 const tabs = computed(() => [
   { label: 'Pending Review', value: 'pending', count: payments.value.filter(p => p.status === 'PAID').length },
   { label: 'Approved', value: 'approved', count: payments.value.filter(p => p.status === 'APPROVED').length },
@@ -247,20 +302,31 @@ const filteredPayments = computed(() => {
   return payments.value.filter(p => p.status === statusMap[activeTab.value])
 })
 
+// Waitlist computed properties
+const hasWaitlistedEnrollments = computed(() => {
+  if (!selectedPayment.value?.enrollments) return false
+  return selectedPayment.value.enrollments.some(e => e.status === 'WAITLISTED')
+})
+
+const waitlistedCount = computed(() => {
+  if (!selectedPayment.value?.enrollments) return 0
+  return selectedPayment.value.enrollments.filter(e => e.status === 'WAITLISTED').length
+})
+
 const loadPayments = async () => {
   try {
     loading.value = true
     const response = await api.getAllPayments()
     payments.value = response.data.map(p => ({
       ...p,
-      studentName: p.student?.username || 'N/A',
-      studentEmail: p.student?.email || 'N/A',
-      semester: p.semester?.name || 'N/A',
+      studentName: p.studentName || p.student?.username || 'N/A',
+      studentEmail: p.studentEmail || p.student?.email || 'N/A',
+      semester: p.semesterName || p.semester?.name || 'N/A',
       paymentDate: formatDate(p.paymentDate)
     }))
   } catch (error) {
     console.error('Error loading payments:', error)
-    alert('Failed to load payments')
+    showNotification(error.userMessage || error.response?.data?.message || 'Failed to load payments', 'error')
   } finally {
     loading.value = false
   }
@@ -272,27 +338,48 @@ const viewPaymentDetails = async (payment) => {
     const response = await api.getPaymentById(payment.id)
     selectedPayment.value = {
       ...response.data,
-      studentName: response.data.student?.username || 'N/A',
-      studentEmail: response.data.student?.email || 'N/A',
-      semester: response.data.semester?.name || 'N/A'
+      studentName: response.data.studentName || response.data.student?.username || 'N/A',
+      studentEmail: response.data.studentEmail || response.data.student?.email || 'N/A',
+      semester: response.data.semesterName || response.data.semester?.name || 'N/A'
     }
     showDetailsModal.value = true
   } catch (error) {
     console.error('Error loading payment details:', error)
-    alert('Failed to load payment details')
+    showNotification(error.userMessage || error.response?.data?.message || 'Failed to load payment details', 'error')
   }
 }
 
 const approvePayment = async () => {
   try {
     processing.value = true
+
+    // Check for waitlisted enrollments before approval
+    const waitlistedEnrollments = selectedPayment.value.enrollments?.filter(e => e.status === 'WAITLISTED') || []
+
+    // Approve the payment
     await api.approvePayment(selectedPayment.value.id)
-    alert('Payment approved successfully! Student enrollments are now active.')
+
+    // If there were waitlisted enrollments, promote them to enrolled
+    if (waitlistedEnrollments.length > 0) {
+      for (const enrollment of waitlistedEnrollments) {
+        try {
+          // Call API to promote from waitlist to enrolled
+          await api.promoteFromWaitlist(enrollment.courseId, enrollment.studentId || selectedPayment.value.student?.id)
+        } catch (enrollError) {
+          console.warn(`Failed to promote enrollment ${enrollment.id} from waitlist:`, enrollError)
+        }
+      }
+
+      showNotification(`Payment approved successfully! ${waitlistedEnrollments.length} course(s) have been moved from waitlist to enrolled status.`, 'success')
+    } else {
+      showNotification('Payment approved successfully! Student enrollments are now active.', 'success')
+    }
+
     showDetailsModal.value = false
     await loadPayments()
   } catch (error) {
     const errorMessage = error.response?.data?.message || 'Failed to approve payment'
-    alert(errorMessage)
+    showNotification(errorMessage, 'error')
   } finally {
     processing.value = false
   }
@@ -300,21 +387,21 @@ const approvePayment = async () => {
 
 const rejectPayment = async () => {
   if (!rejectionReason.value.trim()) {
-    alert('Please provide a rejection reason')
+    showNotification('Please provide a rejection reason', 'error')
     return
   }
 
   try {
     processing.value = true
     await api.rejectPayment(selectedPayment.value.id, rejectionReason.value)
-    alert('Payment rejected')
+    showNotification('Payment rejected', 'success')
     showRejectModal.value = false
     showDetailsModal.value = false
     rejectionReason.value = ''
     await loadPayments()
   } catch (error) {
     const errorMessage = error.response?.data?.message || 'Failed to reject payment'
-    alert(errorMessage)
+    showNotification(errorMessage, 'error')
   } finally {
     processing.value = false
   }

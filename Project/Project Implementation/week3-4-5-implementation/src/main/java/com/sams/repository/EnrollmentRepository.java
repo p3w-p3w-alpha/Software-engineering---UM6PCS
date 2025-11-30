@@ -4,7 +4,10 @@ import com.sams.entity.Course;
 import com.sams.entity.Enrollment;
 import com.sams.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,6 +31,9 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
     // check if student is already enrolled in a course
     boolean existsByStudentAndCourse(User student, Course course);
+
+    // check if student has an active enrollment (not dropped/completed) - for re-enrollment validation
+    boolean existsByStudentAndCourseAndStatusIn(User student, Course course, List<String> statuses);
 
     // find enrollment by student and course
     Optional<Enrollment> findByStudentAndCourse(User student, Course course);
@@ -67,4 +73,8 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
     // find enrollments by payment
     List<Enrollment> findByPaymentId(Long paymentId);
+
+    // Count enrollments in date range (for enrollment trends)
+    @Query("SELECT COUNT(e) FROM Enrollment e WHERE e.enrollmentDate >= :startDate AND e.enrollmentDate < :endDate")
+    long countByEnrollmentDateBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }

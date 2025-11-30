@@ -1,5 +1,22 @@
 <template>
   <div class="min-h-screen bg-gray-50 py-8">
+    <!-- Toast Notification -->
+    <div v-if="showToast" class="fixed top-4 right-4 z-50 max-w-sm">
+      <div :class="[
+        'rounded-lg px-4 py-3 shadow-lg',
+        toastType === 'success' ? 'bg-green-100 border border-green-400 text-green-700' : 'bg-red-100 border border-red-400 text-red-700'
+      ]">
+        <div class="flex items-center justify-between">
+          <span>{{ toastMessage }}</span>
+          <button @click="showToast = false" class="ml-4">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Loading State -->
       <div v-if="loading" class="flex justify-center items-center py-12">
@@ -195,6 +212,18 @@ const user = ref({})
 const connections = ref([])
 const activities = ref([])
 
+// Toast notification state
+const showToast = ref(false)
+const toastMessage = ref('')
+const toastType = ref('success')
+
+function showNotification(message, type = 'success') {
+  toastMessage.value = message
+  toastType.value = type
+  showToast.value = true
+  setTimeout(() => { showToast.value = false }, 5000)
+}
+
 const tabs = [
   { id: 'about', name: 'About' },
   { id: 'connections', name: 'Connections' },
@@ -232,18 +261,19 @@ async function loadProfile() {
     const connectionsResponse = await api.getUserConnections(userId)
     connections.value = (connectionsResponse.data || []).slice(0, 10)
 
-    // Mock activities
+    // User-specific activity feed not yet implemented in backend
+    // When backend adds /api/users/{userId}/activities endpoint, integrate here
     activities.value = []
   } catch (error) {
     console.error('Error loading profile:', error)
-    alert('Failed to load profile.')
+    showNotification('Failed to load profile.', 'error')
   } finally {
     loading.value = false
   }
 }
 
 function sendConnectionRequest() {
-  alert('Connection request sent!')
+  showNotification('Connection request sent!', 'success')
 }
 
 function sendMessage() {

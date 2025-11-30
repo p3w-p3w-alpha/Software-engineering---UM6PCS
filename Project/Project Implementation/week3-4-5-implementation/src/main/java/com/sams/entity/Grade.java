@@ -5,7 +5,11 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "grades")
+@Table(name = "grades", indexes = {
+    @Index(name = "idx_grade_student", columnList = "student_id"),
+    @Index(name = "idx_grade_course", columnList = "course_id"),
+    @Index(name = "idx_grade_enrollment", columnList = "enrollment_id")
+})
 public class Grade {
 
     @Id

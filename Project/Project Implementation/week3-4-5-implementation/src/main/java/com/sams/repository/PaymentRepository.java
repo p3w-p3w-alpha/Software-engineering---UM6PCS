@@ -28,6 +28,9 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     // find payments by status
     List<Payment> findByStatus(String status);
 
+    // count payments by status (for dashboard stats without loading all)
+    long countByStatus(String status);
+
     // find payments by student and semester
     Optional<Payment> findByStudentAndSemester(User student, Semester semester);
 

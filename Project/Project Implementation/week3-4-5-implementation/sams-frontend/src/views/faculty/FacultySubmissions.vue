@@ -1,5 +1,22 @@
 <template>
   <div class="min-h-screen bg-gray-50 py-8">
+    <!-- Toast Notification -->
+    <div v-if="showToast" class="fixed top-4 right-4 z-50 max-w-sm">
+      <div :class="[
+        'rounded-lg px-4 py-3 shadow-lg',
+        toastType === 'success' ? 'bg-green-100 border border-green-400 text-green-700' : 'bg-red-100 border border-red-400 text-red-700'
+      ]">
+        <div class="flex items-center justify-between">
+          <span>{{ toastMessage }}</span>
+          <button @click="showToast = false" class="ml-4">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Header -->
       <div class="mb-6">
@@ -257,6 +274,18 @@ const submissions = ref([])
 const selectedAssignmentId = ref('')
 const statusFilter = ref('')
 
+// Toast notification state
+const showToast = ref(false)
+const toastMessage = ref('')
+const toastType = ref('success')
+
+function showNotification(message, type = 'success') {
+  toastMessage.value = message
+  toastType.value = type
+  showToast.value = true
+  setTimeout(() => { showToast.value = false }, 5000)
+}
+
 const currentAssignment = computed(() => {
   return assignments.value.find(a => a.id === selectedAssignmentId.value)
 })
@@ -290,7 +319,7 @@ async function loadAssignments() {
     assignments.value = response.data || []
   } catch (error) {
     console.error('Error loading assignments:', error)
-    alert('Failed to load assignments. Please try again.')
+    showNotification('Failed to load assignments. Please try again.', 'error')
   } finally {
     loading.value = false
   }
@@ -308,7 +337,7 @@ async function loadSubmissions() {
     submissions.value = response.data || []
   } catch (error) {
     console.error('Error loading submissions:', error)
-    alert('Failed to load submissions. Please try again.')
+    showNotification('Failed to load submissions. Please try again.', 'error')
   } finally {
     loading.value = false
   }
@@ -325,7 +354,7 @@ function viewSubmission(submission) {
 
 async function downloadFiles(submission) {
   if (!submission.filePath) {
-    alert('No files attached to this submission.')
+    showNotification('No files attached to this submission.', 'error')
     return
   }
 
@@ -340,7 +369,7 @@ async function downloadFiles(submission) {
     link.remove()
   } catch (error) {
     console.error('Error downloading file:', error)
-    alert('Failed to download file. Please try again.')
+    showNotification('Failed to download file. Please try again.', 'error')
   }
 }
 

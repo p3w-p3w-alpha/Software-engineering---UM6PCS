@@ -1,5 +1,21 @@
 <template>
   <div class="attendance-management bg-gray-50 min-h-screen p-8">
+    <!-- Toast Notification -->
+    <div v-if="showToast" class="fixed top-4 right-4 z-50 max-w-sm">
+      <div :class="[
+        'rounded-lg px-4 py-3 shadow-lg',
+        toastType === 'success' ? 'bg-green-100 border border-green-400 text-green-700' : 'bg-red-100 border border-red-400 text-red-700'
+      ]">
+        <div class="flex items-center justify-between">
+          <span>{{ toastMessage }}</span>
+          <button @click="showToast = false" class="ml-4">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
     <!-- Page Header -->
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-gray-900">Attendance Management</h1>
@@ -135,7 +151,9 @@
           </select>
         </div>
         <div class="ml-auto flex gap-2">
+          <!-- Mark Attendance button only visible for Faculty -->
           <button
+            v-if="!isAdmin"
             @click="showMarkAttendanceModal = true"
             class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
           >
@@ -144,6 +162,14 @@
             </svg>
             Mark Attendance
           </button>
+          <!-- View-only badge for Admin -->
+          <span v-if="isAdmin" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-md flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            View Only Mode
+          </span>
           <button
             @click="exportAttendance"
             class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center gap-2"
@@ -231,18 +257,25 @@
                 {{ record.notes || '-' }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <button
-                  @click="editAttendance(record)"
-                  class="text-blue-600 hover:text-blue-900 mr-3"
-                >
-                  Edit
-                </button>
-                <button
-                  @click="deleteRecord(record.id)"
-                  class="text-red-600 hover:text-red-900"
-                >
-                  Delete
-                </button>
+                <!-- Edit/Delete only visible for Faculty -->
+                <template v-if="!isAdmin">
+                  <button
+                    @click="editAttendance(record)"
+                    class="text-blue-600 hover:text-blue-900 mr-3"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    @click="deleteRecord(record.id)"
+                    class="text-red-600 hover:text-red-900"
+                  >
+                    Delete
+                  </button>
+                </template>
+                <!-- View-only indicator for Admin -->
+                <span v-else class="text-gray-400 italic text-xs">
+                  View only
+                </span>
               </td>
             </tr>
           </tbody>
@@ -250,9 +283,9 @@
       </div>
     </div>
 
-    <!-- Mark Attendance Modal -->
+    <!-- Mark Attendance Modal - Only for Faculty -->
     <div
-      v-if="showMarkAttendanceModal"
+      v-if="showMarkAttendanceModal && !isAdmin"
       class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
       @click.self="closeMarkAttendanceModal"
     >
@@ -345,10 +378,25 @@
 <script>
 import { ref, onMounted, watch, computed } from 'vue'
 import api from '@/services/api'
+import { useAuthStore } from '@/stores/auth'
 
 export default {
   name: 'AttendanceManagement',
   setup() {
+    // Auth store for role-based permissions
+    const authStore = useAuthStore()
+
+    // Check if user is admin (view-only) or faculty (can edit)
+    const isAdmin = computed(() => {
+      const role = authStore.userRole?.toUpperCase()
+      return role === 'ADMIN' || role === 'SUPER_ADMIN'
+    })
+
+    const canEditAttendance = computed(() => {
+      const role = authStore.userRole?.toUpperCase()
+      return role === 'FACULTY' || role === 'TEACHER'
+    })
+
     // Reactive data
     const selectedDate = ref(new Date().toISOString().split('T')[0])
     const viewType = ref('STUDENT')
@@ -367,6 +415,18 @@ export default {
       notes: ''
     })
 
+    // Toast notification state
+    const showToast = ref(false)
+    const toastMessage = ref('')
+    const toastType = ref('success')
+
+    const showNotification = (message, type = 'success') => {
+      toastMessage.value = message
+      toastType.value = type
+      showToast.value = true
+      setTimeout(() => { showToast.value = false }, 5000)
+    }
+
     // Methods
     const loadAttendanceData = async () => {
       loading.value = true
@@ -379,7 +439,7 @@ export default {
         await loadStatistics()
       } catch (error) {
         console.error('Error loading attendance data:', error)
-        alert('Failed to load attendance data')
+        showNotification('Failed to load attendance data', 'error')
       } finally {
         loading.value = false
       }
@@ -425,12 +485,12 @@ export default {
     const submitAttendance = async () => {
       try {
         await api.markAttendance(attendanceForm.value)
-        alert('Attendance marked successfully')
+        showNotification('Attendance marked successfully', 'success')
         closeMarkAttendanceModal()
         loadAttendanceData()
       } catch (error) {
         console.error('Error marking attendance:', error)
-        alert('Failed to mark attendance')
+        showNotification('Failed to mark attendance', 'error')
       }
     }
 
@@ -459,17 +519,57 @@ export default {
 
       try {
         await api.deleteAttendance(id)
-        alert('Attendance record deleted successfully')
+        showNotification('Attendance record deleted successfully', 'success')
         loadAttendanceData()
       } catch (error) {
         console.error('Error deleting attendance:', error)
-        alert('Failed to delete attendance record')
+        showNotification('Failed to delete attendance record', 'error')
       }
     }
 
     const exportAttendance = () => {
-      // TODO: Implement export functionality
-      alert('Export functionality coming soon!')
+      try {
+        // Prepare CSV data
+        const headers = ['Date', 'Student Name', 'Student ID', 'Status', 'Marked At', 'Remarks']
+        const csvRows = []
+
+        // Add header row
+        csvRows.push(headers.join(','))
+
+        // Add data rows
+        attendanceRecords.value.forEach(record => {
+          const row = [
+            record.date || '-',
+            record.userName || '-',
+            record.userId || '-',
+            record.status || '-',
+            formatTime(record.markedAt),
+            `"${(record.remarks || '').replace(/"/g, '""')}"` // Escape quotes in remarks
+          ]
+          csvRows.push(row.join(','))
+        })
+
+        // Create CSV content
+        const csvContent = csvRows.join('\n')
+
+        // Create blob and download
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+        const link = document.createElement('a')
+        const url = URL.createObjectURL(blob)
+
+        link.setAttribute('href', url)
+        link.setAttribute('download', `attendance_${selectedDate.value || 'all'}_${new Date().getTime()}.csv`)
+        link.style.visibility = 'hidden'
+
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+
+        showNotification('Attendance exported successfully!', 'success')
+      } catch (error) {
+        console.error('Error exporting attendance:', error)
+        showNotification('Failed to export attendance. Please try again.', 'error')
+      }
     }
 
     const getStatusClass = (status) => {
@@ -520,7 +620,12 @@ export default {
       deleteRecord,
       exportAttendance,
       getStatusClass,
-      formatTime
+      formatTime,
+      isAdmin,
+      canEditAttendance,
+      showToast,
+      toastMessage,
+      toastType
     }
   }
 }

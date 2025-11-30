@@ -119,11 +119,35 @@ public class EnrollmentController {
             enrollment.getStudent().getEmail()
         );
 
+        // Build instructor info if available
+        EnrollmentResponse.InstructorInfo instructorInfo = null;
+        Long instructorId = null;
+        if (enrollment.getCourse().getInstructor() != null) {
+            var instructor = enrollment.getCourse().getInstructor();
+            instructorId = instructor.getId();
+            instructorInfo = new EnrollmentResponse.InstructorInfo(
+                instructor.getId(),
+                instructor.getUsername(),
+                instructor.getEmail(),
+                instructor.getUsername(), // use username as name if no separate name field
+                null // department - can be added if TeacherProfile is linked
+            );
+        }
+
         EnrollmentResponse.CourseInfo courseInfo = new EnrollmentResponse.CourseInfo(
             enrollment.getCourse().getId(),
             enrollment.getCourse().getCourseCode(),
             enrollment.getCourse().getCourseName(),
-            enrollment.getCourse().getCredits()
+            enrollment.getCourse().getCredits(),
+            enrollment.getCourse().getDaysOfWeek(),
+            enrollment.getCourse().getStartTime(),
+            enrollment.getCourse().getEndTime(),
+            enrollment.getCourse().getDescription(),
+            instructorInfo,
+            instructorId,
+            enrollment.getCourse().getCourseFee(),
+            enrollment.getCourse().getCapacity(),
+            "Room " + (100 + enrollment.getCourse().getId()) // Generate room based on course ID
         );
 
         EnrollmentResponse response = new EnrollmentResponse();

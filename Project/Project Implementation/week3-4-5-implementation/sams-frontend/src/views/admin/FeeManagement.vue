@@ -1,5 +1,22 @@
 <template>
   <div class="max-w-7xl mx-auto">
+    <!-- Toast Notification -->
+    <div v-if="showToast" class="fixed top-4 right-4 z-50 max-w-sm">
+      <div :class="[
+        'rounded-lg px-4 py-3 shadow-lg',
+        toastType === 'success' ? 'bg-green-100 border border-green-400 text-green-700' : 'bg-red-100 border border-red-400 text-red-700'
+      ]">
+        <div class="flex items-center justify-between">
+          <span>{{ toastMessage }}</span>
+          <button @click="showToast = false" class="ml-4">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div class="mb-8 flex items-center justify-between">
       <div>
         <h1 class="text-3xl font-bold text-gray-900">Fee Management</h1>
@@ -300,6 +317,18 @@ const loading = ref(false)
 const submitting = ref(false)
 const showCreateModal = ref(false)
 const showDeleteModal = ref(false)
+
+// Toast notification state
+const showToast = ref(false)
+const toastMessage = ref('')
+const toastType = ref('success')
+
+function showNotification(message, type = 'success') {
+  toastMessage.value = message
+  toastType.value = type
+  showToast.value = true
+  setTimeout(() => { showToast.value = false }, 5000)
+}
 const editingFee = ref(null)
 const feeToDelete = ref(null)
 const filterCategory = ref('')
@@ -343,7 +372,7 @@ async function loadFees() {
     fees.value = response.data
   } catch (error) {
     console.error('Error loading fees:', error)
-    alert('Failed to load fee structures')
+    showNotification('Failed to load fee structures', 'error')
   } finally {
     loading.value = false
   }
@@ -383,7 +412,7 @@ async function saveFee() {
     resetForm()
   } catch (error) {
     console.error('Error saving fee:', error)
-    alert(error.response?.data || 'Failed to save fee structure')
+    showNotification(error.response?.data || 'Failed to save fee structure', 'error')
   } finally {
     submitting.value = false
   }
@@ -399,7 +428,7 @@ async function toggleFeeStatus(fee) {
     await loadFees()
   } catch (error) {
     console.error('Error updating fee status:', error)
-    alert('Failed to update fee status')
+    showNotification('Failed to update fee status', 'error')
   }
 }
 
@@ -417,7 +446,7 @@ async function deleteFee() {
     feeToDelete.value = null
   } catch (error) {
     console.error('Error deleting fee:', error)
-    alert(error.response?.data || 'Failed to delete fee structure')
+    showNotification(error.response?.data || 'Failed to delete fee structure', 'error')
   } finally {
     submitting.value = false
   }

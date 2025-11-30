@@ -2,9 +2,15 @@ package com.sams.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
-@Table(name = "enrollments")
+@Table(name = "enrollments", indexes = {
+    @Index(name = "idx_enrollment_student", columnList = "student_id"),
+    @Index(name = "idx_enrollment_course", columnList = "course_id"),
+    @Index(name = "idx_enrollment_status", columnList = "status"),
+    @Index(name = "idx_enrollment_student_status", columnList = "student_id, status")
+})
 public class Enrollment {
 
     @Id
@@ -169,5 +175,18 @@ public class Enrollment {
 
     public void setPayment(Payment payment) {
         this.payment = payment;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Enrollment that = (Enrollment) o;
+        return id != null && Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

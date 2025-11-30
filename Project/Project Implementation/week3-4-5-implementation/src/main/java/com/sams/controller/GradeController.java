@@ -101,6 +101,81 @@ public class GradeController {
         return ResponseEntity.ok(GradeService.getGradeScale());
     }
 
+    // get grade analytics for a course - GET /api/grades/course/{courseId}/analytics
+    @GetMapping("/course/{courseId}/analytics")
+    public ResponseEntity<Map<String, Object>> getCourseGradeAnalytics(@PathVariable Long courseId) {
+        List<Grade> grades = gradeService.getGradesByCourse(courseId);
+
+        Map<String, Object> analytics = new java.util.HashMap<>();
+
+        if (grades.isEmpty()) {
+            analytics.put("totalStudents", 0);
+            analytics.put("averageGPA", 0.0);
+            analytics.put("highestGrade", null);
+            analytics.put("lowestGrade", null);
+            analytics.put("gradeDistribution", new java.util.HashMap<String, Integer>());
+            return ResponseEntity.ok(analytics);
+        }
+
+        // Calculate grade distribution
+        Map<String, Integer> gradeDistribution = new java.util.HashMap<>();
+        double totalPoints = 0.0;
+        String highestGrade = grades.get(0).getGradeValue();
+        String lowestGrade = grades.get(0).getGradeValue();
+        double highestPoints = grades.get(0).getGradePoints() != null ? grades.get(0).getGradePoints() : 0.0;
+        double lowestPoints = grades.get(0).getGradePoints() != null ? grades.get(0).getGradePoints() : 0.0;
+
+        for (Grade grade : grades) {
+            String gradeValue = grade.getGradeValue();
+            gradeDistribution.put(gradeValue, gradeDistribution.getOrDefault(gradeValue, 0) + 1);
+
+            Double points = grade.getGradePoints();
+            if (points != null) {
+                totalPoints += points;
+                if (points > highestPoints) {
+                    highestPoints = points;
+                    highestGrade = gradeValue;
+                }
+                if (points < lowestPoints) {
+                    lowestPoints = points;
+                    lowestGrade = gradeValue;
+                }
+            }
+        }
+
+        double averageGPA = totalPoints / grades.size();
+
+        analytics.put("courseId", courseId);
+        analytics.put("totalStudents", grades.size());
+        analytics.put("averageGPA", Math.round(averageGPA * 100.0) / 100.0);
+        analytics.put("highestGrade", highestGrade);
+        analytics.put("lowestGrade", lowestGrade);
+        analytics.put("gradeDistribution", gradeDistribution);
+
+        // Calculate percentage distribution
+        Map<String, Double> percentageDistribution = new java.util.HashMap<>();
+        for (Map.Entry<String, Integer> entry : gradeDistribution.entrySet()) {
+            double percentage = (entry.getValue() * 100.0) / grades.size();
+            percentageDistribution.put(entry.getKey(), Math.round(percentage * 100.0) / 100.0);
+        }
+        analytics.put("percentageDistribution", percentageDistribution);
+
+        // Pass/Fail rate (assuming D and above is passing)
+        int passingCount = gradeDistribution.entrySet().stream()
+            .filter(e -> {
+                String g = e.getKey().toUpperCase();
+                return g.startsWith("A") || g.startsWith("B") || g.startsWith("C") || g.equals("D");
+            })
+            .mapToInt(Map.Entry::getValue)
+            .sum();
+
+        analytics.put("passingCount", passingCount);
+        analytics.put("failingCount", grades.size() - passingCount);
+        analytics.put("passRate", Math.round((passingCount * 100.0 / grades.size()) * 100.0) / 100.0);
+
+        return ResponseEntity.ok(analytics);
+    }
+
     // helper method to convert Grade to GradeResponse
     private GradeResponse convertToResponse(Grade grade) {
         GradeResponse.StudentInfo studentInfo = new GradeResponse.StudentInfo(

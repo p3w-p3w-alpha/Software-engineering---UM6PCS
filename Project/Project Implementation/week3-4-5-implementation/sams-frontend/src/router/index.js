@@ -5,6 +5,7 @@ import DashboardLayout from '../layouts/DashboardLayout.vue'
 
 // Student Views
 import StudentDashboard from '../views/StudentDashboard.vue'
+import StudentCourses from '../views/student/StudentCourses.vue'
 import CourseBrowse from '../views/student/CourseBrowse.vue'
 import StudentPayments from '../views/student/StudentPayments.vue'
 import StudentGrades from '../views/student/StudentGrades.vue'
@@ -52,13 +53,13 @@ const routes = [
       },
       {
         path: 'courses',
-        children: [
-          {
-            path: 'browse',
-            name: 'CourseBrowse',
-            component: CourseBrowse
-          }
-        ]
+        name: 'StudentCourses',
+        component: StudentCourses
+      },
+      {
+        path: 'courses/browse',
+        name: 'CourseBrowse',
+        component: CourseBrowse
       },
       {
         path: 'payments',
@@ -129,7 +130,7 @@ const routes = [
   },
 
   // ========================================
-  // ADMIN ROUTES WITH LAYOUT
+  // ADMIN ROUTES (WITH DASHBOARD LAYOUT)
   // ========================================
   {
     path: '/admin',
@@ -148,10 +149,31 @@ const routes = [
         component: UserManagement
       },
       {
+        path: 'students',
+        name: 'StudentManagement',
+        component: () => import('../views/admin/users/StudentManagement.vue')
+      },
+      {
+        path: 'faculty',
+        name: 'FacultyManagement',
+        component: () => import('../views/admin/users/FacultyManagement.vue')
+      },
+      {
+        path: 'admins',
+        name: 'AdminManagement',
+        component: () => import('../views/admin/users/AdminManagement.vue')
+      },
+      {
         path: 'courses',
         name: 'AdminCourses',
         component: () => import('../views/admin/CourseManagement.vue')
       },
+      // Waiting list route - component to be created later
+      // {
+      //   path: 'courses/:id/waiting-list',
+      //   name: 'CourseWaitingList',
+      //   component: () => import('../views/admin/courses/WaitingList.vue')
+      // },
       {
         path: 'payments',
         name: 'PaymentApproval',
@@ -161,6 +183,27 @@ const routes = [
         path: 'attendance',
         name: 'AttendanceManagement',
         component: AttendanceManagement
+      },
+      // Analytics routes - specific routes first
+      {
+        path: 'analytics/course/:courseId',
+        name: 'CourseAnalyticsDetail',
+        component: () => import('../views/admin/CourseAnalytics.vue')
+      },
+      {
+        path: 'analytics/course',
+        name: 'CourseAnalytics',
+        component: () => import('../views/admin/CourseAnalytics.vue')
+      },
+      {
+        path: 'analytics/student/:studentId',
+        name: 'StudentAnalyticsDetail',
+        component: () => import('../views/admin/StudentAnalytics.vue')
+      },
+      {
+        path: 'analytics/student',
+        name: 'StudentAnalytics',
+        component: () => import('../views/admin/StudentAnalytics.vue')
       },
       {
         path: 'analytics',
@@ -193,6 +236,11 @@ const routes = [
         component: () => import('../views/admin/Reports.vue')
       },
       {
+        path: 'reports/generator',
+        name: 'ReportGenerator',
+        component: () => import('../views/admin/reports/ReportGenerator.vue')
+      },
+      {
         path: 'settings',
         name: 'AdminSettings',
         component: () => import('../views/admin/Settings.vue')
@@ -206,6 +254,11 @@ const routes = [
         path: 'system-health',
         name: 'SystemHealthMonitor',
         component: () => import('../views/admin/SystemHealthMonitor.vue')
+      },
+      {
+        path: 'system/performance',
+        name: 'SystemPerformance',
+        component: () => import('../views/admin/system/SystemPerformance.vue')
       }
     ]
   },

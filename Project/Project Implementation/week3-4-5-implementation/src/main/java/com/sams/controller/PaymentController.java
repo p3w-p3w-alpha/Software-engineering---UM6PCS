@@ -4,8 +4,10 @@ import com.sams.dto.PaymentRequest;
 import com.sams.dto.PaymentResponse;
 import com.sams.entity.Payment;
 import com.sams.entity.PaymentHistory;
+import com.sams.entity.User;
 import com.sams.security.JwtUtil;
 import com.sams.service.PaymentService;
+import com.sams.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,10 +27,12 @@ import java.util.stream.Collectors;
 public class PaymentController {
 
     private final PaymentService paymentService;
+    private final UserService userService;
     private final JwtUtil jwtUtil;
 
-    public PaymentController(PaymentService paymentService, JwtUtil jwtUtil) {
+    public PaymentController(PaymentService paymentService, UserService userService, JwtUtil jwtUtil) {
         this.paymentService = paymentService;
+        this.userService = userService;
         this.jwtUtil = jwtUtil;
     }
 
@@ -99,10 +103,10 @@ public class PaymentController {
             String username = jwtUtil.getUsernameFromToken(token);
 
             // Get admin user ID from username
-            // For now, we'll extract from token or pass as parameter
-            // In production, use UserService to get user by username
+            User admin = userService.getUserByUsername(username);
+            Long adminId = admin.getId();
 
-            Payment payment = paymentService.approvePayment(id, 1L); // TODO: Get actual admin ID
+            Payment payment = paymentService.approvePayment(id, adminId);
             return ResponseEntity.ok(new PaymentResponse(payment));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -120,9 +124,13 @@ public class PaymentController {
                                           @RequestHeader("Authorization") String authHeader) {
         try {
             String token = authHeader.substring(7);
-            // TODO: Get actual admin ID from token
+            String username = jwtUtil.getUsernameFromToken(token);
 
-            Payment payment = paymentService.rejectPayment(id, 1L, reason);
+            // Get admin user ID from username
+            User admin = userService.getUserByUsername(username);
+            Long adminId = admin.getId();
+
+            Payment payment = paymentService.rejectPayment(id, adminId, reason);
             return ResponseEntity.ok(new PaymentResponse(payment));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

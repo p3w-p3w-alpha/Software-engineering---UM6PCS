@@ -7,13 +7,19 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Entity representing a payment transaction made by a student
  * Students pay upfront per semester before they can finalize their enrollment
  */
 @Entity
-@Table(name = "payments")
+@Table(name = "payments", indexes = {
+    @Index(name = "idx_payment_student", columnList = "student_id"),
+    @Index(name = "idx_payment_semester", columnList = "semester_id"),
+    @Index(name = "idx_payment_status", columnList = "status"),
+    @Index(name = "idx_payment_student_semester", columnList = "student_id, semester_id")
+})
 public class Payment {
 
     @Id
@@ -328,5 +334,18 @@ public class Payment {
 
     public void setPaymentHistory(List<PaymentHistory> paymentHistory) {
         this.paymentHistory = paymentHistory;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Payment payment = (Payment) o;
+        return id != null && Objects.equals(id, payment.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

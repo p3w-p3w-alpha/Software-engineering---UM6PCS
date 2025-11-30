@@ -149,6 +149,14 @@ public class CourseService {
         return courseRepository.save(course);
     }
 
+    // remove instructor from course
+    @Transactional
+    public Course removeInstructor(Long courseId) {
+        Course course = getCourseById(courseId);
+        course.setInstructor(null);
+        return courseRepository.save(course);
+    }
+
     // add prerequesite to a course
     @Transactional
     public Course addPrerequisite(Long courseId, Long prerequisiteId) {

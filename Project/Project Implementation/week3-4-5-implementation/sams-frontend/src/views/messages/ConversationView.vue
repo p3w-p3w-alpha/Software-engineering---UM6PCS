@@ -77,7 +77,7 @@
                   message.senderId === authStore.userId ? 'text-blue-100' : 'text-gray-500'
                 ]"
               >
-                {{ formatMessageTime(message.createdAt) }}
+                {{ formatMessageTime(message.sentAt || message.createdAt) }}
               </span>
               <!-- Read Receipt (for sent messages) -->
               <svg
@@ -116,8 +116,76 @@
 
     <!-- Message Input -->
     <div class="px-4 py-4 border-t border-gray-200 bg-white">
+      <!-- File Attachment Preview -->
+      <div v-if="attachedFile" class="mb-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-red-100 rounded-lg">
+              <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-900">{{ attachedFile.name }}</p>
+              <p class="text-xs text-gray-500">{{ formatFileSize(attachedFile.size) }}</p>
+            </div>
+          </div>
+          <button @click="removeAttachment" class="p-1 text-gray-400 hover:text-gray-600">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div v-if="uploadProgress > 0 && uploadProgress < 100" class="mt-2">
+          <div class="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+            <div class="h-full bg-blue-600 transition-all duration-300" :style="{ width: uploadProgress + '%' }"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Drag & Drop Zone -->
+      <div
+        v-if="isDragging"
+        @dragover.prevent
+        @drop.prevent="handleDrop"
+        @dragleave="isDragging = false"
+        class="mb-3 p-6 border-2 border-dashed border-blue-400 bg-blue-50 rounded-lg text-center"
+      >
+        <svg class="mx-auto h-10 w-10 text-blue-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+        </svg>
+        <p class="text-sm text-blue-600 font-medium">Drop your PDF file here</p>
+        <p class="text-xs text-blue-500 mt-1">Max size: 10MB</p>
+      </div>
+
       <form @submit.prevent="sendMessage" class="flex items-end space-x-2">
-        <div class="flex-1">
+        <!-- Attachment Button -->
+        <div class="relative">
+          <input
+            ref="fileInput"
+            type="file"
+            accept=".pdf"
+            @change="handleFileSelect"
+            class="hidden"
+          />
+          <button
+            type="button"
+            @click="$refs.fileInput.click()"
+            class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Attach PDF file"
+          >
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+            </svg>
+          </button>
+        </div>
+
+        <div
+          class="flex-1"
+          @dragover.prevent="isDragging = true"
+          @dragleave="isDragging = false"
+          @drop.prevent="handleDrop"
+        >
           <textarea
             v-model="messageContent"
             @keydown.enter.exact.prevent="sendMessage"
@@ -127,11 +195,11 @@
             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 resize-none"
             style="max-height: 120px"
           ></textarea>
-          <p class="text-xs text-gray-500 mt-1">Press Enter to send, Shift+Enter for new line</p>
+          <p class="text-xs text-gray-500 mt-1">Press Enter to send • Drag & drop PDF to attach</p>
         </div>
         <button
           type="submit"
-          :disabled="!messageContent.trim() || sending"
+          :disabled="(!messageContent.trim() && !attachedFile) || sending"
           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
         >
           <LoadingSpinner v-if="sending" size="small" color="white" class="mr-2" />
@@ -159,7 +227,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['back', 'message-sent'])
+const emit = defineEmits(['back', 'message-sent', 'error'])
 
 const authStore = useAuthStore()
 
@@ -170,6 +238,12 @@ const loadingMessages = ref(true)
 const sending = ref(false)
 const isTyping = ref(false)
 const messagesContainer = ref(null)
+const fileInput = ref(null)
+const attachedFile = ref(null)
+const isDragging = ref(false)
+const uploadProgress = ref(0)
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 
 let typingTimeout = null
 
@@ -233,7 +307,7 @@ function connectWebSocket() {
 
     // Mark as read if it's from the other user
     if (message.senderId === props.otherUserId) {
-      api.markMessageAsRead(message.id).catch(err => {
+      api.markMessageAsRead(message.id, authStore.userId).catch(err => {
         console.error('Error marking message as read:', err)
       })
     }
@@ -249,16 +323,32 @@ function connectWebSocket() {
 }
 
 async function sendMessage() {
-  if (!messageContent.value.trim() || sending.value) return
+  if ((!messageContent.value.trim() && !attachedFile.value) || sending.value) return
 
   try {
     sending.value = true
 
+    let fileData = null
+    if (attachedFile.value) {
+      fileData = await uploadFile()
+    }
+
+    const content = messageContent.value.trim()
+    let fullContent = content
+
+    // Add file link to message content if file was uploaded
+    if (fileData) {
+      const fileInfo = `[PDF: ${attachedFile.value.name}]${fileData.downloadUrl ? ' ' + fileData.downloadUrl : ''}`
+      fullContent = content ? `${content}\n\n${fileInfo}` : fileInfo
+    }
+
     const messageData = {
       senderId: authStore.userId,
       receiverId: props.otherUserId,
-      content: messageContent.value.trim(),
-      createdAt: new Date().toISOString()
+      content: fullContent,
+      createdAt: new Date().toISOString(),
+      attachmentId: fileData?.id || null,
+      attachmentName: attachedFile.value?.name || null
     }
 
     const response = await api.sendMessage(messageData)
@@ -266,8 +356,9 @@ async function sendMessage() {
     // Add message to list
     messages.value.push(response.data)
 
-    // Clear input
+    // Clear input and attachment
     messageContent.value = ''
+    removeAttachment()
 
     // Scroll to bottom
     scrollToBottom()
@@ -276,7 +367,8 @@ async function sendMessage() {
     emit('message-sent')
   } catch (error) {
     console.error('Error sending message:', error)
-    alert('Failed to send message. Please try again.')
+    // Parent component should handle displaying error notification
+    emit('error', 'Failed to send message. Please try again.')
   } finally {
     sending.value = false
   }
@@ -329,6 +421,82 @@ function formatMessageTime(dateString) {
 
   // Different day - show date
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+// File handling functions
+function handleFileSelect(event) {
+  const file = event.target.files[0]
+  if (file) {
+    validateAndAttachFile(file)
+  }
+}
+
+function handleDrop(event) {
+  isDragging.value = false
+  const file = event.dataTransfer.files[0]
+  if (file) {
+    validateAndAttachFile(file)
+  }
+}
+
+function validateAndAttachFile(file) {
+  // Check file type
+  if (file.type !== 'application/pdf') {
+    emit('error', 'Only PDF files are allowed')
+    return
+  }
+
+  // Check file size
+  if (file.size > MAX_FILE_SIZE) {
+    emit('error', 'File size exceeds 10MB limit')
+    return
+  }
+
+  attachedFile.value = file
+}
+
+function removeAttachment() {
+  attachedFile.value = null
+  uploadProgress.value = 0
+  if (fileInput.value) {
+    fileInput.value.value = ''
+  }
+}
+
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+async function uploadFile() {
+  if (!attachedFile.value) return null
+
+  try {
+    const formData = new FormData()
+    formData.append('file', attachedFile.value)
+    formData.append('uploadedBy', authStore.userId)
+    formData.append('description', `Attachment from message to ${otherUser.value?.username || 'user'}`)
+
+    // Simulate upload progress
+    const progressInterval = setInterval(() => {
+      if (uploadProgress.value < 90) {
+        uploadProgress.value += 10
+      }
+    }, 100)
+
+    const response = await api.uploadFile(formData)
+
+    clearInterval(progressInterval)
+    uploadProgress.value = 100
+
+    return response.data
+  } catch (error) {
+    console.error('Error uploading file:', error)
+    throw error
+  }
 }
 </script>
 

@@ -23,18 +23,55 @@ public class WebSocketController {
 
     /**
      * Handle messages sent to study groups
-     * @param message The message content
-     * @return Broadcast message to all group members
+     * Routes to specific group topic based on groupId
+     * @param message The message content with groupId
      */
     @MessageMapping("/group/send")
-    @SendTo("/topic/group")
-    public Map<String, Object> sendGroupMessage(Map<String, Object> message) {
-        message.put("timestamp", LocalDateTime.now().toString());
-        return message;
+    public void sendGroupMessage(Map<String, Object> message) {
+        Object groupId = message.get("groupId");
+        if (groupId != null) {
+            message.put("timestamp", LocalDateTime.now().toString());
+            // Send to the specific group topic
+            messagingTemplate.convertAndSend("/topic/group/" + groupId, message);
+        }
     }
 
     /**
-     * Send private message to a specific user
+     * Handle private messages sent to specific users
+     * @param message The message content with recipientId
+     */
+    @MessageMapping("/private/send")
+    public void handlePrivateMessage(Map<String, Object> message) {
+        Object recipientId = message.get("recipientId");
+        if (recipientId != null) {
+            message.put("timestamp", LocalDateTime.now().toString());
+            // Send to the recipient's queue
+            messagingTemplate.convertAndSendToUser(
+                recipientId.toString(),
+                "/queue/messages",
+                message
+            );
+        }
+    }
+
+    /**
+     * Handle typing indicators
+     * @param typingData The typing indicator data with senderId, recipientId, isTyping
+     */
+    @MessageMapping("/typing")
+    public void handleTypingIndicator(Map<String, Object> typingData) {
+        Object recipientId = typingData.get("recipientId");
+        if (recipientId != null) {
+            messagingTemplate.convertAndSendToUser(
+                recipientId.toString(),
+                "/queue/typing",
+                typingData
+            );
+        }
+    }
+
+    /**
+     * Send private message to a specific user (programmatic)
      */
     public void sendPrivateMessage(String username, Map<String, Object> message) {
         message.put("timestamp", LocalDateTime.now().toString());

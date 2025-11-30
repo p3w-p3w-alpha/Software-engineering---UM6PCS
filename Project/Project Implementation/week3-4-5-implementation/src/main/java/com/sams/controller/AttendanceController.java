@@ -140,13 +140,21 @@ public class AttendanceController {
     /**
      * Get attendance statistics for a specific user
      * GET /api/attendance/statistics/user/{userId}?startDate={startDate}&endDate={endDate}
+     * startDate and endDate are optional - defaults to last 90 days
      */
     @GetMapping("/statistics/user/{userId}")
     public ResponseEntity<AttendanceStatistics> getStatisticsByUser(
             @PathVariable Long userId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         try {
+            // Default to last 90 days if not specified
+            if (endDate == null) {
+                endDate = LocalDate.now();
+            }
+            if (startDate == null) {
+                startDate = endDate.minusDays(90);
+            }
             AttendanceStatistics statistics = attendanceService.getAttendanceStatisticsByUser(userId, startDate, endDate);
             return ResponseEntity.ok(statistics);
         } catch (RuntimeException e) {
@@ -196,6 +204,55 @@ public class AttendanceController {
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    /**
+     * Get attendance statistics for a specific course
+     * GET /api/attendance/course/{courseId}/statistics?startDate={startDate}&endDate={endDate}
+     */
+    @GetMapping("/course/{courseId}/statistics")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'FACULTY')")
+    public ResponseEntity<AttendanceStatistics> getStatisticsByCourse(
+            @PathVariable Long courseId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        try {
+            // Default to last 90 days if not specified
+            if (endDate == null) {
+                endDate = LocalDate.now();
+            }
+            if (startDate == null) {
+                startDate = endDate.minusDays(90);
+            }
+            AttendanceStatistics statistics = attendanceService.getAttendanceStatisticsByCourse(courseId, startDate, endDate);
+            return ResponseEntity.ok(statistics);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
+    /**
+     * Get attendance records for a specific course
+     * GET /api/attendance/course/{courseId}
+     */
+    @GetMapping("/course/{courseId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'FACULTY')")
+    public ResponseEntity<List<AttendanceResponse>> getAttendanceByCourse(
+            @PathVariable Long courseId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        try {
+            if (endDate == null) {
+                endDate = LocalDate.now();
+            }
+            if (startDate == null) {
+                startDate = endDate.minusDays(30);
+            }
+            List<AttendanceResponse> responses = attendanceService.getAttendanceByCourse(courseId, startDate, endDate);
+            return ResponseEntity.ok(responses);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
 }

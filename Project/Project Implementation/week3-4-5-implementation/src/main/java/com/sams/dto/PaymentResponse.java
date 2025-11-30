@@ -9,6 +9,7 @@ public class PaymentResponse {
     private Long id;
     private Long studentId;
     private String studentName;
+    private String studentEmail;
     private Long semesterId;
     private String semesterName;
     private BigDecimal amount;
@@ -38,6 +39,7 @@ public class PaymentResponse {
         this.id = payment.getId();
         this.studentId = payment.getStudent().getId();
         this.studentName = payment.getStudent().getFirstName() + " " + payment.getStudent().getLastName();
+        this.studentEmail = payment.getStudent().getEmail();
         this.semesterId = payment.getSemester().getId();
         this.semesterName = payment.getSemester().getName();
         this.amount = payment.getAmount();
@@ -88,6 +90,14 @@ public class PaymentResponse {
 
     public void setStudentName(String studentName) {
         this.studentName = studentName;
+    }
+
+    public String getStudentEmail() {
+        return studentEmail;
+    }
+
+    public void setStudentEmail(String studentEmail) {
+        this.studentEmail = studentEmail;
     }
 
     public Long getSemesterId() {

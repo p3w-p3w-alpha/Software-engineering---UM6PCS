@@ -189,7 +189,58 @@ async function loadConversations() {
   try {
     loadingConversations.value = true
     const response = await api.getUserConversations(authStore.userId)
-    conversations.value = response.data || []
+    const rawMessages = response.data || []
+
+    // Transform raw messages into conversations grouped by the other user
+    const conversationMap = new Map()
+    const currentUserId = authStore.userId
+
+    for (const msg of rawMessages) {
+      // Determine the other user in this message
+      const isCurrentUserSender = msg.senderId === currentUserId
+      const otherUserId = isCurrentUserSender ? msg.receiverId : msg.senderId
+      const otherUserName = isCurrentUserSender ? msg.receiverName : msg.senderName
+
+      // Parse name into first/last
+      const nameParts = (otherUserName || 'Unknown User').split(' ')
+      const firstName = nameParts[0] || 'Unknown'
+      const lastName = nameParts.slice(1).join(' ') || ''
+
+      if (!conversationMap.has(otherUserId)) {
+        conversationMap.set(otherUserId, {
+          otherUser: {
+            id: otherUserId,
+            firstName: firstName,
+            lastName: lastName,
+            username: otherUserName?.toLowerCase().replace(/\s+/g, '') || 'user',
+            role: 'User',
+            online: false
+          },
+          lastMessage: {
+            content: msg.content,
+            createdAt: msg.sentAt
+          },
+          unreadCount: (!isCurrentUserSender && !msg.read) ? 1 : 0
+        })
+      } else {
+        const conv = conversationMap.get(otherUserId)
+        // Update last message if this one is newer
+        const existingTime = new Date(conv.lastMessage.createdAt)
+        const newTime = new Date(msg.sentAt)
+        if (newTime > existingTime) {
+          conv.lastMessage = {
+            content: msg.content,
+            createdAt: msg.sentAt
+          }
+        }
+        // Count unread messages
+        if (!isCurrentUserSender && !msg.read) {
+          conv.unreadCount++
+        }
+      }
+    }
+
+    conversations.value = Array.from(conversationMap.values())
 
     // Sort by last message time
     conversations.value.sort((a, b) => {

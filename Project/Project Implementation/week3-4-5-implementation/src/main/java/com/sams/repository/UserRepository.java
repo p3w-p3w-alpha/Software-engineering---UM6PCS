@@ -43,5 +43,19 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // Dashboard statistics
     long countByRole(String role);
 
+    // Count all active users (for demographics without loading all)
+    long countByActiveTrue();
+
     long countByRoleAndActive(String role, boolean active);
+
+    // Gender demographics
+    long countByGenderAndActiveTrue(String gender);
+
+    // Count users created in date range (for growth calculations)
+    @Query("SELECT COUNT(u) FROM User u WHERE u.role = :role AND u.createdAt >= :startDate AND u.createdAt < :endDate")
+    long countByRoleAndCreatedAtBetween(@Param("role") String role, @Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
+
+    // Get recent users with pagination (for recent activities fallback - avoids N+1)
+    @Query("SELECT u FROM User u ORDER BY u.createdAt DESC")
+    List<User> findRecentUsers(org.springframework.data.domain.Pageable pageable);
 }

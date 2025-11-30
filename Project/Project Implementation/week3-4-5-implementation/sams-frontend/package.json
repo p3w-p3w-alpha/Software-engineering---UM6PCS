@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@formkit/auto-animate": "^0.9.0",
     "@headlessui/vue": "^1.7.23",
     "@heroicons/vue": "^2.2.0",
     "@primevue/themes": "^4.4.1",
@@ -20,15 +21,19 @@
     "axios": "^1.13.2",
     "chart.js": "^4.5.1",
     "framer-motion": "^12.23.24",
+    "gsap": "^3.13.0",
+    "lucide-vue-next": "^0.555.0",
     "pinia": "^3.0.4",
     "primeicons": "^7.0.0",
     "primevue": "^4.4.1",
     "sockjs-client": "^1.6.1",
     "vue": "^3.5.24",
     "vue-chartjs": "^5.3.3",
-    "vue-router": "^4.6.3"
+    "vue-router": "^4.6.3",
+    "vue3-toastify": "^0.2.8"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "@tailwindcss/postcss": "^4.1.17",
     "@vitejs/plugin-vue": "^6.0.1",
     "autoprefixer": "^10.4.22",

@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -111,6 +112,63 @@ public class FileUploadController {
     }
 
     /**
+     * Upload file for study group resource sharing
+     * Any authenticated user can upload to their study groups
+     */
+    @PostMapping("/upload/studygroup")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> uploadStudyGroupFile(@RequestParam("file") MultipartFile file,
+                                                   @RequestParam Long groupId,
+                                                   @RequestParam Long userId) {
+        try {
+            // Store file in study-groups directory
+            String filePath = fileStorageService.storeStudyGroupFile(file, groupId, userId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "File uploaded successfully");
+            response.put("filePath", filePath);
+            response.put("fileName", file.getOriginalFilename());
+            response.put("fileSize", fileStorageService.getFileSizeDisplay(file.getSize()));
+            response.put("fileType", file.getContentType());
+
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "error", e.getMessage()));
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body(Map.of("success", false, "error", "Failed to upload file: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Upload profile picture
+     * Authenticated users can upload their own profile picture
+     */
+    @PostMapping("/upload/profile")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> uploadProfilePicture(@RequestParam("file") MultipartFile file,
+                                                   @RequestParam Long userId) {
+        try {
+            String filePath = fileStorageService.storeProfilePicture(file, userId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Profile picture uploaded successfully");
+            response.put("filePath", filePath);
+            response.put("fileName", file.getOriginalFilename());
+            response.put("fileSize", fileStorageService.getFileSizeDisplay(file.getSize()));
+
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "error", e.getMessage()));
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body(Map.of("success", false, "error", "Failed to upload profile picture: " + e.getMessage()));
+        }
+    }
+
+    /**
      * Check if file exists
      */
     @GetMapping("/exists")
@@ -136,6 +194,88 @@ public class FileUploadController {
             ));
         } catch (IOException e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
+     * Upload course material file
+     * FACULTY (their own courses), ADMIN/SUPER_ADMIN (all courses)
+     */
+    @PostMapping("/upload/course-material")
+    @PreAuthorize("hasRole('FACULTY') or hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
+    public ResponseEntity<?> uploadCourseMaterial(@RequestParam("file") MultipartFile file,
+                                                   @RequestParam Long courseId,
+                                                   @RequestParam Long uploaderId,
+                                                   @RequestParam(required = false) String title,
+                                                   @RequestParam(required = false) String description) {
+        try {
+            Map<String, Object> materialInfo = fileStorageService.storeCourseMaterial(
+                file, courseId, uploaderId, title, description);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Course material uploaded successfully");
+            response.putAll(materialInfo);
+
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "error", e.getMessage()));
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body(Map.of("success", false, "error", "Failed to upload course material: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Get all course materials for a course
+     * Available to all authenticated users enrolled in the course
+     */
+    @GetMapping("/course/{courseId}/materials")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getCourseMaterials(@PathVariable Long courseId) {
+        try {
+            List<Map<String, Object>> materials = fileStorageService.getCourseMaterials(courseId);
+            return ResponseEntity.ok(materials);
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body(Map.of("success", false, "error", "Failed to get course materials: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Download course material
+     */
+    @GetMapping("/course/{courseId}/materials/{materialId}/download")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Resource> downloadCourseMaterial(@PathVariable Long courseId,
+                                                           @PathVariable String materialId) {
+        try {
+            Resource resource = fileStorageService.loadCourseMaterial(courseId, materialId);
+            String filename = resource.getFilename();
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=\"" + filename + "\"")
+                    .body(resource);
+
+        } catch (IOException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
+     * Delete course material
+     * FACULTY (their own materials), ADMIN/SUPER_ADMIN (all)
+     */
+    @DeleteMapping("/course/{courseId}/materials/{materialId}")
+    @PreAuthorize("hasRole('FACULTY') or hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
+    public ResponseEntity<?> deleteCourseMaterial(@PathVariable Long courseId,
+                                                   @PathVariable String materialId) {
+        try {
+            fileStorageService.deleteCourseMaterial(courseId, materialId);
+            return ResponseEntity.ok(Map.of("success", true, "message", "Course material deleted successfully"));
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body(Map.of("success", false, "error", "Failed to delete course material: " + e.getMessage()));
         }
     }
 }

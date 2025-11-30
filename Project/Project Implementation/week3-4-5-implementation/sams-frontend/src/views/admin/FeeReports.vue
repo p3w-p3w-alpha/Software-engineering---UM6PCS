@@ -1,4 +1,21 @@
 <template>
+  <!-- Toast Notification -->
+  <div v-if="showToast" class="fixed top-4 right-4 z-50 max-w-sm">
+    <div :class="[
+      'rounded-lg px-4 py-3 shadow-lg',
+      toastType === 'success' ? 'bg-green-100 border border-green-400 text-green-700' : 'bg-red-100 border border-red-400 text-red-700'
+    ]">
+      <div class="flex items-center justify-between">
+        <span>{{ toastMessage }}</span>
+        <button @click="showToast = false" class="ml-4">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="max-w-7xl mx-auto">
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-gray-900">Fee Reports</h1>
@@ -199,6 +216,18 @@ import { ref, computed, onMounted } from 'vue'
 import api from '@/services/api'
 
 const loading = ref(false)
+
+// Toast notification state
+const showToast = ref(false)
+const toastMessage = ref('')
+const toastType = ref('success')
+
+function showNotification(message, type = 'success') {
+  toastMessage.value = message
+  toastType.value = type
+  showToast.value = true
+  setTimeout(() => { showToast.value = false }, 5000)
+}
 const report = ref(null)
 const semesters = ref([])
 const selectedSemester = ref('')
@@ -244,7 +273,7 @@ async function generateReport() {
     report.value = response.data
   } catch (error) {
     console.error('Error generating report:', error)
-    alert('Failed to generate report')
+    showNotification('Failed to generate report', 'error')
   } finally {
     loading.value = false
   }

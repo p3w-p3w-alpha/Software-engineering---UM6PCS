@@ -294,11 +294,8 @@ async function submitAssignment() {
     const uploadedFiles = []
     for (let i = 0; i < selectedFiles.value.length; i++) {
       const file = selectedFiles.value[i]
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('assignmentId', assignment.value.id)
 
-      const response = await api.uploadAssignmentFile(formData)
+      const response = await api.uploadAssignmentFile(file, authStore.userId, assignment.value.id)
       uploadedFiles.push(response.data)
 
       uploadProgress.value = Math.round(((i + 1) / selectedFiles.value.length) * 100)

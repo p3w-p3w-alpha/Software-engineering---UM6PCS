@@ -223,6 +223,7 @@ public class AssignmentController {
         response.setDescription(assignment.getDescription());
         response.setDueDate(assignment.getDueDate());
         response.setMaxPoints(assignment.getMaxPoints());
+        response.setMaxGrade(assignment.getMaxPoints()); // alias for frontend
         response.setAllowLateSubmissions(assignment.getAllowLateSubmissions());
         response.setLatePenaltyPerDay(assignment.getLatePenaltyPerDay());
         response.setAllowedFileTypes(assignment.getAllowedFileTypes());
@@ -231,12 +232,20 @@ public class AssignmentController {
         response.setIsOverdue(assignment.isOverdue());
         response.setCreatedAt(assignment.getCreatedAt());
         response.setUpdatedAt(assignment.getUpdatedAt());
+        response.setType("assignment"); // default type
 
-        // set course info
+        // set course info - both flat fields and nested object
         if (assignment.getCourse() != null) {
             response.setCourseId(assignment.getCourse().getId());
             response.setCourseName(assignment.getCourse().getCourseCode() + " - " +
                     assignment.getCourse().getCourseName());
+            // Create nested course object for frontend compatibility
+            AssignmentResponse.CourseInfo courseInfo = new AssignmentResponse.CourseInfo(
+                assignment.getCourse().getId(),
+                assignment.getCourse().getCourseCode(),
+                assignment.getCourse().getCourseName()
+            );
+            response.setCourse(courseInfo);
         }
 
         // set creator info

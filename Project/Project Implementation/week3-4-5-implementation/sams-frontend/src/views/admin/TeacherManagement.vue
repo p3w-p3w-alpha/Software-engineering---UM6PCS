@@ -1,4 +1,21 @@
 <template>
+  <!-- Toast Notification -->
+  <div v-if="showToast" class="fixed top-4 right-4 z-50 max-w-sm">
+    <div :class="[
+      'rounded-lg px-4 py-3 shadow-lg',
+      toastType === 'success' ? 'bg-green-100 border border-green-400 text-green-700' : 'bg-red-100 border border-red-400 text-red-700'
+    ]">
+      <div class="flex items-center justify-between">
+        <span>{{ toastMessage }}</span>
+        <button @click="showToast = false" class="ml-4">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="max-w-7xl mx-auto">
     <!-- Header -->
     <div class="mb-8 flex items-center justify-between">
@@ -405,6 +422,18 @@
 import { ref, onMounted } from 'vue'
 import api from '@/services/api'
 
+// Toast notification state
+const showToast = ref(false)
+const toastMessage = ref('')
+const toastType = ref('success')
+
+function showNotification(message, type = 'success') {
+  toastMessage.value = message
+  toastType.value = type
+  showToast.value = true
+  setTimeout(() => { showToast.value = false }, 5000)
+}
+
 const teachers = ref([])
 const loading = ref(false)
 const showCreateModal = ref(false)
@@ -448,7 +477,7 @@ async function loadTeachers() {
     teachers.value = response.data
   } catch (error) {
     console.error('Error loading teachers:', error)
-    alert('Failed to load teachers')
+    showNotification('Failed to load teachers', 'error')
   } finally {
     loading.value = false
   }
@@ -461,7 +490,7 @@ async function applyFilters() {
     teachers.value = response.data
   } catch (error) {
     console.error('Error applying filters:', error)
-    alert('Failed to apply filters')
+    showNotification('Failed to apply filters', 'error')
   } finally {
     loading.value = false
   }
@@ -500,10 +529,10 @@ async function saveTeacher() {
     }
     await loadTeachers()
     closeModal()
-    alert('Teacher profile saved successfully!')
+    showNotification('Teacher profile saved successfully!', 'success')
   } catch (error) {
     console.error('Error saving teacher:', error)
-    alert(error.response?.data || 'Failed to save teacher profile')
+    showNotification(error.response?.data || 'Failed to save teacher profile', 'error')
   } finally {
     loading.value = false
   }
@@ -515,7 +544,7 @@ async function toggleStatus(profileId) {
     await loadTeachers()
   } catch (error) {
     console.error('Error toggling status:', error)
-    alert('Failed to toggle status')
+    showNotification('Failed to toggle status', 'error')
   }
 }
 
@@ -525,10 +554,10 @@ async function deleteTeacher(profileId) {
   try {
     await api.deleteTeacherProfile(profileId)
     await loadTeachers()
-    alert('Teacher profile deleted successfully')
+    showNotification('Teacher profile deleted successfully', 'success')
   } catch (error) {
     console.error('Error deleting teacher:', error)
-    alert('Failed to delete teacher profile')
+    showNotification('Failed to delete teacher profile', 'error')
   }
 }
 

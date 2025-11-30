@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import api from '../services/api'
+import websocketService from '../services/websocket'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -50,6 +51,11 @@ export const useAuthStore = defineStore('auth', {
     },
 
     logout() {
+      // Disconnect WebSocket before clearing auth state
+      if (websocketService) {
+        websocketService.disconnect()
+      }
+
       this.user = null
       this.token = null
       this.isAuthenticated = false

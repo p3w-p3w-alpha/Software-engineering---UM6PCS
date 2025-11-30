@@ -14,6 +14,11 @@ public class DashboardStats {
     private Long activeFaculty;
     private Long inactiveFaculty;
 
+    // Frontend-expected fields
+    private Long totalUsers;
+    private Long activeCourses;
+    private Long pendingPayments;
+
     // Trends (compared to previous period)
     private Double studentGrowthRate;
     private Double facultyGrowthRate;
@@ -117,5 +122,29 @@ public class DashboardStats {
 
     public void setEnrollmentGrowthRate(Double enrollmentGrowthRate) {
         this.enrollmentGrowthRate = enrollmentGrowthRate;
+    }
+
+    public Long getTotalUsers() {
+        return totalUsers;
+    }
+
+    public void setTotalUsers(Long totalUsers) {
+        this.totalUsers = totalUsers;
+    }
+
+    public Long getActiveCourses() {
+        return activeCourses;
+    }
+
+    public void setActiveCourses(Long activeCourses) {
+        this.activeCourses = activeCourses;
+    }
+
+    public Long getPendingPayments() {
+        return pendingPayments;
+    }
+
+    public void setPendingPayments(Long pendingPayments) {
+        this.pendingPayments = pendingPayments;
     }
 }

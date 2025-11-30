@@ -34,9 +34,43 @@ apiClient.interceptors.response.use(
       localStorage.removeItem('user')
       window.location.href = '/login'
     }
+
+    // Enhance error object with extracted message
+    if (error.response?.data) {
+      // Extract the actual error message from various response formats
+      const data = error.response.data
+      error.userMessage = data.message || data.error || data.detail ||
+        (typeof data === 'string' ? data : null) ||
+        `Request failed with status ${error.response.status}`
+    } else if (error.request) {
+      error.userMessage = 'Network error - please check your connection'
+    } else {
+      error.userMessage = error.message || 'An unexpected error occurred'
+    }
+
     return Promise.reject(error)
   }
 )
+
+// Helper function to extract error message from API error
+export function getErrorMessage(error, fallbackMessage = 'An error occurred') {
+  if (error.userMessage) {
+    return error.userMessage
+  }
+  if (error.response?.data?.message) {
+    return error.response.data.message
+  }
+  if (error.response?.data?.error) {
+    return error.response.data.error
+  }
+  if (typeof error.response?.data === 'string') {
+    return error.response.data
+  }
+  if (error.message) {
+    return error.message
+  }
+  return fallbackMessage
+}
 
 export default {
   // Authentication
@@ -50,13 +84,26 @@ export default {
     })
   },
 
+  // Global Search
+  globalSearch(query) {
+    return apiClient.get(`/search?query=${encodeURIComponent(query)}`)
+  },
+
+  searchUsers(query) {
+    return apiClient.get(`/users/search?query=${encodeURIComponent(query)}`)
+  },
+
+  searchCourses(query) {
+    return apiClient.get(`/courses/search?query=${encodeURIComponent(query)}`)
+  },
+
   // Admin - User Management
   getAllUsers() {
     return apiClient.get('/admin/users')
   },
 
   getUserById(id) {
-    return apiClient.get(`/admin/users/${id}`)
+    return apiClient.get(`/users/${id}`)
   },
 
   createUser(userData) {
@@ -65,6 +112,11 @@ export default {
 
   updateUser(id, userData) {
     return apiClient.put(`/admin/users/${id}`, userData)
+  },
+
+  // Update user's own profile (authenticated user)
+  updateProfile(id, profileData) {
+    return apiClient.put(`/users/${id}/profile`, profileData)
   },
 
   deleteUser(id) {
@@ -84,6 +136,10 @@ export default {
     return apiClient.get('/courses')
   },
 
+  getCoursesByInstructor(instructorId) {
+    return apiClient.get(`/courses/instructor/${instructorId}`)
+  },
+
   getCourseById(id) {
     return apiClient.get(`/courses/${id}`)
   },
@@ -100,6 +156,21 @@ export default {
     return apiClient.delete(`/courses/${id}`)
   },
 
+  assignInstructor(courseId, instructorId) {
+    return apiClient.put(`/courses/${courseId}/instructor/${instructorId}`)
+  },
+
+  removeInstructor(courseId) {
+    return apiClient.delete(`/courses/${courseId}/instructor`)
+  },
+
+  getFacultyUsers() {
+    return apiClient.get('/admin/users').then(response => {
+      const facultyUsers = response.data.filter(user => user.role === 'FACULTY')
+      return { data: facultyUsers }
+    })
+  },
+
   // Enrollments
   getStudentEnrollments(studentId) {
     return apiClient.get(`/enrollments/student/${studentId}`)
@@ -114,7 +185,9 @@ export default {
   },
 
   updateEnrollmentStatus(id, status) {
-    return apiClient.patch(`/enrollments/${id}/status`, { status })
+    return apiClient.patch(`/enrollments/${id}/status`, null, {
+      params: { status }
+    })
   },
 
   // Assignments
@@ -170,7 +243,8 @@ export default {
   },
 
   createStudyGroup(groupData) {
-    return apiClient.post('/study-groups', groupData)
+    const { creatorId, ...requestBody } = groupData
+    return apiClient.post(`/study-groups?creatorId=${creatorId}`, requestBody)
   },
 
   // Connections
@@ -201,7 +275,9 @@ export default {
   },
 
   rejectPayment(paymentId, reason) {
-    return apiClient.post(`/payments/${paymentId}/reject`, { reason })
+    return apiClient.post(`/payments/${paymentId}/reject`, null, {
+      params: { reason }
+    })
   },
 
   getStudentPayments(studentId) {
@@ -254,11 +330,11 @@ export default {
   },
 
   getEligibleForGraduation() {
-    return apiClient.get('/degree-progress/eligible-graduation')
+    return apiClient.get('/degree-progress/students/graduation-eligible')
   },
 
   getStudentsAtRisk() {
-    return apiClient.get('/degree-progress/at-risk')
+    return apiClient.get('/degree-progress/students/at-risk')
   },
 
   // File Upload
@@ -288,13 +364,27 @@ export default {
     })
   },
 
+  // Study Group File Upload
+  uploadStudyGroupFile(file, groupId, userId) {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('groupId', groupId)
+    formData.append('userId', userId)
+
+    return apiClient.post('/files/upload/studygroup', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+  },
+
   // Semesters
   getAllSemesters() {
     return apiClient.get('/semesters')
   },
 
   getActiveSemester() {
-    return apiClient.get('/semesters/active')
+    return apiClient.get('/semesters/current')
   },
 
   createSemester(semesterData) {
@@ -307,11 +397,19 @@ export default {
 
   // Waitlist
   getCourseWaitlist(courseId) {
-    return apiClient.get(`/enrollments/waitlist/${courseId}`)
+    return apiClient.get(`/courses/${courseId}/waitlist`)
+  },
+
+  promoteFromWaitlist(courseId, studentId) {
+    return apiClient.post(`/courses/${courseId}/waitlist/${studentId}/promote`)
+  },
+
+  removeFromWaitlist(courseId, studentId) {
+    return apiClient.delete(`/courses/${courseId}/waitlist/${studentId}`)
   },
 
   dropEnrollment(enrollmentId) {
-    return apiClient.delete(`/enrollments/${enrollmentId}/drop`)
+    return apiClient.put(`/enrollments/${enrollmentId}/drop`)
   },
 
   // Attendance Management
@@ -333,6 +431,11 @@ export default {
 
   getAttendanceByUser(userId) {
     return apiClient.get(`/attendance/user/${userId}`)
+  },
+
+  // Alias for student dashboard
+  getStudentAttendance(studentId) {
+    return apiClient.get(`/attendance/user/${studentId}`)
   },
 
   getAttendanceByUserAndDateRange(userId, startDate, endDate) {
@@ -600,24 +703,30 @@ export default {
   // PHASE 2: PRIVATE MESSAGES
   // ========================================
   sendMessage(data) {
-    return apiClient.post('/messages/send', data)
+    return apiClient.post('/messages/send', { content: data.content }, {
+      params: { senderId: data.senderId, receiverId: data.receiverId }
+    })
   },
 
   getConversation(userId1, userId2) {
-    return apiClient.get(`/messages/conversation/${userId1}/${userId2}`)
+    return apiClient.get('/messages/conversation', {
+      params: { user1Id: userId1, user2Id: userId2 }
+    })
   },
 
   getUserConversations(userId) {
     return apiClient.get(`/messages/user/${userId}/conversations`)
   },
 
-  markMessageAsRead(messageId) {
-    return apiClient.patch(`/messages/${messageId}/read`)
+  markMessageAsRead(messageId, userId) {
+    return apiClient.post(`/messages/${messageId}/read`, null, {
+      params: { userId }
+    })
   },
 
   markConversationAsRead(userId, otherUserId) {
-    return apiClient.patch(`/messages/conversation/${otherUserId}/read-all`, null, {
-      params: { userId }
+    return apiClient.post('/messages/conversation/read', null, {
+      params: { user1Id: userId, user2Id: otherUserId }
     })
   },
 
@@ -735,8 +844,11 @@ export default {
     return apiClient.get(`/study-groups/${groupId}/files?userId=${userId}`)
   },
 
-  sendGroupMessage(data) {
-    return apiClient.post('/study-groups/messages', data)
+  sendGroupMessage(groupId, senderId, content) {
+    return apiClient.post(`/study-groups/${groupId}/messages?senderId=${senderId}`, {
+      content: content,
+      messageType: 'TEXT'
+    })
   },
 
   getStudyGroupResources(groupId) {
@@ -806,11 +918,11 @@ export default {
   // MISSING: ADVANCED COURSE MANAGEMENT
   // ========================================
   searchCoursesByName(name) {
-    return apiClient.get(`/courses/search/name?name=${encodeURIComponent(name)}`)
+    return apiClient.get(`/courses/search/name?query=${encodeURIComponent(name)}`)
   },
 
   searchCoursesByCode(code) {
-    return apiClient.get(`/courses/search/code?code=${encodeURIComponent(code)}`)
+    return apiClient.get(`/courses/search/code?query=${encodeURIComponent(code)}`)
   },
 
   getCoursesByCredits(credits) {
@@ -829,8 +941,10 @@ export default {
     return apiClient.get(`/courses/${courseId}/prerequisites`)
   },
 
-  updateCourseSchedule(courseId, scheduleData) {
-    return apiClient.put(`/courses/${courseId}/schedule`, scheduleData)
+  updateCourseSchedule(courseId, daysOfWeek, startTime, endTime) {
+    return apiClient.put(`/courses/${courseId}/schedule`, null, {
+      params: { daysOfWeek, startTime, endTime }
+    })
   },
 
   // ========================================
@@ -1115,6 +1229,56 @@ export default {
   },
 
   // ========================================
+  // COURSE MATERIALS MANAGEMENT
+  // ========================================
+  uploadCourseMaterial(file, courseId, materialType, title) {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('courseId', courseId)
+    formData.append('materialType', materialType)
+    formData.append('title', title)
+
+    return apiClient.post('/files/upload/course-material', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+  },
+
+  getCourseMaterials(courseId) {
+    return apiClient.get(`/files/course/${courseId}/materials`)
+  },
+
+  deleteCourseMaterial(materialId) {
+    return apiClient.delete(`/files/course-material/${materialId}`)
+  },
+
+  downloadCourseMaterial(materialId) {
+    return apiClient.get(`/files/course-material/${materialId}/download`, {
+      responseType: 'blob'
+    })
+  },
+
+  // ========================================
+  // COURSE GRADE ANALYTICS
+  // ========================================
+  getCourseGradeAnalytics(courseId) {
+    return apiClient.get(`/grades/course/${courseId}/analytics`)
+  },
+
+  getStudentCoursePerformance(studentId, courseId) {
+    return apiClient.get(`/grades/student/${studentId}/course/${courseId}/performance`)
+  },
+
+  getCourseAttendanceStats(courseId) {
+    return apiClient.get(`/attendance/course/${courseId}/statistics`)
+  },
+
+  getStudentCourseAttendance(studentId, courseId) {
+    return apiClient.get(`/attendance/student/${studentId}/course/${courseId}`)
+  },
+
+  // ========================================
   // MISSING: ADVANCED SEMESTER MANAGEMENT
   // ========================================
   getSemesterByCode(code) {
@@ -1154,5 +1318,65 @@ export default {
 
   getUsersByRole(role) {
     return apiClient.get(`/users/role/${role}`)
+  },
+
+  // ========================================
+  // GENERIC HTTP METHODS
+  // ========================================
+  get(url, config) {
+    return apiClient.get(url, config)
+  },
+
+  post(url, data, config) {
+    return apiClient.post(url, data, config)
+  },
+
+  put(url, data, config) {
+    return apiClient.put(url, data, config)
+  },
+
+  patch(url, data, config) {
+    return apiClient.patch(url, data, config)
+  },
+
+  delete(url, config) {
+    return apiClient.delete(url, config)
+  },
+
+  // ========================================
+  // PASSWORD MANAGEMENT
+  // ========================================
+  changePassword(userId, passwordData) {
+    return apiClient.put(`/users/${userId}/change-password`, passwordData)
+  },
+
+  // ========================================
+  // PROFILE PICTURE UPLOAD
+  // ========================================
+  uploadProfilePicture(userId, file) {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('userId', userId)
+
+    return apiClient.post('/files/upload/profile', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+  },
+
+  getProfilePictureUrl(userId) {
+    return `${API_BASE_URL}/files/profile/${userId}`
+  },
+
+  // ========================================
+  // SYSTEM MONITORING
+  // ========================================
+  getSystemMetrics() {
+    return apiClient.get('/system/metrics')
+  },
+
+  getSystemHealth() {
+    return apiClient.get('/system/health')
   }
 }

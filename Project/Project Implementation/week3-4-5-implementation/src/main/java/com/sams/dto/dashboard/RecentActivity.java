@@ -7,6 +7,9 @@ import java.time.LocalDateTime;
  */
 public class RecentActivity {
 
+    private Long id;
+    private String type; // Frontend-friendly alias for activityType
+    private String message; // Frontend-friendly alias for description
     private String activityType; // USER_CREATED, ENROLLMENT_ADDED, GRADE_ASSIGNED, etc.
     private String description;
     private String performedBy;
@@ -63,5 +66,29 @@ public class RecentActivity {
 
     public void setIcon(String icon) {
         this.icon = icon;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

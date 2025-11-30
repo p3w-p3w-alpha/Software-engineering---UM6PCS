@@ -56,8 +56,10 @@ public class EnrollmentService {
             throw new IllegalArgumentException("Only students can enroll in courses");
         }
 
-        // chekc if student is already enrolled or waitlisted
-        if (enrollmentRepository.existsByStudentAndCourse(student, course)) {
+        // check if student has an active enrollment (ACTIVE, PENDING_PAYMENT, or WAITLISTED)
+        // Students who dropped or completed a course can re-enroll
+        List<String> blockingStatuses = Arrays.asList("ACTIVE", "PENDING_PAYMENT", "WAITLISTED");
+        if (enrollmentRepository.existsByStudentAndCourseAndStatusIn(student, course, blockingStatuses)) {
             throw new AlreadyEnrolledException(
                 "Student " + student.getUsername() + " is already enrolled in " + course.getCourseCode()
             );

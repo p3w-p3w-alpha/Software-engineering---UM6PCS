@@ -266,7 +266,7 @@ const loadDashboardData = async () => {
       stats.value.completedCredits = progressRes.data.creditsCompleted || 0
       stats.value.totalCredits = progressRes.data.degreeProgram?.totalCreditsRequired || 0
     } catch (error) {
-      console.log('No degree progress data available')
+      // Degree progress may not be available for all students
     }
 
     // Load payments

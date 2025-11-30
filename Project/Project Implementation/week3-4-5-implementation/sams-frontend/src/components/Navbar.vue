@@ -1,5 +1,5 @@
 <template>
-  <nav class="bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg">
+  <nav class="bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg" role="navigation" aria-label="Main navigation">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="flex h-16 items-center justify-between">
         <!-- Logo and Title -->
@@ -32,12 +32,15 @@
           <button
             @click="$emit('toggle-notifications')"
             class="relative p-2 text-blue-100 hover:text-white hover:bg-blue-500 rounded-full transition-colors"
+            aria-label="Toggle notifications panel"
+            :aria-expanded="false"
           >
             <svg
               class="h-6 w-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
+              aria-hidden="true"
             >
               <path
                 stroke-linecap="round"
@@ -59,6 +62,9 @@
             <button
               @click="showUserMenu = !showUserMenu"
               class="flex items-center space-x-3 p-2 rounded-md hover:bg-blue-500 transition-colors"
+              aria-label="User menu"
+              aria-haspopup="true"
+              :aria-expanded="showUserMenu"
             >
               <div class="flex items-center justify-center h-8 w-8 rounded-full bg-blue-500 text-white font-bold">
                 {{ userInitials }}
@@ -132,7 +138,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
@@ -178,7 +184,12 @@ const handleClickOutside = (event) => {
   }
 }
 
-if (typeof window !== 'undefined') {
+// Properly register and cleanup event listener to avoid memory leaks
+onMounted(() => {
   window.addEventListener('click', handleClickOutside)
-}
+})
+
+onUnmounted(() => {
+  window.removeEventListener('click', handleClickOutside)
+})
 </script>

@@ -2,6 +2,7 @@ package com.sams.repository;
 
 import com.sams.entity.Attendance;
 import com.sams.entity.Attendance.AttendanceStatus;
+import com.sams.entity.Course;
 import com.sams.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -74,4 +75,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
                                           @Param("status") AttendanceStatus status,
                                           @Param("startDate") LocalDate startDate,
                                           @Param("endDate") LocalDate endDate);
+
+    // Find attendance records for a course within a date range
+    List<Attendance> findByCourseAndDateBetween(Course course, LocalDate startDate, LocalDate endDate);
 }

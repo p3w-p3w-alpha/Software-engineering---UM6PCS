@@ -4,11 +4,17 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 // entity to store in-app notifications for users
 // supports different notification types for various events in the system
 @Entity
-@Table(name = "notifications")
+@Table(name = "notifications", indexes = {
+    @Index(name = "idx_notification_user", columnList = "user_id"),
+    @Index(name = "idx_notification_read", columnList = "read"),
+    @Index(name = "idx_notification_type", columnList = "type"),
+    @Index(name = "idx_notification_created", columnList = "created_at")
+})
 public class Notification {
 
     @Id
@@ -196,5 +202,18 @@ public class Notification {
 
     public void setEmailSentAt(LocalDateTime emailSentAt) {
         this.emailSentAt = emailSentAt;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Notification that = (Notification) o;
+        return id != null && Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

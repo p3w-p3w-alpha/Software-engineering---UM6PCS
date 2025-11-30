@@ -10,10 +10,12 @@ public class AssignmentResponse {
     private String description;
     private Long courseId;
     private String courseName;
+    private CourseInfo course; // nested course object for frontend compatibility
     private Long createdById;
     private String createdByName;
     private LocalDateTime dueDate;
     private Double maxPoints;
+    private Double maxGrade; // alias for maxPoints for frontend compatibility
     private Boolean allowLateSubmissions;
     private Double latePenaltyPerDay;
     private String allowedFileTypes;
@@ -23,6 +25,37 @@ public class AssignmentResponse {
     private Long submissionCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String type; // 'assignment' or 'exam'
+
+    // Nested class for course info
+    public static class CourseInfo {
+        private Long id;
+        private String courseCode;
+        private String courseName;
+        private String code; // alias for courseCode
+        private String name; // alias for courseName
+
+        public CourseInfo() {}
+
+        public CourseInfo(Long id, String courseCode, String courseName) {
+            this.id = id;
+            this.courseCode = courseCode;
+            this.courseName = courseName;
+            this.code = courseCode;
+            this.name = courseName;
+        }
+
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+        public String getCourseCode() { return courseCode; }
+        public void setCourseCode(String courseCode) { this.courseCode = courseCode; this.code = courseCode; }
+        public String getCourseName() { return courseName; }
+        public void setCourseName(String courseName) { this.courseName = courseName; this.name = courseName; }
+        public String getCode() { return code; }
+        public void setCode(String code) { this.code = code; }
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+    }
 
     // constructors
     public AssignmentResponse() {
@@ -171,5 +204,29 @@ public class AssignmentResponse {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public CourseInfo getCourse() {
+        return course;
+    }
+
+    public void setCourse(CourseInfo course) {
+        this.course = course;
+    }
+
+    public Double getMaxGrade() {
+        return maxGrade;
+    }
+
+    public void setMaxGrade(Double maxGrade) {
+        this.maxGrade = maxGrade;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

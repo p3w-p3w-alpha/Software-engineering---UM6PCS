@@ -1,5 +1,21 @@
 <template>
   <div class="min-h-screen bg-gray-50 py-8">
+    <!-- Toast Notification -->
+    <div v-if="showToast" class="fixed top-4 right-4 z-50 max-w-sm">
+      <div :class="[
+        'rounded-lg px-4 py-3 shadow-lg',
+        toastType === 'success' ? 'bg-green-100 border border-green-400 text-green-700' : 'bg-red-100 border border-red-400 text-red-700'
+      ]">
+        <div class="flex items-center justify-between">
+          <span>{{ toastMessage }}</span>
+          <button @click="showToast = false" class="ml-4">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Header -->
       <div class="mb-6">
@@ -239,11 +255,14 @@
               type="text"
               placeholder="Search for people to connect..."
               class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+              @keyup.enter="searchUsers"
+              @input="debouncedSearch"
             />
             <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
+          <p v-if="searchLoading" class="text-sm text-gray-500 mt-2">Searching...</p>
         </div>
 
         <!-- Suggested People -->
@@ -276,6 +295,17 @@
             </button>
           </div>
         </div>
+
+        <!-- Empty State for Discover -->
+        <div v-else class="text-center py-12">
+          <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <h3 class="mt-4 text-lg font-medium text-gray-900">Search for People</h3>
+          <p class="mt-2 text-sm text-gray-600">
+            Type a name or email in the search box above to find students and faculty to connect with
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -292,13 +322,29 @@ const router = useRouter()
 const authStore = useAuthStore()
 
 const loading = ref(true)
+const searchLoading = ref(false)
 const activeTab = ref('connections')
 const searchQuery = ref('')
 const discoverSearchQuery = ref('')
+const errorMessage = ref('')
+let searchTimeout = null
 
 const connections = ref([])
 const pendingRequests = ref([])
 const suggestedPeople = ref([])
+const sentRequests = ref(new Set()) // Track sent request user IDs
+
+// Toast notification state
+const showToast = ref(false)
+const toastMessage = ref('')
+const toastType = ref('success')
+
+function showNotification(message, type = 'success') {
+  toastMessage.value = message
+  toastType.value = type
+  showToast.value = true
+  setTimeout(() => { showToast.value = false }, 5000)
+}
 
 const filteredConnections = computed(() => {
   if (!searchQuery.value) return connections.value
@@ -323,67 +369,151 @@ async function loadConnections() {
   try {
     loading.value = true
 
-    // Load connections
+    // Load connections and transform to extract the "other user" info
     const connectionsResponse = await api.getUserConnections(authStore.userId)
-    connections.value = connectionsResponse.data || []
+    const rawConnections = connectionsResponse.data || []
+    const currentUserId = Number(authStore.userId)
+    connections.value = rawConnections.map(conn => {
+      // Determine who the "other person" is in this connection (use Number to avoid type mismatch)
+      const isCurrentUserRequester = Number(conn.requesterId) === currentUserId
+      return {
+        id: isCurrentUserRequester ? conn.receiverId : conn.requesterId,
+        name: isCurrentUserRequester ? conn.receiverName : conn.requesterName,
+        email: isCurrentUserRequester ? conn.receiverEmail : conn.requesterEmail,
+        role: 'USER', // Backend doesn't include role yet
+        connectedAt: conn.acceptedAt || conn.createdAt,
+        connectionId: conn.id
+      }
+    })
 
-    // Load pending requests (mock for now)
-    pendingRequests.value = []
+    // Load pending requests (REAL API CALL)
+    const pendingResponse = await api.getReceivedConnectionRequests(authStore.userId)
+    pendingRequests.value = (pendingResponse.data || []).map(req => ({
+      id: req.id,
+      name: req.requesterName,
+      email: req.requesterEmail,
+      userId: req.requesterId,
+      createdAt: req.createdAt
+    }))
 
-    // Load suggested people
-    const usersResponse = await api.getAllUsers()
-    const allUsers = usersResponse.data || []
+    // Load suggested people (may fail for non-admin users)
+    try {
+      const usersResponse = await api.getAllUsers()
+      const allUsers = usersResponse.data || []
 
-    const connectedIds = new Set(connections.value.map(c => c.id))
-    connectedIds.add(authStore.userId)
+      const connectedIds = new Set(connections.value.map(c => c.id))
+      connectedIds.add(authStore.userId)
 
-    suggestedPeople.value = allUsers
-      .filter(u => !connectedIds.has(u.id))
-      .slice(0, 12)
-      .map(u => ({
-        ...u,
-        requestSent: false,
-        mutualConnections: 0
-      }))
+      // Also exclude users with pending requests
+      const pendingIds = new Set(pendingRequests.value.map(r => r.userId))
+
+      suggestedPeople.value = allUsers
+        .filter(u => !connectedIds.has(u.id) && !pendingIds.has(u.id))
+        .slice(0, 12)
+        .map(u => ({
+          ...u,
+          requestSent: false,
+          mutualConnections: 0
+        }))
+    } catch (err) {
+      // Students can't access admin/users endpoint - just show empty discover list
+      suggestedPeople.value = []
+    }
   } catch (error) {
-    console.error('Error loading connections:', error)
-    alert('Failed to load connections. Please try again.')
+    errorMessage.value = 'Failed to load connections. Please try again.'
   } finally {
     loading.value = false
   }
 }
 
+// Debounced search function
+function debouncedSearch() {
+  if (searchTimeout) clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    if (discoverSearchQuery.value.trim().length >= 2) {
+      searchUsers()
+    } else {
+      suggestedPeople.value = []
+    }
+  }, 300)
+}
+
+// Search users API call
+async function searchUsers() {
+  const query = discoverSearchQuery.value.trim()
+  if (!query || query.length < 2) {
+    suggestedPeople.value = []
+    return
+  }
+
+  try {
+    searchLoading.value = true
+    const response = await api.get(`/users/search?query=${encodeURIComponent(query)}`)
+    const users = response.data || []
+
+    // Filter out current user, already connected users, and pending requests
+    const connectedIds = new Set(connections.value.map(c => c.id))
+    connectedIds.add(Number(authStore.userId))
+
+    // Also exclude users with pending requests
+    const pendingIds = new Set(pendingRequests.value.map(r => r.userId))
+
+    suggestedPeople.value = users
+      .filter(u => !connectedIds.has(u.id) && !pendingIds.has(u.id))
+      .map(u => ({
+        id: u.id,
+        name: u.firstName && u.lastName ? `${u.firstName} ${u.lastName}` : u.username,
+        email: u.email,
+        role: u.role,
+        requestSent: sentRequests.value.has(u.id),
+        mutualConnections: 0
+      }))
+  } catch (error) {
+    console.error('Error searching users:', error)
+  } finally {
+    searchLoading.value = false
+  }
+}
+
 async function sendConnectionRequest(userId) {
   try {
-    // Mock API call - implement when backend ready
+    // REAL API CALL
+    await api.sendConnectionRequest(authStore.userId, userId)
+
     const person = suggestedPeople.value.find(p => p.id === userId)
     if (person) {
       person.requestSent = true
     }
-    alert('Connection request sent!')
+    sentRequests.value.add(userId)
+    showNotification('Connection request sent!', 'success')
   } catch (error) {
     console.error('Error sending connection request:', error)
-    alert('Failed to send connection request.')
+    showNotification('Failed to send connection request.', 'error')
   }
 }
 
 async function acceptRequest(requestId) {
   try {
-    // Mock API call
+    // REAL API CALL
+    await api.acceptConnectionRequest(requestId, authStore.userId)
     pendingRequests.value = pendingRequests.value.filter(r => r.id !== requestId)
-    alert('Connection request accepted!')
+    showNotification('Connection request accepted!', 'success')
     await loadConnections()
   } catch (error) {
     console.error('Error accepting request:', error)
+    showNotification('Failed to accept connection request.', 'error')
   }
 }
 
 async function declineRequest(requestId) {
   try {
+    // REAL API CALL
+    await api.rejectConnectionRequest(requestId, authStore.userId)
     pendingRequests.value = pendingRequests.value.filter(r => r.id !== requestId)
-    alert('Connection request declined.')
+    showNotification('Connection request declined.', 'success')
   } catch (error) {
     console.error('Error declining request:', error)
+    showNotification('Failed to decline connection request.', 'error')
   }
 }
 

@@ -9,10 +9,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 // service for handling file storage operations on local file system
 // stores assignment submission files in a structured directory format
@@ -121,23 +122,132 @@ public class FileStorageService {
         }
     }
 
+    // store a file for a study group resource
+    public String storeStudyGroupFile(MultipartFile file, Long groupId, Long userId) throws IOException {
+        // validate file is not empty
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("Cannot store empty file");
+        }
+
+        // get original filename
+        String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
+
+        // check for invalid characters in filename
+        if (originalFilename.contains("..")) {
+            throw new IllegalArgumentException("Filename contains invalid path sequence: " + originalFilename);
+        }
+
+        // validate file type (allow PDF and common document types)
+        String fileExtension = getFileExtension(originalFilename);
+        if (!isAllowedFileType(fileExtension)) {
+            throw new IllegalArgumentException("File type not allowed: " + fileExtension +
+                    ". Allowed types: " + allowedFileTypes);
+        }
+
+        // validate file size
+        long fileSizeBytes = file.getSize();
+        long maxSizeBytes = (long) maxFileSizeMb * 1024 * 1024;
+        if (fileSizeBytes > maxSizeBytes) {
+            throw new IllegalArgumentException("File size exceeds maximum allowed size of " +
+                    maxFileSizeMb + "MB");
+        }
+
+        // generate unique filename
+        String uniqueFilename = generateUniqueFilename(originalFilename, userId);
+
+        // create directory structure: uploads/study-groups/{groupId}/
+        Path studyGroupPath = Paths.get(uploadDirectory, "study-groups", groupId.toString());
+
+        try {
+            // create directories if they don't exist
+            Files.createDirectories(studyGroupPath);
+
+            // resolve the full file path
+            Path targetLocation = studyGroupPath.resolve(uniqueFilename);
+
+            // copy file to target location (replace existing file if it exists)
+            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+
+            // return relative path for storing in database
+            return Paths.get("study-groups", groupId.toString(), uniqueFilename).toString();
+
+        } catch (IOException ex) {
+            throw new IOException("Could not store file " + uniqueFilename + ". Please try again!", ex);
+        }
+    }
+
+    // store a profile picture for a user
+    public String storeProfilePicture(MultipartFile file, Long userId) throws IOException {
+        // validate file is not empty
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("Cannot store empty file");
+        }
+
+        // get original filename
+        String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
+
+        // check for invalid characters in filename
+        if (originalFilename.contains("..")) {
+            throw new IllegalArgumentException("Filename contains invalid path sequence: " + originalFilename);
+        }
+
+        // validate image file type
+        String fileExtension = getFileExtension(originalFilename).toLowerCase();
+        List<String> allowedImageTypes = Arrays.asList("jpg", "jpeg", "png", "gif", "webp");
+        if (!allowedImageTypes.contains(fileExtension)) {
+            throw new IllegalArgumentException("Invalid image type: " + fileExtension +
+                    ". Allowed types: jpg, jpeg, png, gif, webp");
+        }
+
+        // validate file size (max 2MB for profile pictures)
+        long fileSizeBytes = file.getSize();
+        long maxSizeBytes = 2 * 1024 * 1024; // 2MB
+        if (fileSizeBytes > maxSizeBytes) {
+            throw new IllegalArgumentException("Profile picture exceeds maximum size of 2MB");
+        }
+
+        // use a consistent filename for profile picture (profile.{ext})
+        String profileFilename = "profile_" + userId + "." + fileExtension;
+
+        // create directory structure: uploads/profiles/{userId}/
+        Path profilePath = Paths.get(uploadDirectory, "profiles", userId.toString());
+
+        try {
+            // create directories if they don't exist
+            Files.createDirectories(profilePath);
+
+            // resolve the full file path
+            Path targetLocation = profilePath.resolve(profileFilename);
+
+            // copy file to target location (replace existing profile picture)
+            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+
+            // return relative path for storing in database
+            return Paths.get("profiles", userId.toString(), profileFilename).toString();
+
+        } catch (IOException ex) {
+            throw new IOException("Could not store profile picture. Please try again!", ex);
+        }
+    }
+
     // delete all files for a specific student's submission
     public void deleteSubmissionFiles(Long assignmentId, Long studentId) throws IOException {
         Path studentPath = Paths.get(uploadDirectory, "assignments",
                 assignmentId.toString(), "student_" + studentId);
 
         if (Files.exists(studentPath)) {
-            // delete all files in the student directory
-            Files.walk(studentPath)
+            // delete all files in the student directory using try-with-resources to prevent resource leak
+            try (var pathStream = Files.walk(studentPath)) {
+                pathStream
                     .sorted((a, b) -> b.compareTo(a)) // reverse order to delete files before directories
                     .forEach(path -> {
                         try {
                             Files.delete(path);
                         } catch (IOException e) {
-                            // log error but continue
-                            System.err.println("Failed to delete: " + path);
+                            // log error but continue - use proper logging in production
                         }
                     });
+            }
         }
     }
 
@@ -238,5 +348,174 @@ public class FileStorageService {
     public long getFileSize(String filePath) throws IOException {
         Path fullPath = Paths.get(uploadDirectory).resolve(filePath).normalize();
         return Files.size(fullPath);
+    }
+
+    // store a course material file
+    public Map<String, Object> storeCourseMaterial(MultipartFile file, Long courseId, Long uploaderId,
+                                                    String title, String description) throws IOException {
+        // validate file is not empty
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("Cannot store empty file");
+        }
+
+        // get original filename
+        String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
+
+        // check for invalid characters in filename
+        if (originalFilename.contains("..")) {
+            throw new IllegalArgumentException("Filename contains invalid path sequence: " + originalFilename);
+        }
+
+        // validate file type
+        String fileExtension = getFileExtension(originalFilename);
+        if (!isAllowedFileType(fileExtension)) {
+            throw new IllegalArgumentException("File type not allowed: " + fileExtension +
+                    ". Allowed types: " + allowedFileTypes);
+        }
+
+        // validate file size
+        long fileSizeBytes = file.getSize();
+        long maxSizeBytes = (long) maxFileSizeMb * 1024 * 1024;
+        if (fileSizeBytes > maxSizeBytes) {
+            throw new IllegalArgumentException("File size exceeds maximum allowed size of " +
+                    maxFileSizeMb + "MB");
+        }
+
+        // generate unique material ID
+        String materialId = UUID.randomUUID().toString().substring(0, 8);
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+        String uniqueFilename = materialId + "_" + timestamp + "_" + originalFilename.replaceAll("[^a-zA-Z0-9._-]", "_");
+
+        // create directory structure: uploads/courses/{courseId}/materials/
+        Path courseMaterialsPath = Paths.get(uploadDirectory, "courses", courseId.toString(), "materials");
+
+        try {
+            // create directories if they don't exist
+            Files.createDirectories(courseMaterialsPath);
+
+            // resolve the full file path
+            Path targetLocation = courseMaterialsPath.resolve(uniqueFilename);
+
+            // copy file to target location
+            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+
+            // return material info
+            Map<String, Object> materialInfo = new HashMap<>();
+            materialInfo.put("materialId", materialId);
+            materialInfo.put("filePath", Paths.get("courses", courseId.toString(), "materials", uniqueFilename).toString());
+            materialInfo.put("fileName", originalFilename);
+            materialInfo.put("fileSize", getFileSizeDisplay(fileSizeBytes));
+            materialInfo.put("fileSizeBytes", fileSizeBytes);
+            materialInfo.put("fileType", fileExtension);
+            materialInfo.put("title", title != null ? title : originalFilename);
+            materialInfo.put("description", description);
+            materialInfo.put("uploadedBy", uploaderId);
+            materialInfo.put("uploadedAt", LocalDateTime.now().toString());
+            materialInfo.put("courseId", courseId);
+
+            return materialInfo;
+
+        } catch (IOException ex) {
+            throw new IOException("Could not store course material. Please try again!", ex);
+        }
+    }
+
+    // get all course materials for a course
+    public List<Map<String, Object>> getCourseMaterials(Long courseId) throws IOException {
+        Path courseMaterialsPath = Paths.get(uploadDirectory, "courses", courseId.toString(), "materials");
+        List<Map<String, Object>> materials = new ArrayList<>();
+
+        if (!Files.exists(courseMaterialsPath)) {
+            return materials;
+        }
+
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(courseMaterialsPath)) {
+            for (Path entry : stream) {
+                if (Files.isRegularFile(entry)) {
+                    String filename = entry.getFileName().toString();
+                    // Extract material ID from filename (first part before underscore)
+                    String materialId = filename.split("_")[0];
+
+                    BasicFileAttributes attrs = Files.readAttributes(entry, BasicFileAttributes.class);
+
+                    Map<String, Object> materialInfo = new HashMap<>();
+                    materialInfo.put("materialId", materialId);
+                    materialInfo.put("fileName", extractOriginalFilename(filename));
+                    materialInfo.put("fullFileName", filename);
+                    materialInfo.put("filePath", Paths.get("courses", courseId.toString(), "materials", filename).toString());
+                    materialInfo.put("fileSize", getFileSizeDisplay(attrs.size()));
+                    materialInfo.put("fileSizeBytes", attrs.size());
+                    materialInfo.put("fileType", getFileExtension(filename));
+                    materialInfo.put("uploadedAt", attrs.creationTime().toString());
+                    materialInfo.put("courseId", courseId);
+
+                    materials.add(materialInfo);
+                }
+            }
+        }
+
+        // Sort by upload date (newest first)
+        materials.sort((a, b) -> ((String) b.get("uploadedAt")).compareTo((String) a.get("uploadedAt")));
+
+        return materials;
+    }
+
+    // extract original filename from stored filename format: {materialId}_{timestamp}_{originalName}
+    private String extractOriginalFilename(String storedFilename) {
+        String[] parts = storedFilename.split("_", 3);
+        if (parts.length >= 3) {
+            return parts[2];
+        }
+        return storedFilename;
+    }
+
+    // load a course material file as a resource
+    public Resource loadCourseMaterial(Long courseId, String materialId) throws IOException {
+        Path courseMaterialsPath = Paths.get(uploadDirectory, "courses", courseId.toString(), "materials");
+
+        if (!Files.exists(courseMaterialsPath)) {
+            throw new IOException("Course materials directory not found");
+        }
+
+        // Find the file that starts with the materialId
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(courseMaterialsPath, materialId + "_*")) {
+            for (Path entry : stream) {
+                if (Files.isRegularFile(entry)) {
+                    Resource resource = new UrlResource(entry.toUri());
+                    if (resource.exists() && resource.isReadable()) {
+                        return resource;
+                    }
+                }
+            }
+        }
+
+        throw new IOException("Course material not found: " + materialId);
+    }
+
+    // delete a course material
+    public void deleteCourseMaterial(Long courseId, String materialId) throws IOException {
+        Path courseMaterialsPath = Paths.get(uploadDirectory, "courses", courseId.toString(), "materials");
+
+        if (!Files.exists(courseMaterialsPath)) {
+            throw new IOException("Course materials directory not found");
+        }
+
+        // Find and delete the file that starts with the materialId
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(courseMaterialsPath, materialId + "_*")) {
+            boolean found = false;
+            for (Path entry : stream) {
+                if (Files.isRegularFile(entry)) {
+                    Files.delete(entry);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                throw new IOException("Course material not found: " + materialId);
+            }
+        }
+
+        // Clean up empty directories
+        cleanupEmptyDirectories(courseMaterialsPath);
     }
 }

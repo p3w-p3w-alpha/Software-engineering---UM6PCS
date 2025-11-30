@@ -68,13 +68,13 @@ const props = defineProps({
     default: ''
   },
   icon: {
-    type: Object,
+    type: [Object, Function],
     default: null
   },
   color: {
     type: String,
     default: 'blue',
-    validator: (value) => ['blue', 'green', 'purple', 'orange', 'red', 'indigo', 'pink'].includes(value)
+    validator: (value) => ['blue', 'green', 'purple', 'orange', 'red', 'indigo', 'pink', 'yellow'].includes(value)
   },
   trend: {
     type: String,
@@ -144,6 +144,13 @@ const colorClasses = {
     value: 'text-pink-600',
     bg: 'bg-pink-600',
     progress: 'bg-pink-600'
+  },
+  yellow: {
+    icon: 'text-yellow-600',
+    iconBg: 'bg-yellow-100',
+    value: 'text-yellow-600',
+    bg: 'bg-yellow-600',
+    progress: 'bg-yellow-600'
   }
 }
 

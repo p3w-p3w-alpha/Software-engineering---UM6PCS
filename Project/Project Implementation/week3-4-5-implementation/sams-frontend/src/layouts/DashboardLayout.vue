@@ -63,7 +63,50 @@
         <nav class="p-4 overflow-y-auto custom-scrollbar" style="max-height: calc(100vh - 240px)">
           <ul class="space-y-2">
             <li v-for="(item, index) in menuItems" :key="item.path">
+              <!-- Item with children -->
+              <div v-if="item.children">
+                <div
+                  @click="toggleSubmenu(item.path)"
+                  :class="[
+                    'flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-300',
+                    isMenuActive(item) ? 'bg-white/20 text-white shadow-lg backdrop-blur-xl' : 'text-white/70 hover:bg-white/10 hover:text-white'
+                  ]"
+                  :style="{ animationDelay: `${index * 0.05}s` }"
+                  class="animate-slide-in-left"
+                >
+                  <i :class="[item.icon, 'text-xl']"></i>
+                  <Transition name="slide-left">
+                    <span v-if="!sidebarCollapsed" class="font-medium">{{ item.label }}</span>
+                  </Transition>
+                  <i v-if="!sidebarCollapsed" :class="['pi', expandedMenus.includes(item.path) ? 'pi-chevron-down' : 'pi-chevron-right', 'ml-auto text-sm']"></i>
+                </div>
+                <!-- Submenu -->
+                <Transition name="slide-down">
+                  <ul v-if="expandedMenus.includes(item.path) && !sidebarCollapsed" class="mt-2 ml-4 space-y-1">
+                    <li v-for="child in item.children" :key="child.path">
+                      <router-link
+                        :to="child.path"
+                        v-slot="{ isActive }"
+                        custom
+                      >
+                        <div
+                          @click="navigateTo(child.path)"
+                          :class="[
+                            'flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200',
+                            isActive ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'
+                          ]"
+                        >
+                          <i :class="[child.icon, 'text-sm']"></i>
+                          <span class="text-sm">{{ child.label }}</span>
+                        </div>
+                      </router-link>
+                    </li>
+                  </ul>
+                </Transition>
+              </div>
+              <!-- Regular item without children -->
               <router-link
+                v-else
                 :to="item.path"
                 v-slot="{ isActive }"
                 custom
@@ -128,9 +171,8 @@
     <!-- Main Content Area -->
     <div
       :class="[
-        'main-content transition-all duration-300',
-        'md:ml-20 lg:ml-64',
-        !sidebarCollapsed && !isMobile ? 'md:ml-64' : ''
+        'main-content transition-all duration-300 min-h-screen',
+        sidebarCollapsed ? 'md:ml-20' : 'md:ml-64'
       ]"
     >
       <!-- Top Navbar -->
@@ -153,14 +195,97 @@
             <!-- Right Actions -->
             <div class="flex items-center gap-2 md:gap-3">
               <!-- Global Search (hidden on small screens) -->
-              <div class="relative hidden md:block">
+              <div class="relative hidden md:block search-container">
                 <InputText
                   v-model="searchQuery"
-                  placeholder="Search..."
-                  class="pl-10 pr-4 py-2 w-48 lg:w-64 rounded-xl border-gray-200 focus:border-indigo-500"
+                  placeholder="Search users, courses..."
+                  class="pl-10 pr-10 py-2 w-48 lg:w-72 rounded-xl border-gray-200 focus:border-indigo-500"
                   @keyup.enter="performSearch"
+                  @focus="searchQuery.length >= 2 && searchResults.totalResults > 0 ? showSearchResults = true : null"
                 />
                 <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <button
+                  v-if="searchQuery"
+                  @click="clearSearch"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <i class="pi pi-times text-sm"></i>
+                </button>
+
+                <!-- Search Results Dropdown -->
+                <Transition name="scale">
+                  <div
+                    v-if="showSearchResults"
+                    class="absolute top-12 left-0 w-80 lg:w-96 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50 search-results-panel"
+                  >
+                    <!-- Loading State -->
+                    <div v-if="searchLoading" class="p-6 text-center">
+                      <i class="pi pi-spin pi-spinner text-2xl text-indigo-500"></i>
+                      <p class="mt-2 text-gray-500">Searching...</p>
+                    </div>
+
+                    <!-- Results -->
+                    <div v-else-if="searchResults.totalResults > 0" class="max-h-96 overflow-y-auto">
+                      <!-- Users Section -->
+                      <div v-if="searchResults.users && searchResults.users.length > 0">
+                        <div class="px-4 py-2 bg-gray-50 border-b border-gray-100">
+                          <span class="text-xs font-semibold text-gray-500 uppercase">Users</span>
+                        </div>
+                        <div
+                          v-for="user in searchResults.users"
+                          :key="'user-' + user.id"
+                          @click="navigateToSearchResult('user', user)"
+                          class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 flex items-center gap-3 transition-colors"
+                        >
+                          <Avatar
+                            :label="user.username ? user.username.substring(0, 2).toUpperCase() : '?'"
+                            size="small"
+                            shape="circle"
+                            class="bg-gradient-to-br from-indigo-400 to-purple-500"
+                          />
+                          <div class="flex-1 min-w-0">
+                            <p class="font-medium text-gray-900 truncate">{{ user.username }}</p>
+                            <p class="text-sm text-gray-500 truncate">{{ user.email }}</p>
+                          </div>
+                          <Badge :value="user.role" severity="info" class="text-xs" />
+                        </div>
+                      </div>
+
+                      <!-- Courses Section -->
+                      <div v-if="searchResults.courses && searchResults.courses.length > 0">
+                        <div class="px-4 py-2 bg-gray-50 border-b border-gray-100">
+                          <span class="text-xs font-semibold text-gray-500 uppercase">Courses</span>
+                        </div>
+                        <div
+                          v-for="course in searchResults.courses"
+                          :key="'course-' + course.id"
+                          @click="navigateToSearchResult('course', course)"
+                          class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 flex items-center gap-3 transition-colors"
+                        >
+                          <div class="w-10 h-10 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center">
+                            <i class="pi pi-book text-white"></i>
+                          </div>
+                          <div class="flex-1 min-w-0">
+                            <p class="font-medium text-gray-900 truncate">{{ course.name }}</p>
+                            <p class="text-sm text-gray-500">{{ course.code }} - {{ course.credits }} credits</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Total Results Footer -->
+                      <div class="px-4 py-2 bg-gray-50 text-center">
+                        <span class="text-xs text-gray-500">Found {{ searchResults.totalResults }} result(s)</span>
+                      </div>
+                    </div>
+
+                    <!-- No Results -->
+                    <div v-else class="p-6 text-center">
+                      <i class="pi pi-search text-3xl text-gray-300"></i>
+                      <p class="mt-2 text-gray-500">No results found for "{{ searchQuery }}"</p>
+                      <p class="text-sm text-gray-400">Try different keywords</p>
+                    </div>
+                  </div>
+                </Transition>
               </div>
 
               <!-- Search button for mobile -->
@@ -189,11 +314,16 @@
                 <Transition name="scale">
                   <div
                     v-if="showNotifications"
-                    class="absolute right-0 top-12 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden"
+                    class="absolute right-0 top-12 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden notification-panel"
                   >
                     <NotificationPanel
                       :notifications="notifications"
+                      :loading="notificationsLoading"
+                      :is-open="showNotifications"
                       @close="showNotifications = false"
+                      @mark-read="handleMarkRead"
+                      @mark-all-read="handleMarkAllRead"
+                      @notification-click="handleNotificationClick"
                     />
                   </div>
                 </Transition>
@@ -259,11 +389,11 @@
 
       <!-- Page Content with Animation -->
       <main class="p-6">
-        <Transition name="page" mode="out-in">
-          <router-view v-slot="{ Component }">
+        <router-view v-slot="{ Component }">
+          <Transition name="page" mode="out-in">
             <component :is="Component" />
-          </router-view>
-        </Transition>
+          </Transition>
+        </router-view>
       </main>
 
       <!-- Floating Action Button -->
@@ -305,10 +435,12 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { useNotificationStore } from '../stores/notifications'
 import { useToast } from 'primevue/usetoast'
+import api from '../services/api'
 import Avatar from 'primevue/avatar'
 import Badge from 'primevue/badge'
 import Button from 'primevue/button'
@@ -323,6 +455,7 @@ import NotificationPanel from '../components/NotificationPanel.vue'
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const notificationStore = useNotificationStore()
 const toast = useToast()
 
 // State
@@ -332,26 +465,40 @@ const showNotifications = ref(false)
 const showUserMenu = ref(false)
 const showQuickAdd = ref(false)
 const searchQuery = ref('')
-const unreadNotifications = ref(3)
 const isMobile = ref(window.innerWidth < 768)
+const expandedMenus = ref(['/admin/users']) // Keep Users menu expanded by default
+const showSearchResults = ref(false)
+const searchLoading = ref(false)
+const searchResults = ref({ users: [], courses: [], totalResults: 0 })
+
+// Computed notifications from store
+const unreadNotifications = computed(() => notificationStore.unreadCount)
+const notifications = computed(() => notificationStore.recentNotifications)
+const notificationsLoading = computed(() => notificationStore.loading)
 
 // User Info
-const userName = computed(() => authStore.user?.name || 'User')
+const userName = computed(() => authStore.user?.username || authStore.userName || 'User')
 const userEmail = computed(() => authStore.user?.email || 'user@example.com')
-const userRole = computed(() => authStore.user?.role || 'User')
+const userRole = computed(() => authStore.user?.role || authStore.userRole || 'User')
 const userAvatar = computed(() => authStore.user?.avatar || null)
 const userInitials = computed(() => {
   const name = userName.value
-  return name.split(' ').map(n => n[0]).join('').toUpperCase()
+  if (name.length < 2) return name.toUpperCase()
+  return name.substring(0, 2).toUpperCase()
 })
 
 // Dynamic Menu Items based on user role
 const menuItems = computed(() => {
+  // Normalize role for path: SUPER_ADMIN -> admin, ADMIN -> admin, STUDENT -> student, FACULTY -> faculty
+  const rolePath = userRole.value === 'SUPER_ADMIN' || userRole.value === 'ADMIN'
+    ? 'admin'
+    : userRole.value.toLowerCase()
+
   const baseItems = [
     {
       label: 'Dashboard',
       icon: 'pi pi-home',
-      path: `/${userRole.value.toLowerCase()}`,
+      path: `/${rolePath}`,
       badge: null
     }
   ]
@@ -359,12 +506,24 @@ const menuItems = computed(() => {
   if (authStore.isAdmin) {
     return [
       ...baseItems,
-      { label: 'User Management', icon: 'pi pi-users', path: '/admin/users' },
-      { label: 'Course Management', icon: 'pi pi-book', path: '/admin/courses' },
-      { label: 'Fee Management', icon: 'pi pi-dollar', path: '/admin/fees', badge: '5' },
+      {
+        label: 'Users',
+        icon: 'pi pi-users',
+        path: '/admin/users',
+        children: [
+          { label: 'All Users', icon: 'pi pi-list', path: '/admin/users' },
+          { label: 'Students', icon: 'pi pi-user', path: '/admin/students' },
+          { label: 'Faculty', icon: 'pi pi-briefcase', path: '/admin/faculty' },
+          { label: 'Admins', icon: 'pi pi-shield', path: '/admin/admins' }
+        ]
+      },
+      { label: 'Courses', icon: 'pi pi-book', path: '/admin/courses' },
+      { label: 'Fees', icon: 'pi pi-dollar', path: '/admin/fees', badge: '5' },
+      { label: 'Payments', icon: 'pi pi-wallet', path: '/admin/payments', badge: '3' },
       { label: 'Attendance', icon: 'pi pi-calendar-check', path: '/admin/attendance' },
-      { label: 'Reports', icon: 'pi pi-chart-line', path: '/admin/reports' },
       { label: 'Analytics', icon: 'pi pi-chart-bar', path: '/admin/analytics' },
+      { label: 'Reports', icon: 'pi pi-chart-line', path: '/admin/reports' },
+      { label: 'System', icon: 'pi pi-server', path: '/admin/system-health' },
       { label: 'Settings', icon: 'pi pi-cog', path: '/admin/settings' }
     ]
   }
@@ -449,37 +608,29 @@ const quickAddActions = ref([
   { label: 'New Report', icon: 'pi pi-chart-line', color: '#3b82f6' }
 ])
 
-// Mock notifications
-const notifications = ref([
-  {
-    id: 1,
-    type: 'info',
-    title: 'New Assignment',
-    message: 'You have a new assignment due next week',
-    time: '5 min ago',
-    read: false
-  },
-  {
-    id: 2,
-    type: 'success',
-    title: 'Grade Posted',
-    message: 'Your grade for Math 101 has been posted',
-    time: '1 hour ago',
-    read: false
-  },
-  {
-    id: 3,
-    type: 'warning',
-    title: 'Payment Due',
-    message: 'Your fee payment is due in 3 days',
-    time: '2 hours ago',
-    read: false
-  }
-])
+// Notification refresh interval
+let notificationRefreshInterval = null
 
 // Methods
 const navigateTo = (path) => {
   router.push(path)
+}
+
+const toggleSubmenu = (path) => {
+  const index = expandedMenus.value.indexOf(path)
+  if (index > -1) {
+    expandedMenus.value.splice(index, 1)
+  } else {
+    expandedMenus.value.push(path)
+  }
+}
+
+const isMenuActive = (item) => {
+  if (route.path === item.path) return true
+  if (item.children) {
+    return item.children.some(child => route.path === child.path)
+  }
+  return false
 }
 
 const toggleDarkMode = () => {
@@ -497,14 +648,103 @@ const toggleNotifications = () => {
   showUserMenu.value = false
 }
 
-const performSearch = () => {
-  if (searchQuery.value) {
+// Notification handlers
+const handleMarkRead = async (notificationId) => {
+  try {
+    await notificationStore.markAsRead(notificationId)
+  } catch (error) {
     toast.add({
-      severity: 'info',
-      summary: 'Searching',
-      detail: `Searching for: ${searchQuery.value}`,
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to mark notification as read',
       life: 3000
     })
+  }
+}
+
+const handleMarkAllRead = async () => {
+  try {
+    await notificationStore.markAllAsRead(authStore.userId)
+    toast.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: 'All notifications marked as read',
+      life: 2000
+    })
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to mark all notifications as read',
+      life: 3000
+    })
+  }
+}
+
+const handleNotificationClick = async (notification) => {
+  // Mark as read if not already
+  if (!notification.read) {
+    await handleMarkRead(notification.id)
+  }
+
+  // Navigate to the action URL if provided
+  if (notification.actionUrl) {
+    router.push(notification.actionUrl)
+    showNotifications.value = false
+  }
+}
+
+const performSearch = async () => {
+  if (!searchQuery.value || searchQuery.value.trim().length < 2) {
+    toast.add({
+      severity: 'warn',
+      summary: 'Search',
+      detail: 'Please enter at least 2 characters to search',
+      life: 2000
+    })
+    return
+  }
+
+  searchLoading.value = true
+  showSearchResults.value = true
+
+  try {
+    const response = await api.globalSearch(searchQuery.value.trim())
+    searchResults.value = response.data
+  } catch (error) {
+    console.error('Search error:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Search Failed',
+      detail: 'Unable to perform search. Please try again.',
+      life: 3000
+    })
+    searchResults.value = { users: [], courses: [], totalResults: 0 }
+  } finally {
+    searchLoading.value = false
+  }
+}
+
+const clearSearch = () => {
+  searchQuery.value = ''
+  showSearchResults.value = false
+  searchResults.value = { users: [], courses: [], totalResults: 0 }
+}
+
+const navigateToSearchResult = (type, item) => {
+  showSearchResults.value = false
+  searchQuery.value = ''
+
+  if (type === 'user') {
+    router.push(`/profile/${item.id}`)
+  } else if (type === 'course') {
+    if (authStore.isAdmin) {
+      router.push(`/admin/courses`)
+    } else if (authStore.isFaculty) {
+      router.push(`/faculty/courses`)
+    } else {
+      router.push(`/student/courses`)
+    }
   }
 }
 
@@ -541,7 +781,7 @@ const handleLogout = async () => {
 }
 
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
   // Initialize dark mode from local storage
   const savedDarkMode = localStorage.getItem('darkMode')
   if (savedDarkMode === 'true') {
@@ -571,7 +811,30 @@ onMounted(() => {
     if (!e.target.closest('.user-menu-btn') && !e.target.closest('.user-menu-panel')) {
       showUserMenu.value = false
     }
+    if (!e.target.closest('.search-container') && !e.target.closest('.search-results-panel')) {
+      showSearchResults.value = false
+    }
   })
+
+  // Initialize notifications with token for WebSocket
+  const userId = authStore.userId
+  const token = authStore.token
+  if (userId) {
+    await notificationStore.initialize(userId, token)
+
+    // Refresh notification count periodically (every 30 seconds)
+    notificationRefreshInterval = setInterval(() => {
+      notificationStore.loadUnreadCount(userId)
+    }, 30000)
+  }
+})
+
+// Cleanup on unmount
+onUnmounted(() => {
+  if (notificationRefreshInterval) {
+    clearInterval(notificationRefreshInterval)
+  }
+  notificationStore.unsubscribeFromRealTime()
 })
 
 // Watch dark mode changes
@@ -690,5 +953,32 @@ watch(darkMode, (newValue) => {
 .page-leave-to {
   opacity: 0;
   transform: translateX(-30px);
+}
+
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-down-enter-from,
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* Animation for slide in left */
+.animate-slide-in-left {
+  animation: slideInLeft 0.3s ease-out forwards;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 </style>

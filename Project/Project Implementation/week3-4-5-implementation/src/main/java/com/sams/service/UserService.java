@@ -63,6 +63,12 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException("email", email));
     }
 
+    // get user by username
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("username", username));
+    }
+
     // get all users
     public List<User> getAllUsers() {
         return userRepository.findAll();
@@ -116,5 +122,27 @@ public class UserService {
     // check if email exists
     public boolean emailExists(String email) {
         return userRepository.existsByEmail(email);
+    }
+
+    // simple save user (for profile updates without password change)
+    @Transactional
+    public User saveUser(User user) {
+        return userRepository.save(user);
+    }
+
+    // change user password with verification of current password
+    @Transactional
+    public boolean changePassword(Long userId, String currentPassword, String newPassword) {
+        User user = getUserById(userId);
+
+        // Verify current password
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            return false;
+        }
+
+        // Encode and set new password
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        return true;
     }
 }

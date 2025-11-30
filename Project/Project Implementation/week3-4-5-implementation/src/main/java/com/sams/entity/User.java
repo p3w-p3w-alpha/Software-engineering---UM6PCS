@@ -5,9 +5,15 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", indexes = {
+    @Index(name = "idx_user_role", columnList = "role"),
+    @Index(name = "idx_user_active", columnList = "active"),
+    @Index(name = "idx_user_email", columnList = "email"),
+    @Index(name = "idx_user_username", columnList = "username")
+})
 public class User {
 
     @Id
@@ -58,6 +64,20 @@ public class User {
 
     @Column(name = "deleted_by")
     private Long deletedBy; // id of user who deleted this record
+
+    // Profile fields
+    @Column(name = "phone")
+    private String phone;
+
+    @Column(name = "bio", columnDefinition = "TEXT")
+    private String bio;
+
+    @Column(name = "profile_picture")
+    private String profilePicture;
+
+    // Gender field for demographics (MALE, FEMALE, OTHER, PREFER_NOT_TO_SAY)
+    @Column(name = "gender")
+    private String gender;
 
     @PrePersist
     protected void onCreate() {
@@ -191,5 +211,50 @@ public class User {
 
     public void setPermissions(String permissions) {
         this.permissions = permissions;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
+    public String getProfilePicture() {
+        return profilePicture;
+    }
+
+    public void setProfilePicture(String profilePicture) {
+        this.profilePicture = profilePicture;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return id != null && Objects.equals(id, user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

@@ -33,6 +33,11 @@ public class NotificationController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
+        // Validate page size to prevent DoS attacks
+        if (size < 1) size = 1;
+        if (size > 100) size = 100;
+        if (page < 0) page = 0;
+
         Pageable pageable = PageRequest.of(page, size);
         Page<Notification> notifications = notificationService.getNotificationsForUser(userId, pageable);
         Page<NotificationResponse> responses = notifications.map(this::convertToResponse);

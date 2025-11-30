@@ -1,0 +1,27 @@
+Getting auth token...
+Token: eyJhbGciOiJIUzUxMiJ9...
+
+Test 1: /api/courses/search?query=test
+[]
+HTTP Status: 200
+
+---
+Test 2: /api/search?query=test
+{"courses":[],"totalResults":0,"query":"test","users":[]}
+HTTP Status: 200
+
+---
+Test 3: /api/users/search?query=student
+[{"id":11,"username":"student2","firstName":null,"lastName":null,"email":"student2@sams.edu","role":"STUDENT","permissions":[],"active":true,"createdAt":"2025-11-27T05:55:19.369629","updatedAt":null},{"id":9,"username":"student1","firstName":null,"lastName":null,"email":"student1@sams.edu","role":"STUDENT","permissions":[],"active":true,"createdAt":"2025-11-27T05:54:31.936592","updatedAt":null}]
+HTTP Status: 200
+
+---
+Test 4: /api/courses/search/name?query=test
+[]
+HTTP Status: 200
+
+---
+Test 5: /api/attendance/faculty
+{"status":500,"message":"An error occurred: Request method 'GET' is not supported","timestamp":"2025-11-27T12:12:22.443048467"}
+HTTP Status: 500
+

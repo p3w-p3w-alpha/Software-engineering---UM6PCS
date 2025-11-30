@@ -1,9 +1,11 @@
 package com.sams.service;
 
 import com.sams.dto.dashboard.*;
+import com.sams.entity.ActivityLog;
 import com.sams.entity.Payment;
 import com.sams.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +34,9 @@ public class DashboardService {
 
     @Autowired
     private PaymentRepository paymentRepository;
+
+    @Autowired
+    private ActivityLogRepository activityLogRepository;
 
     /**
      * Get complete dashboard with all analytics
@@ -72,13 +77,47 @@ public class DashboardService {
         stats.setActiveFaculty(userRepository.countByRoleAndActive("FACULTY", true));
         stats.setInactiveFaculty(userRepository.countByRoleAndActive("FACULTY", false));
 
-        // Growth rates (simplified - comparing current vs previous month)
-        // For a real implementation, you'd need to track historical data
-        stats.setStudentGrowthRate(0.0); // Placeholder
-        stats.setFacultyGrowthRate(0.0); // Placeholder
-        stats.setEnrollmentGrowthRate(0.0); // Placeholder
+        // Frontend-expected fields
+        long totalUsers = userRepository.count();
+        stats.setTotalUsers(totalUsers);
+        stats.setActiveCourses(totalCourses); // All courses are considered active
+
+        // Count pending payments using repository method (avoid loading all payments)
+        long pendingPayments = paymentRepository.countByStatus("PENDING");
+        stats.setPendingPayments(pendingPayments);
+
+        // Growth rates - compare current month vs previous month
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfCurrentMonth = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
+        LocalDateTime startOfPreviousMonth = startOfCurrentMonth.minusMonths(1);
+        LocalDateTime startOfTwoMonthsAgo = startOfCurrentMonth.minusMonths(2);
+
+        // Student growth
+        long studentsThisMonth = userRepository.countByRoleAndCreatedAtBetween("STUDENT", startOfCurrentMonth, now);
+        long studentsLastMonth = userRepository.countByRoleAndCreatedAtBetween("STUDENT", startOfPreviousMonth, startOfCurrentMonth);
+        stats.setStudentGrowthRate(calculateGrowthRate(studentsLastMonth, studentsThisMonth));
+
+        // Faculty growth
+        long facultyThisMonth = userRepository.countByRoleAndCreatedAtBetween("FACULTY", startOfCurrentMonth, now);
+        long facultyLastMonth = userRepository.countByRoleAndCreatedAtBetween("FACULTY", startOfPreviousMonth, startOfCurrentMonth);
+        stats.setFacultyGrowthRate(calculateGrowthRate(facultyLastMonth, facultyThisMonth));
+
+        // Enrollment growth
+        long enrollmentsThisMonth = enrollmentRepository.countByEnrollmentDateBetween(startOfCurrentMonth, now);
+        long enrollmentsLastMonth = enrollmentRepository.countByEnrollmentDateBetween(startOfPreviousMonth, startOfCurrentMonth);
+        stats.setEnrollmentGrowthRate(calculateGrowthRate(enrollmentsLastMonth, enrollmentsThisMonth));
 
         return stats;
+    }
+
+    /**
+     * Calculate growth rate between two periods
+     */
+    private Double calculateGrowthRate(long previous, long current) {
+        if (previous == 0) {
+            return current > 0 ? 100.0 : 0.0;
+        }
+        return ((double)(current - previous) / previous) * 100.0;
     }
 
     /**
@@ -93,11 +132,12 @@ public class DashboardService {
             LocalDate monthDate = now.minusMonths(i);
             String period = monthDate.format(formatter);
 
-            // Count enrollments for this month
-            // This is a simplified version - ideally you'd query by enrollment date
-            long count = enrollmentRepository.count();
+            // Get actual enrollment count for this month
+            LocalDateTime startOfMonth = monthDate.withDayOfMonth(1).atStartOfDay();
+            LocalDateTime endOfMonth = monthDate.plusMonths(1).withDayOfMonth(1).atStartOfDay();
 
-            trends.add(new EnrollmentTrend(period, count / months)); // Simplified distribution
+            long count = enrollmentRepository.countByEnrollmentDateBetween(startOfMonth, endOfMonth);
+            trends.add(new EnrollmentTrend(period, count));
         }
 
         return trends;
@@ -165,11 +205,16 @@ public class DashboardService {
     public Map<String, Long> getGenderDemographics() {
         Map<String, Long> demographics = new HashMap<>();
 
-        // Note: This requires gender field in User entity
-        // For now, return mock data or implement after adding gender field
-        demographics.put("MALE", 0L);
-        demographics.put("FEMALE", 0L);
-        demographics.put("OTHER", 0L);
+        // Count users by gender
+        demographics.put("MALE", userRepository.countByGenderAndActiveTrue("MALE"));
+        demographics.put("FEMALE", userRepository.countByGenderAndActiveTrue("FEMALE"));
+        demographics.put("OTHER", userRepository.countByGenderAndActiveTrue("OTHER"));
+        demographics.put("PREFER_NOT_TO_SAY", userRepository.countByGenderAndActiveTrue("PREFER_NOT_TO_SAY"));
+
+        // Count users without gender set (null) - use count instead of loading all users
+        long totalActive = userRepository.countByActiveTrue();
+        long withGender = demographics.values().stream().mapToLong(Long::longValue).sum();
+        demographics.put("UNSPECIFIED", totalActive - withGender);
 
         return demographics;
     }
@@ -180,23 +225,103 @@ public class DashboardService {
     public List<RecentActivity> getRecentActivities(int limit) {
         List<RecentActivity> activities = new ArrayList<>();
 
-        // This is a simplified version
-        // In a real implementation, you'd have an Activity/AuditLog table
+        // First, try to get from ActivityLog table
+        List<ActivityLog> logs = activityLogRepository.findRecentActivities(PageRequest.of(0, limit));
 
-        // For now, return recent user creations
-        userRepository.findAll().stream()
-            .sorted((u1, u2) -> u2.getCreatedAt().compareTo(u1.getCreatedAt()))
-            .limit(limit)
-            .forEach(user -> {
+        if (!logs.isEmpty()) {
+            // Use activity logs
+            for (ActivityLog log : logs) {
                 RecentActivity activity = new RecentActivity();
-                activity.setActivityType("USER_CREATED");
-                activity.setDescription("New user created: " + user.getUsername());
-                activity.setPerformedBy("System");
-                activity.setTimestamp(user.getCreatedAt());
-                activity.setIcon("user-plus");
+                activity.setId(log.getId());
+                activity.setActivityType(log.getActivityType());
+                activity.setType(getActivityTypeForFrontend(log.getActivityType()));
+                activity.setDescription(log.getDescription());
+                activity.setMessage(log.getDescription());
+                activity.setPerformedBy(log.getPerformedByUsername());
+                activity.setTimestamp(log.getCreatedAt());
+                activity.setIcon(getIconForActivityType(log.getActivityType()));
                 activities.add(activity);
-            });
+            }
+        } else {
+            // Fallback: Generate activities from recent user creations
+            // Use paginated query to avoid loading all users (N+1 fix)
+            final long[] counter = {1};
+            userRepository.findRecentUsers(PageRequest.of(0, limit))
+                .forEach(user -> {
+                    RecentActivity activity = new RecentActivity();
+                    activity.setId(counter[0]++);
+                    activity.setActivityType("USER_CREATED");
+                    activity.setType("user");
+                    activity.setDescription("New user created: " + user.getUsername());
+                    activity.setMessage("New user created: " + user.getUsername());
+                    activity.setPerformedBy("System");
+                    activity.setTimestamp(user.getCreatedAt());
+                    activity.setIcon("user-plus");
+                    activities.add(activity);
+                });
+        }
 
         return activities;
+    }
+
+    /**
+     * Get frontend-friendly type from activity type
+     */
+    private String getActivityTypeForFrontend(String activityType) {
+        if (activityType == null) return "info";
+        switch (activityType) {
+            case "USER_CREATED":
+            case "USER_UPDATED":
+            case "USER_DELETED":
+                return "user";
+            case "ENROLLMENT_CREATED":
+            case "ENROLLMENT_DROPPED":
+                return "enrollment";
+            case "GRADE_ASSIGNED":
+            case "GRADE_UPDATED":
+                return "grade";
+            case "PAYMENT_SUBMITTED":
+            case "PAYMENT_APPROVED":
+            case "PAYMENT_REJECTED":
+                return "payment";
+            case "COURSE_CREATED":
+            case "COURSE_UPDATED":
+                return "course";
+            default:
+                return "info";
+        }
+    }
+
+    /**
+     * Get icon for activity type
+     */
+    private String getIconForActivityType(String activityType) {
+        if (activityType == null) return "info-circle";
+        switch (activityType) {
+            case "USER_CREATED":
+                return "user-plus";
+            case "USER_UPDATED":
+                return "user-edit";
+            case "USER_DELETED":
+                return "user-minus";
+            case "ENROLLMENT_CREATED":
+                return "book-open";
+            case "ENROLLMENT_DROPPED":
+                return "book-dead";
+            case "GRADE_ASSIGNED":
+            case "GRADE_UPDATED":
+                return "graduation-cap";
+            case "PAYMENT_SUBMITTED":
+                return "credit-card";
+            case "PAYMENT_APPROVED":
+                return "check-circle";
+            case "PAYMENT_REJECTED":
+                return "times-circle";
+            case "COURSE_CREATED":
+            case "COURSE_UPDATED":
+                return "chalkboard-teacher";
+            default:
+                return "info-circle";
+        }
     }
 }

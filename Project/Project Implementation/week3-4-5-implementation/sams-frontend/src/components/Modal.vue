@@ -30,19 +30,24 @@
               v-if="modelValue"
               class="relative transform overflow-hidden rounded-lg bg-white shadow-xl transition-all"
               :class="sizeClasses"
+              role="dialog"
+              aria-modal="true"
+              :aria-labelledby="'modal-title-' + title.replace(/\s+/g, '-').toLowerCase()"
             >
               <!-- Header -->
               <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
                 <div class="flex items-center justify-between">
-                  <h3 class="text-lg font-semibold text-gray-900">
+                  <h3 :id="'modal-title-' + title.replace(/\s+/g, '-').toLowerCase()" class="text-lg font-semibold text-gray-900">
                     {{ title }}
                   </h3>
                   <button
                     v-if="closeable"
                     @click="closeModal"
                     class="text-gray-400 hover:text-gray-600 transition-colors"
+                    aria-label="Close modal"
                   >
                     <svg
+                      aria-hidden="true"
                       class="h-6 w-6"
                       fill="none"
                       stroke="currentColor"
@@ -110,7 +115,7 @@ const props = defineProps({
   size: {
     type: String,
     default: 'md',
-    validator: (value) => ['sm', 'md', 'lg', 'xl', 'full'].includes(value)
+    validator: (value) => ['sm', 'md', 'lg', 'xl', 'full', 'small', 'medium', 'large'].includes(value)
   },
   closeable: {
     type: Boolean,
@@ -147,8 +152,11 @@ const emit = defineEmits(['update:modelValue', 'confirm', 'close'])
 const sizeClasses = computed(() => {
   const sizes = {
     sm: 'max-w-sm w-full',
+    small: 'max-w-sm w-full',
     md: 'max-w-md w-full',
+    medium: 'max-w-lg w-full',
     lg: 'max-w-2xl w-full',
+    large: 'max-w-2xl w-full',
     xl: 'max-w-4xl w-full',
     full: 'max-w-7xl w-full mx-4'
   }

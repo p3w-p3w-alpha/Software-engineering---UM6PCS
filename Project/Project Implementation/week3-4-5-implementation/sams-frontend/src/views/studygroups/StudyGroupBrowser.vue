@@ -1,5 +1,22 @@
 <template>
   <div class="min-h-screen bg-gray-50 py-8">
+    <!-- Toast Notification -->
+    <div v-if="showToast" class="fixed top-4 right-4 z-50 max-w-sm">
+      <div :class="[
+        'rounded-lg px-4 py-3 shadow-lg',
+        toastType === 'success' ? 'bg-green-100 border border-green-400 text-green-700' : 'bg-red-100 border border-red-400 text-red-700'
+      ]">
+        <div class="flex items-center justify-between">
+          <span>{{ toastMessage }}</span>
+          <button @click="showToast = false" class="ml-4">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Header -->
       <div class="mb-6">
@@ -158,7 +175,7 @@
                   <!-- Member Avatars -->
                   <div class="flex -space-x-2">
                     <div
-                      v-for="(member, index) in group.recentMembers.slice(0, 3)"
+                      v-for="(member, index) in (group.recentMembers || []).slice(0, 3)"
                       :key="index"
                       class="h-8 w-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-semibold border-2 border-white"
                       :title="member.name"
@@ -333,6 +350,18 @@ const selectedCourse = ref('')
 const privacyFilter = ref('')
 const showCreateModal = ref(false)
 
+// Toast notification state
+const showToast = ref(false)
+const toastMessage = ref('')
+const toastType = ref('success') // 'success' or 'error'
+
+function showNotification(message, type = 'success') {
+  toastMessage.value = message
+  toastType.value = type
+  showToast.value = true
+  setTimeout(() => { showToast.value = false }, 5000)
+}
+
 const allGroups = ref([])
 const myGroups = ref([])
 const courses = ref([])
@@ -349,28 +378,45 @@ async function loadData() {
     const groupsResponse = await api.getAllStudyGroups()
     allGroups.value = groupsResponse.data || []
 
-    // Load user's groups
+    // Load user's groups (membership records)
     const myGroupsResponse = await api.getUserStudyGroups(authStore.userId)
-    myGroups.value = myGroupsResponse.data || []
+    const myMemberships = myGroupsResponse.data || []
 
-    // Mark which groups the user is a member of
-    const myGroupIds = new Set(myGroups.value.map(g => g.id))
+    // Mark which groups the user is a member of (using groupId from membership)
+    const myGroupIds = new Set(myMemberships.map(m => m.groupId))
+
+    // Transform memberships to group objects for My Groups tab
+    myGroups.value = myMemberships.map(m => ({
+      id: m.groupId,
+      name: m.groupName,
+      role: m.role,
+      joinedAt: m.joinedAt
+    }))
     allGroups.value = allGroups.value.map(group => ({
       ...group,
       isMember: myGroupIds.has(group.id)
     }))
 
-    // Load user's courses for filter
-    const enrollmentsResponse = await api.getStudentEnrollments(authStore.userId)
-    const enrollments = enrollmentsResponse.data || []
+    // Load user's courses for filter (fail gracefully if not available)
+    try {
+      const enrollmentsResponse = await api.getStudentEnrollments(authStore.userId)
+      const enrollments = enrollmentsResponse.data || []
 
-    // Load course details
-    const coursePromises = enrollments.map(e => api.getCourseById(e.courseId))
-    const courseResponses = await Promise.all(coursePromises)
-    courses.value = courseResponses.map(r => r.data)
+      // Extract courses directly from enrollment objects - they include course details
+      const validEnrollments = enrollments.filter(e => e.course && e.course.id)
+      if (validEnrollments.length > 0) {
+        courses.value = validEnrollments.map(e => ({
+          id: e.course.id,
+          code: e.course.courseCode,
+          name: e.course.courseName
+        }))
+      }
+    } catch (enrollError) {
+      console.warn('Could not load course enrollments for filter:', enrollError)
+      // Continue without course filter - not critical
+    }
   } catch (error) {
-    console.error('Error loading study groups:', error)
-    alert('Failed to load study groups. Please try again.')
+    showNotification(error.userMessage || error.response?.data?.message || 'Failed to load study groups. Please try again.', 'error')
   } finally {
     loading.value = false
   }
@@ -415,10 +461,9 @@ async function joinGroup(groupId) {
       myGroups.value.push(group)
     }
 
-    alert('Successfully joined the study group!')
+    showNotification('Successfully joined the study group!', 'success')
   } catch (error) {
-    console.error('Error joining group:', error)
-    alert(error.response?.data?.message || 'Failed to join group. Please try again.')
+    showNotification(error.response?.data?.message || 'Failed to join group. Please try again.', 'error')
   }
 }
 
@@ -437,10 +482,9 @@ async function leaveGroup(groupId) {
 
     myGroups.value = myGroups.value.filter(g => g.id !== groupId)
 
-    alert('Successfully left the study group.')
+    showNotification('Successfully left the study group.', 'success')
   } catch (error) {
-    console.error('Error leaving group:', error)
-    alert('Failed to leave group. Please try again.')
+    showNotification(error.userMessage || error.response?.data?.message || 'Failed to leave group. Please try again.', 'error')
   }
 }
 

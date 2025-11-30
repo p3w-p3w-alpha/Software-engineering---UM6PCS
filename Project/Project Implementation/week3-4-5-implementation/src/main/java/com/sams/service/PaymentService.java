@@ -327,15 +327,22 @@ public class PaymentService {
      * Create payment history entry (internal helper)
      */
     private void createPaymentHistory(Payment payment, String actionType, User performedBy, String description) {
+        createPaymentHistory(payment, actionType, performedBy, description, null, null);
+    }
+
+    private void createPaymentHistory(Payment payment, String actionType, User performedBy, String description,
+                                      BigDecimal previousAmount, String previousStatus) {
         PaymentHistory history = new PaymentHistory();
         history.setPayment(payment);
         history.setActionType(actionType);
         history.setPerformedBy(performedBy);
         history.setDescription(description);
-        history.setPreviousStatus(payment.getStatus());
+        history.setPreviousStatus(previousStatus != null ? previousStatus : payment.getStatus());
         history.setNewStatus(payment.getStatus());
-        history.setPreviousAmount(payment.getPaidAmount());
-        history.setNewAmount(payment.getPaidAmount());
+        // Fix: When previousAmount is null for new actions, use BigDecimal.ZERO instead of current amount
+        // This correctly represents that there was no previous amount before this action
+        history.setPreviousAmount(previousAmount != null ? previousAmount : BigDecimal.ZERO);
+        history.setNewAmount(payment.getPaidAmount() != null ? payment.getPaidAmount() : BigDecimal.ZERO);
 
         paymentHistoryRepository.save(history);
     }

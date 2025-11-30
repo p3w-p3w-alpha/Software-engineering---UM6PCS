@@ -4,11 +4,14 @@
     <div v-if="searchable || $slots.actions" class="border-b border-gray-200 bg-gray-50 px-6 py-4">
       <div class="flex items-center justify-between">
         <div v-if="searchable" class="flex-1 max-w-md">
+          <label for="table-search" class="sr-only">Search table</label>
           <input
+            id="table-search"
             v-model="searchQuery"
             type="text"
             :placeholder="searchPlaceholder"
             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            aria-label="Search table data"
           />
         </div>
         <div v-if="$slots.actions" class="ml-4">
@@ -31,20 +34,20 @@
             >
               {{ column.label }}
             </th>
-            <th v-if="$slots.actions" scope="col" class="relative px-6 py-3">
+            <th v-if="$slots['row-actions']" scope="col" class="relative px-6 py-3">
               <span class="sr-only">Actions</span>
             </th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200 bg-white">
           <tr v-if="loading">
-            <td :colspan="columns.length + ($slots.actions ? 1 : 0)" class="px-6 py-12 text-center">
+            <td :colspan="columns.length + ($slots['row-actions'] ? 1 : 0)" class="px-6 py-12 text-center">
               <LoadingSpinner />
             </td>
           </tr>
           <tr v-else-if="filteredData.length === 0">
             <td
-              :colspan="columns.length + ($slots.actions ? 1 : 0)"
+              :colspan="columns.length + ($slots['row-actions'] ? 1 : 0)"
               class="px-6 py-12 text-center text-sm text-gray-500"
             >
               {{ emptyMessage }}
@@ -66,7 +69,7 @@
                 {{ row[column.key] }}
               </slot>
             </td>
-            <td v-if="$slots.actions" class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+            <td v-if="$slots['row-actions']" class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
               <slot name="row-actions" :row="row"></slot>
             </td>
           </tr>
@@ -88,11 +91,12 @@
         <span class="font-medium">{{ filteredData.length }}</span>
         results
       </div>
-      <div class="flex space-x-2">
+      <nav class="flex space-x-2" aria-label="Pagination">
         <button
           @click="previousPage"
           :disabled="currentPage === 1"
           class="px-3 py-1 rounded-md border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Go to previous page"
         >
           Previous
         </button>
@@ -106,6 +110,8 @@
               ? 'bg-blue-600 text-white'
               : 'border border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
           ]"
+          :aria-label="'Go to page ' + page"
+          :aria-current="page === currentPage ? 'page' : undefined"
         >
           {{ page }}
         </button>
@@ -113,10 +119,11 @@
           @click="nextPage"
           :disabled="currentPage === totalPages"
           class="px-3 py-1 rounded-md border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Go to next page"
         >
           Next
         </button>
-      </div>
+      </nav>
     </div>
   </div>
 </template>

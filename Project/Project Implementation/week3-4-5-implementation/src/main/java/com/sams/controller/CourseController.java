@@ -137,6 +137,22 @@ public class CourseController {
                 .collect(Collectors.toList());
     }
 
+    // search courses by name or code - GET /api/courses/search?query=...
+    @GetMapping("/search")
+    public List<CourseResponse> searchCourses(@RequestParam String query) {
+        // Search in both name and code
+        List<Course> coursesByName = courseService.searchCoursesByName(query);
+        List<Course> coursesByCode = courseService.searchCoursesByCode(query);
+
+        // Combine and deduplicate
+        Set<Course> allCourses = new java.util.HashSet<>(coursesByName);
+        allCourses.addAll(coursesByCode);
+
+        return allCourses.stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+
     // search courses by name - GET /api/courses/search/name?query=...
     @GetMapping("/search/name")
     public List<CourseResponse> searchCoursesByName(@RequestParam String query) {
@@ -168,6 +184,13 @@ public class CourseController {
     @PutMapping("/{courseId}/instructor/{instructorId}")
     public CourseResponse assignInstructor(@PathVariable Long courseId, @PathVariable Long instructorId) {
         Course course = courseService.assignInstructor(courseId, instructorId);
+        return convertToResponse(course);
+    }
+
+    // remove instructor from course - DELETE /api/courses/{courseId}/instructor
+    @DeleteMapping("/{courseId}/instructor")
+    public CourseResponse removeInstructor(@PathVariable Long courseId) {
+        Course course = courseService.removeInstructor(courseId);
         return convertToResponse(course);
     }
 

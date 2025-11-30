@@ -1,6 +1,7 @@
 package com.sams.dto;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 public class EnrollmentResponse {
 
@@ -62,12 +63,52 @@ public class EnrollmentResponse {
         }
     }
 
+    // nested class for instructor info
+    public static class InstructorInfo {
+        private Long id;
+        private String username;
+        private String email;
+        private String name;
+        private String department;
+
+        public InstructorInfo() {
+        }
+
+        public InstructorInfo(Long id, String username, String email, String name, String department) {
+            this.id = id;
+            this.username = username;
+            this.email = email;
+            this.name = name;
+            this.department = department;
+        }
+
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+        public String getUsername() { return username; }
+        public void setUsername(String username) { this.username = username; }
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+        public String getDepartment() { return department; }
+        public void setDepartment(String department) { this.department = department; }
+    }
+
     // nested class for course info
     public static class CourseInfo {
         private Long id;
         private String courseCode;
         private String courseName;
         private Integer credits;
+        private String daysOfWeek;
+        private LocalTime startTime;
+        private LocalTime endTime;
+        private String description;
+        private InstructorInfo instructor;
+        private Long instructorId;
+        private java.math.BigDecimal courseFee;
+        private Integer capacity;
+        private String location;
 
         public CourseInfo() {
         }
@@ -77,6 +118,37 @@ public class EnrollmentResponse {
             this.courseCode = courseCode;
             this.courseName = courseName;
             this.credits = credits;
+        }
+
+        public CourseInfo(Long id, String courseCode, String courseName, Integer credits,
+                         String daysOfWeek, LocalTime startTime, LocalTime endTime, String description) {
+            this.id = id;
+            this.courseCode = courseCode;
+            this.courseName = courseName;
+            this.credits = credits;
+            this.daysOfWeek = daysOfWeek;
+            this.startTime = startTime;
+            this.endTime = endTime;
+            this.description = description;
+        }
+
+        public CourseInfo(Long id, String courseCode, String courseName, Integer credits,
+                         String daysOfWeek, LocalTime startTime, LocalTime endTime, String description,
+                         InstructorInfo instructor, Long instructorId, java.math.BigDecimal courseFee,
+                         Integer capacity, String location) {
+            this.id = id;
+            this.courseCode = courseCode;
+            this.courseName = courseName;
+            this.credits = credits;
+            this.daysOfWeek = daysOfWeek;
+            this.startTime = startTime;
+            this.endTime = endTime;
+            this.description = description;
+            this.instructor = instructor;
+            this.instructorId = instructorId;
+            this.courseFee = courseFee;
+            this.capacity = capacity;
+            this.location = location;
         }
 
         public Long getId() {
@@ -109,6 +181,83 @@ public class EnrollmentResponse {
 
         public void setCredits(Integer credits) {
             this.credits = credits;
+        }
+
+        public String getDaysOfWeek() {
+            return daysOfWeek;
+        }
+
+        public void setDaysOfWeek(String daysOfWeek) {
+            this.daysOfWeek = daysOfWeek;
+        }
+
+        public LocalTime getStartTime() {
+            return startTime;
+        }
+
+        public void setStartTime(LocalTime startTime) {
+            this.startTime = startTime;
+        }
+
+        public LocalTime getEndTime() {
+            return endTime;
+        }
+
+        public void setEndTime(LocalTime endTime) {
+            this.endTime = endTime;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        // Alias for frontend compatibility
+        public Integer getCreditHours() {
+            return credits;
+        }
+
+        public InstructorInfo getInstructor() {
+            return instructor;
+        }
+
+        public void setInstructor(InstructorInfo instructor) {
+            this.instructor = instructor;
+        }
+
+        public Long getInstructorId() {
+            return instructorId;
+        }
+
+        public void setInstructorId(Long instructorId) {
+            this.instructorId = instructorId;
+        }
+
+        public java.math.BigDecimal getCourseFee() {
+            return courseFee;
+        }
+
+        public void setCourseFee(java.math.BigDecimal courseFee) {
+            this.courseFee = courseFee;
+        }
+
+        public Integer getCapacity() {
+            return capacity;
+        }
+
+        public void setCapacity(Integer capacity) {
+            this.capacity = capacity;
+        }
+
+        public String getLocation() {
+            return location;
+        }
+
+        public void setLocation(String location) {
+            this.location = location;
         }
     }
 

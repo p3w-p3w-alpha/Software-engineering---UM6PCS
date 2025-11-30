@@ -227,6 +227,42 @@ public class AttendanceService {
         attendanceRepository.delete(attendance);
     }
 
+    /**
+     * Get attendance statistics for a specific course
+     */
+    public AttendanceStatistics getAttendanceStatisticsByCourse(Long courseId, LocalDate startDate, LocalDate endDate) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found with ID: " + courseId));
+
+        List<Attendance> attendanceList = attendanceRepository.findByCourseAndDateBetween(course, startDate, endDate);
+
+        long totalCount = attendanceList.size();
+        long presentCount = attendanceList.stream().filter(a -> a.getStatus() == AttendanceStatus.PRESENT).count();
+        long lateCount = attendanceList.stream().filter(a -> a.getStatus() == AttendanceStatus.LATE).count();
+        long absentCount = attendanceList.stream().filter(a -> a.getStatus() == AttendanceStatus.ABSENT).count();
+        long sickCount = attendanceList.stream().filter(a -> a.getStatus() == AttendanceStatus.SICK).count();
+        long excusedCount = attendanceList.stream().filter(a -> a.getStatus() == AttendanceStatus.EXCUSED).count();
+
+        AttendanceStatistics statistics = new AttendanceStatistics(
+            totalCount, presentCount, lateCount, absentCount, sickCount, excusedCount
+        );
+        statistics.setPeriod(startDate + " to " + endDate);
+        return statistics;
+    }
+
+    /**
+     * Get attendance records for a specific course
+     */
+    public List<AttendanceResponse> getAttendanceByCourse(Long courseId, LocalDate startDate, LocalDate endDate) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found with ID: " + courseId));
+
+        List<Attendance> attendanceList = attendanceRepository.findByCourseAndDateBetween(course, startDate, endDate);
+        return attendanceList.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
     // Helper method to calculate statistics from query results
     private AttendanceStatistics calculateStatistics(List<Object[]> stats, String period) {
         long totalCount = 0;
@@ -243,19 +279,19 @@ public class AttendanceService {
             totalCount += count;
             switch (status) {
                 case PRESENT:
-                    presentCount = count;
+                    presentCount += count;
                     break;
                 case LATE:
-                    lateCount = count;
+                    lateCount += count;
                     break;
                 case ABSENT:
-                    absentCount = count;
+                    absentCount += count;
                     break;
                 case SICK:
-                    sickCount = count;
+                    sickCount += count;
                     break;
                 case EXCUSED:
-                    excusedCount = count;
+                    excusedCount += count;
                     break;
             }
         }

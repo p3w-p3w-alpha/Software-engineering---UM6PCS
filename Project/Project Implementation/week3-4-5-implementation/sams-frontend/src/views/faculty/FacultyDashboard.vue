@@ -32,8 +32,24 @@
             <div v-if="loadingCourses" class="flex justify-center py-8">
               <LoadingSpinner />
             </div>
-            <div v-else-if="myCourses.length === 0" class="text-center py-8 text-gray-500">
-              <p>No courses assigned</p>
+            <div v-else-if="myCourses.length === 0" class="text-center py-12 text-gray-500">
+              <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+              <h3 class="mt-4 text-lg font-medium text-gray-900">No courses assigned yet</h3>
+              <p class="mt-2 text-sm text-gray-500">You don't have any courses assigned to you at this time.</p>
+              <p class="mt-1 text-sm text-gray-500">Please contact your administrator to get courses assigned.</p>
+              <div class="mt-6">
+                <button
+                  @click="$router.push('/faculty/schedule')"
+                  class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <svg class="mr-2 -ml-1 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  View Schedule
+                </button>
+              </div>
             </div>
             <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div
@@ -156,18 +172,17 @@ const loadDashboardData = async () => {
   try {
     loadingCourses.value = true
 
-    // Load faculty's courses
-    const coursesRes = await api.getAllCourses()
-    // In a real implementation, we'd filter by faculty ID
-    myCourses.value = coursesRes.data.slice(0, 6) // Mock: show first 6 courses
+    // Load faculty's courses using the instructor ID
+    const coursesRes = await api.getCoursesByInstructor(userId.value)
+    myCourses.value = coursesRes.data
     stats.value.myCourses = myCourses.value.length
 
-    // Calculate total students
+    // Calculate total students from enrolled count in each course
     stats.value.totalStudents = myCourses.value.reduce((sum, course) =>
       sum + (course.enrolledCount || 0), 0
     )
 
-    // Load assignments
+    // Load assignments for this faculty
     loadingAssignments.value = true
     const assignmentsRes = await api.getFacultyAssignments(userId.value)
     recentAssignments.value = assignmentsRes.data.slice(0, 10).map(a => ({
@@ -176,6 +191,20 @@ const loadDashboardData = async () => {
       submissions: `${a.submissionsCount || 0}/${a.totalStudents || 0}`
     }))
     stats.value.totalAssignments = assignmentsRes.data.length
+
+    // Calculate pending grades (submissions without grades)
+    let pendingGradesCount = 0
+    for (const course of myCourses.value) {
+      try {
+        const enrollmentsRes = await api.getCourseEnrollments(course.id)
+        const gradesRes = await api.getCourseGrades(course.id)
+        const gradedStudentIds = new Set(gradesRes.data.map(g => g.enrollment?.studentId || g.studentId))
+        pendingGradesCount += enrollmentsRes.data.filter(e => !gradedStudentIds.has(e.studentId || e.student?.id)).length
+      } catch (err) {
+        console.warn(`Error loading grades for course ${course.id}:`, err)
+      }
+    }
+    stats.value.pendingGrades = pendingGradesCount
 
   } catch (error) {
     console.error('Error loading dashboard data:', error)

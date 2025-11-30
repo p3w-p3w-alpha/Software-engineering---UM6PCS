@@ -209,6 +209,8 @@ const creating = ref(false)
 const errorMessage = ref('')
 const courses = ref([])
 
+// Toast notification - we use parent's toast via emit since this is a modal
+
 const formData = ref({
   name: '',
   courseId: '',
@@ -247,14 +249,16 @@ onMounted(() => {
 
 async function loadCourses() {
   try {
-    // Load user's enrolled courses
+    // Load user's enrolled courses - the response already includes course details
     const enrollmentsResponse = await api.getStudentEnrollments(authStore.userId)
     const enrollments = enrollmentsResponse.data || []
 
-    // Load course details
-    const coursePromises = enrollments.map(e => api.getCourseById(e.courseId))
-    const courseResponses = await Promise.all(coursePromises)
-    courses.value = courseResponses.map(r => r.data)
+    // Extract courses from enrollments and map to expected format
+    courses.value = enrollments.map(e => ({
+      id: e.course.id,
+      code: e.course.courseCode,
+      name: e.course.courseName
+    }))
   } catch (error) {
     console.error('Error loading courses:', error)
     errorMessage.value = 'Failed to load courses. Please try again.'
@@ -288,7 +292,7 @@ async function createGroup() {
     // Close modal
     closeModal()
 
-    alert('Study group created successfully!')
+    // Note: Parent component should show toast notification for success
   } catch (error) {
     console.error('Error creating study group:', error)
     errorMessage.value = error.response?.data?.message || 'Failed to create study group. Please try again.'
