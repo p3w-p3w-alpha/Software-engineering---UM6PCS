@@ -136,17 +136,28 @@
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <button
+                  v-if="!enrollment.grade?.finalized"
                   @click="openGradeEntry(enrollment)"
                   class="text-blue-600 hover:text-blue-900 mr-4"
                 >
                   {{ enrollment.grade ? 'Edit' : 'Grade' }}
                 </button>
+                <span v-else class="text-gray-400 mr-4 cursor-not-allowed" title="Grade is finalized">
+                  Locked
+                </span>
                 <button
                   v-if="enrollment.grade && !enrollment.grade.finalized"
                   @click="finalizeGrade(enrollment.grade.id)"
                   class="text-green-600 hover:text-green-900"
                 >
                   Finalize
+                </button>
+                <button
+                  v-if="enrollment.grade && enrollment.grade.finalized"
+                  @click="unfinalizeGrade(enrollment.grade.id)"
+                  class="text-orange-600 hover:text-orange-900"
+                >
+                  Unlock
                 </button>
               </td>
             </tr>
@@ -437,11 +448,22 @@ async function loadCourseGrades() {
     const enrollmentsRes = await api.getCourseEnrollments(selectedCourseId.value)
     const gradesRes = await api.getCourseGrades(selectedCourseId.value)
 
-    // Merge enrollments with grades
-    enrollments.value = enrollmentsRes.data.map(enrollment => ({
-      ...enrollment,
-      grade: gradesRes.data.find(g => g.enrollment?.id === enrollment.id) || null
-    }))
+    // Merge enrollments with grades - match by student ID since grade response includes student info
+    enrollments.value = enrollmentsRes.data.map(enrollment => {
+      const matchedGrade = gradesRes.data.find(g => g.student?.id === enrollment.student?.id)
+      return {
+        ...enrollment,
+        grade: matchedGrade ? {
+          id: matchedGrade.id,
+          letterGrade: matchedGrade.gradeValue,
+          gradePoints: matchedGrade.gradePoints,
+          numericGrade: null, // Backend doesn't store numeric grade separately
+          updatedAt: matchedGrade.createdAt,
+          finalized: matchedGrade.finalized || false,
+          finalizedAt: matchedGrade.finalizedAt
+        } : null
+      }
+    })
 
     // Initialize bulk grades array
     bulkGrades.value = enrollments.value.map(e => ({
@@ -520,14 +542,28 @@ async function saveBulkGrades() {
 }
 
 async function finalizeGrade(gradeId) {
-  if (!confirm('Are you sure you want to finalize this grade? This cannot be undone.')) return
+  if (!confirm('Are you sure you want to finalize this grade? Once finalized, it cannot be edited without unlocking.')) return
 
   try {
     await api.finalizeGrade(gradeId)
     await loadCourseGrades()
+    showNotification('Grade finalized successfully', 'success')
   } catch (error) {
     console.error('Error finalizing grade:', error)
     showNotification('Failed to finalize grade', 'error')
+  }
+}
+
+async function unfinalizeGrade(gradeId) {
+  if (!confirm('Are you sure you want to unlock this grade for editing?')) return
+
+  try {
+    await api.unfinalizeGrade(gradeId)
+    await loadCourseGrades()
+    showNotification('Grade unlocked for editing', 'success')
+  } catch (error) {
+    console.error('Error unlocking grade:', error)
+    showNotification('Failed to unlock grade', 'error')
   }
 }
 

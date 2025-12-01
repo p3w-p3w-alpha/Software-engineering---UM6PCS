@@ -72,9 +72,10 @@ public class GradeService {
     public Grade assignGrade(Long enrollmentId, String gradeValue, Long modifiedBy) {
         Enrollment enrollment = enrollmentService.getEnrollmentById(enrollmentId);
 
-        // validate that enrollment is completed
-        if (!"COMPLETED".equals(enrollment.getStatus())) {
-            throw new IllegalArgumentException("Can only assign grades to completed enrollments");
+        // validate that enrollment is active or completed (allow grading during the course)
+        String status = enrollment.getStatus();
+        if (!"COMPLETED".equals(status) && !"ACTIVE".equals(status) && !"ENROLLED".equals(status)) {
+            throw new IllegalArgumentException("Can only assign grades to active or completed enrollments");
         }
 
         // validate grade value

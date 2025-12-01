@@ -73,6 +73,27 @@ export function getErrorMessage(error, fallbackMessage = 'An error occurred') {
 }
 
 export default {
+  // Generic HTTP methods
+  get(url, config) {
+    return apiClient.get(url, config)
+  },
+
+  post(url, data, config) {
+    return apiClient.post(url, data, config)
+  },
+
+  put(url, data, config) {
+    return apiClient.put(url, data, config)
+  },
+
+  patch(url, data, config) {
+    return apiClient.patch(url, data, config)
+  },
+
+  delete(url, config) {
+    return apiClient.delete(url, config)
+  },
+
   // Authentication
   login(credentials) {
     return apiClient.post('/auth/login', credentials)
@@ -217,7 +238,21 @@ export default {
   },
 
   assignGrade(gradeData) {
-    return apiClient.post('/grades/assign', gradeData)
+    // Backend expects { enrollmentId, gradeValue }
+    return apiClient.post('/grades', {
+      enrollmentId: gradeData.enrollmentId,
+      gradeValue: gradeData.letterGrade || gradeData.gradeValue
+    })
+  },
+
+  finalizeGrade(gradeId) {
+    return apiClient.post(`/grades/${gradeId}/finalize`)
+  },
+
+  unfinalizeGrade(gradeId, reason = 'Admin override') {
+    return apiClient.post(`/grades/${gradeId}/unfinalize`, null, {
+      params: { reason }
+    })
   },
 
   // Notifications
@@ -341,10 +376,9 @@ export default {
   uploadAssignmentFile(file, studentId, assignmentId) {
     const formData = new FormData()
     formData.append('file', file)
-    formData.append('studentId', studentId)
-    formData.append('assignmentId', assignmentId)
 
-    return apiClient.post('/files/upload/assignment', formData, {
+    // Pass studentId and assignmentId as query parameters (as expected by backend @RequestParam)
+    return apiClient.post(`/files/upload/assignment?studentId=${studentId}&assignmentId=${assignmentId}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -688,7 +722,8 @@ export default {
   },
 
   submitAssignment(data) {
-    return apiClient.post('/submissions/submit', data)
+    // Use the new endpoint that accepts pre-uploaded file paths (JSON body)
+    return apiClient.post('/submissions/submit-with-files', data)
   },
 
   gradeSubmission(submissionId, data) {
@@ -912,6 +947,16 @@ export default {
 
   searchConnectedUsers(userId, query) {
     return apiClient.get(`/connections/user/${userId}/search?query=${encodeURIComponent(query)}`)
+  },
+
+  // Get mutual connections between two users
+  getMutualConnections(user1Id, user2Id) {
+    return apiClient.get(`/connections/mutual?user1Id=${user1Id}&user2Id=${user2Id}`)
+  },
+
+  // Get detailed connection status between two users
+  getConnectionStatus(user1Id, user2Id) {
+    return apiClient.get(`/connections/status?user1Id=${user1Id}&user2Id=${user2Id}`)
   },
 
   // ========================================

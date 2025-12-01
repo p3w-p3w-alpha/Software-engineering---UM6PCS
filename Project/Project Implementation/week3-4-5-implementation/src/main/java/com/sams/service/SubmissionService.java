@@ -111,6 +111,71 @@ public class SubmissionService {
     }
 
     /**
+     * Submit an assignment with pre-uploaded file paths
+     * Used when files are uploaded separately via the file upload endpoint
+     */
+    @Transactional
+    public Submission submitAssignmentWithFilePaths(Long assignmentId, Long studentId, String filePath, String notes) {
+        // validate assignment exists
+        Assignment assignment = assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Assignment not found with id: " + assignmentId));
+
+        // validate student exists
+        User student = userRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
+
+        // validate student role
+        if (!"STUDENT".equals(student.getRole())) {
+            throw new IllegalArgumentException("Only students can submit assignments");
+        }
+
+        // check if student has already submitted
+        if (submissionRepository.existsByAssignmentIdAndStudentIdAndActiveTrue(assignmentId, studentId)) {
+            throw new IllegalStateException("You have already submitted this assignment. " +
+                    "Delete previous submission before resubmitting.");
+        }
+
+        // check if assignment accepts late submissions
+        boolean isLate = LocalDateTime.now().isAfter(assignment.getDueDate());
+        if (isLate && !assignment.getAllowLateSubmissions()) {
+            throw new IllegalStateException("Assignment deadline has passed and late submissions are not allowed");
+        }
+
+        // Extract filename from the file path
+        String fileName = filePath.substring(filePath.lastIndexOf('/') + 1);
+        String fileExtension = getFileExtension(fileName);
+
+        // create submission record
+        Submission submission = new Submission();
+        submission.setAssignment(assignment);
+        submission.setStudent(student);
+        submission.setFilePath(filePath);
+        submission.setFileName(fileName);
+        submission.setFileSizeBytes(0L); // File was already uploaded, size tracking can be done separately
+        submission.setFileType(fileExtension);
+        submission.setSubmittedAt(LocalDateTime.now());
+        submission.setIsLate(isLate);
+        submission.setFeedback(notes); // Store notes in feedback field temporarily
+
+        // calculate late penalty if applicable
+        if (isLate) {
+            double penalty = assignment.calculateLatePenalty(LocalDateTime.now());
+            submission.setLatePenaltyPercent(penalty);
+        }
+
+        Submission savedSubmission = submissionRepository.save(submission);
+
+        // notify faculty about new submission
+        notificationService.notifySubmissionReceived(assignment.getCreatedBy(),
+                assignment.getCourse(), assignment, student);
+
+        // notify student of successful submission
+        notificationService.notifySubmissionConfirmed(student, assignment.getCourse(), assignment);
+
+        return savedSubmission;
+    }
+
+    /**
      * Resubmit an assignment (delete old submission and create new one)
      */
     @Transactional

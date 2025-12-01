@@ -57,6 +57,38 @@ public class SubmissionController {
     }
 
     /**
+     * Submit an assignment with pre-uploaded file paths (JSON body)
+     * POST /api/submissions/submit-with-files
+     * Content-Type: application/json
+     * Used when files are uploaded separately via /api/files/upload/assignment
+     */
+    @PostMapping("/submit-with-files")
+    public ResponseEntity<SubmissionResponse> submitAssignmentWithFiles(
+            @RequestBody Map<String, Object> submissionData) {
+
+        Long assignmentId = Long.valueOf(submissionData.get("assignmentId").toString());
+        Long studentId = Long.valueOf(submissionData.get("studentId").toString());
+
+        // Get file paths - can be single string or array
+        String filePath;
+        Object filePathsObj = submissionData.get("filePaths");
+        if (filePathsObj instanceof List) {
+            List<?> paths = (List<?>) filePathsObj;
+            filePath = paths.isEmpty() ? "" : paths.get(0).toString();
+        } else if (filePathsObj != null) {
+            filePath = filePathsObj.toString();
+        } else {
+            filePath = "";
+        }
+
+        String notes = submissionData.get("notes") != null ? submissionData.get("notes").toString() : "";
+
+        Submission submission = submissionService.submitAssignmentWithFilePaths(
+                assignmentId, studentId, filePath, notes);
+        return ResponseEntity.status(HttpStatus.CREATED).body(convertToResponse(submission));
+    }
+
+    /**
      * Resubmit an assignment (replaces previous submission)
      * POST /api/submissions/resubmit?assignmentId=1&studentId=2
      * Content-Type: multipart/form-data

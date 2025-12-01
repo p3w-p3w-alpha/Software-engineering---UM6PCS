@@ -46,10 +46,11 @@ public class UserController {
     }
 
     // get user by id - GET /api/users/{id}
+    // Returns full profile data using UserResponse constructor
     @GetMapping("/{id}")
     public UserResponse getUserById(@PathVariable Long id) {
         User user = userService.getUserById(id);
-        return convertToResponse(user);
+        return new UserResponse(user);
     }
 
     // update user - PUT /api/users/{id}
@@ -136,68 +137,12 @@ public class UserController {
     // PUT /api/users/{id}/profile
     @PutMapping("/{id}/profile")
     public ResponseEntity<UserResponse> updateProfile(@PathVariable Long id, @RequestBody java.util.Map<String, Object> profileData) {
-        User user = userService.getUserById(id);
-
-        // Update only profile fields (not role or password) with proper type validation
-        if (profileData.containsKey("firstName")) {
-            Object value = profileData.get("firstName");
-            if (value != null && !(value instanceof String)) {
-                throw new IllegalArgumentException("firstName must be a string");
-            }
-            user.setFirstName(value != null ? (String) value : null);
-        }
-        if (profileData.containsKey("lastName")) {
-            Object value = profileData.get("lastName");
-            if (value != null && !(value instanceof String)) {
-                throw new IllegalArgumentException("lastName must be a string");
-            }
-            user.setLastName(value != null ? (String) value : null);
-        }
-        if (profileData.containsKey("email")) {
-            Object value = profileData.get("email");
-            if (value != null && !(value instanceof String)) {
-                throw new IllegalArgumentException("email must be a string");
-            }
-            String email = value != null ? (String) value : null;
-            if (email != null && !email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
-                throw new IllegalArgumentException("Invalid email format");
-            }
-            user.setEmail(email);
-        }
-        if (profileData.containsKey("phone")) {
-            Object value = profileData.get("phone");
-            if (value != null && !(value instanceof String)) {
-                throw new IllegalArgumentException("phone must be a string");
-            }
-            user.setPhone(value != null ? (String) value : null);
-        }
-        if (profileData.containsKey("bio")) {
-            Object value = profileData.get("bio");
-            if (value != null && !(value instanceof String)) {
-                throw new IllegalArgumentException("bio must be a string");
-            }
-            user.setBio(value != null ? (String) value : null);
-        }
-        if (profileData.containsKey("profilePicture")) {
-            Object value = profileData.get("profilePicture");
-            if (value != null && !(value instanceof String)) {
-                throw new IllegalArgumentException("profilePicture must be a string");
-            }
-            user.setProfilePicture(value != null ? (String) value : null);
-        }
-
-        User updatedUser = userService.saveUser(user);
-        return ResponseEntity.ok(convertToResponse(updatedUser));
+        User updatedUser = userService.updateProfile(id, profileData);
+        return ResponseEntity.ok(new UserResponse(updatedUser));
     }
 
     // helper method to convert User to UserResponse
     private UserResponse convertToResponse(User user) {
-        return new UserResponse(
-            user.getId(),
-            user.getUsername(),
-            user.getEmail(),
-            user.getRole(),
-            user.getCreatedAt()
-        );
+        return new UserResponse(user);
     }
 }

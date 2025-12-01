@@ -8,8 +8,12 @@ import com.sams.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 // service for managing user connections (friendships/colleague relationships)
 @Service
@@ -301,5 +305,74 @@ public class ConnectionService {
                     return fullName.contains(lowerSearch) || user.getEmail().toLowerCase().contains(lowerSearch);
                 })
                 .toList();
+    }
+
+    /**
+     * Get mutual connections between two users
+     * Returns list of users who are connected to both user1 and user2
+     */
+    public List<User> getMutualConnections(Long user1Id, Long user2Id) {
+        // Get connections for both users
+        List<User> user1Connections = getConnectedUsers(user1Id);
+        List<User> user2Connections = getConnectedUsers(user2Id);
+
+        // Create a set of user2's connection IDs for efficient lookup
+        Set<Long> user2ConnectionIds = user2Connections.stream()
+                .map(User::getId)
+                .collect(Collectors.toSet());
+
+        // Find mutual connections (present in both lists)
+        return user1Connections.stream()
+                .filter(user -> user2ConnectionIds.contains(user.getId()))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get detailed connection status between two users
+     * Returns status and connection ID if exists
+     */
+    public Map<String, Object> getConnectionStatus(Long user1Id, Long user2Id) {
+        Map<String, Object> result = new HashMap<>();
+
+        // Get connection between users
+        Optional<Connection> connectionOpt = connectionRepository.findConnectionBetweenUsers(user1Id, user2Id);
+
+        if (connectionOpt.isEmpty()) {
+            result.put("status", "NOT_CONNECTED");
+            result.put("connectionId", null);
+            return result;
+        }
+
+        Connection connection = connectionOpt.get();
+        result.put("connectionId", connection.getId());
+
+        switch (connection.getStatus()) {
+            case "ACCEPTED":
+                result.put("status", "CONNECTED");
+                break;
+            case "PENDING":
+                // Determine if user1 sent or received the request
+                if (connection.getRequester().getId().equals(user1Id)) {
+                    result.put("status", "PENDING_SENT");
+                } else {
+                    result.put("status", "PENDING_RECEIVED");
+                }
+                break;
+            case "BLOCKED":
+                // Check who blocked whom
+                if (connection.getBlockedBy() != null && connection.getBlockedBy().getId().equals(user1Id)) {
+                    result.put("status", "BLOCKED_BY_YOU");
+                } else {
+                    result.put("status", "BLOCKED");
+                }
+                break;
+            case "REJECTED":
+                result.put("status", "REJECTED");
+                break;
+            default:
+                result.put("status", "NOT_CONNECTED");
+        }
+
+        return result;
     }
 }

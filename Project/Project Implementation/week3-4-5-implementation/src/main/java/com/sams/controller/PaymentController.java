@@ -2,6 +2,7 @@ package com.sams.controller;
 
 import com.sams.dto.PaymentRequest;
 import com.sams.dto.PaymentResponse;
+import com.sams.dto.PaymentSubmitRequest;
 import com.sams.entity.Payment;
 import com.sams.entity.PaymentHistory;
 import com.sams.entity.User;
@@ -74,7 +75,7 @@ public class PaymentController {
     @PostMapping("/{id}/submit")
     @PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<?> submitPayment(@PathVariable Long id,
-                                          @Valid @RequestBody PaymentRequest request,
+                                          @Valid @RequestBody PaymentSubmitRequest request,
                                           @RequestHeader("Authorization") String authHeader) {
         try {
             Payment payment = paymentService.submitPayment(

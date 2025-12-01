@@ -3,10 +3,10 @@
     <!-- Welcome Header with Date -->
     <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
           Welcome back, {{ authStore.userName || 'Student' }}!
         </h1>
-        <p class="text-gray-600 mt-1">{{ currentDateFormatted }} - Here's your academic overview</p>
+        <p class="text-gray-600 dark:text-gray-300 mt-1">{{ currentDateFormatted }} - Here's your academic overview</p>
       </div>
       <div class="flex gap-3 mt-4 md:mt-0">
         <router-link
@@ -23,55 +23,55 @@
 
     <!-- Stats Cards Row -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-5 hover:shadow-md transition-shadow">
         <div class="flex items-center justify-between">
-          <div class="p-3 bg-blue-100 rounded-lg">
-            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
           </div>
           <div class="text-right">
-            <p class="text-2xl font-bold text-gray-900">{{ enrollments.length }}</p>
-            <p class="text-sm text-gray-500">Courses</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ enrollments.length }}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Courses</p>
           </div>
         </div>
-        <div class="mt-3 pt-3 border-t border-gray-100">
-          <span class="text-xs text-green-600 font-medium">{{ activeEnrollments }} active</span>
+        <div class="mt-3 pt-3 border-t border-gray-100 dark:border-slate-700">
+          <span class="text-xs text-green-600 dark:text-green-400 font-medium">{{ activeEnrollments }} active</span>
         </div>
       </div>
 
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-5 hover:shadow-md transition-shadow">
         <div class="flex items-center justify-between">
-          <div class="p-3 bg-orange-100 rounded-lg">
-            <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+            <svg class="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
             </svg>
           </div>
           <div class="text-right">
-            <p class="text-2xl font-bold text-gray-900">{{ pendingAssignments }}</p>
-            <p class="text-sm text-gray-500">Pending</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ pendingAssignments }}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Pending</p>
           </div>
         </div>
-        <div class="mt-3 pt-3 border-t border-gray-100">
-          <span :class="overdueAssignments > 0 ? 'text-red-600' : 'text-gray-500'" class="text-xs font-medium">
+        <div class="mt-3 pt-3 border-t border-gray-100 dark:border-slate-700">
+          <span :class="overdueAssignments > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'" class="text-xs font-medium">
             {{ overdueAssignments }} overdue
           </span>
         </div>
       </div>
 
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-5 hover:shadow-md transition-shadow">
         <div class="flex items-center justify-between">
-          <div class="p-3 bg-green-100 rounded-lg">
-            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+            <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
           </div>
           <div class="text-right">
-            <p class="text-2xl font-bold text-gray-900">{{ gpa.toFixed(2) }}</p>
-            <p class="text-sm text-gray-500">GPA</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ gpa.toFixed(2) }}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">GPA</p>
           </div>
         </div>
-        <div class="mt-3 pt-3 border-t border-gray-100">
+        <div class="mt-3 pt-3 border-t border-gray-100 dark:border-slate-700">
           <span :class="gpaChangeColor" class="text-xs font-medium">
             <template v-if="gpaChange !== null">
               {{ gpaChange >= 0 ? '+' : '' }}{{ gpaChange.toFixed(2) }} this semester
@@ -83,20 +83,20 @@
         </div>
       </div>
 
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-5 hover:shadow-md transition-shadow">
         <div class="flex items-center justify-between">
-          <div class="p-3 bg-purple-100 rounded-lg">
-            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+            <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
           <div class="text-right">
-            <p class="text-2xl font-bold text-gray-900">{{ attendanceRate }}%</p>
-            <p class="text-sm text-gray-500">Attendance</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ attendanceRate }}%</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Attendance</p>
           </div>
         </div>
-        <div class="mt-3 pt-3 border-t border-gray-100">
-          <span :class="attendanceRate >= 75 ? 'text-green-600' : 'text-red-600'" class="text-xs font-medium">
+        <div class="mt-3 pt-3 border-t border-gray-100 dark:border-slate-700">
+          <span :class="attendanceRate >= 75 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'" class="text-xs font-medium">
             {{ attendanceRate >= 75 ? 'Good standing' : 'Needs improvement' }}
           </span>
         </div>
@@ -106,9 +106,9 @@
     <!-- Main Content Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
       <!-- Academic Progress Chart -->
-      <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200">
-        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <h2 class="text-lg font-semibold text-gray-900">Academic Progress</h2>
+      <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Academic Progress</h2>
           <div class="flex gap-2">
             <button
               v-for="period in ['Week', 'Month', 'Semester']"
@@ -117,8 +117,8 @@
               :class="[
                 'px-3 py-1 text-xs font-medium rounded-lg transition-colors',
                 chartPeriod === period.toLowerCase()
-                  ? 'bg-blue-100 text-blue-600'
-                  : 'text-gray-500 hover:bg-gray-100'
+                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700'
               ]"
             >
               {{ period }}
@@ -131,17 +131,17 @@
       </div>
 
       <!-- Today's Schedule -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <h2 class="text-lg font-semibold text-gray-900">Today's Schedule</h2>
-          <router-link to="/student/schedule" class="text-sm text-blue-600 hover:text-blue-700">View all</router-link>
+      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Today's Schedule</h2>
+          <router-link to="/student/schedule" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">View all</router-link>
         </div>
         <div class="p-4 max-h-[300px] overflow-y-auto">
           <div v-if="loading" class="space-y-3">
-            <div v-for="n in 3" :key="n" class="h-16 bg-gray-100 rounded-lg animate-pulse"></div>
+            <div v-for="n in 3" :key="n" class="h-16 bg-gray-100 dark:bg-slate-700 rounded-lg animate-pulse"></div>
           </div>
-          <div v-else-if="todaySchedule.length === 0" class="text-center py-8 text-gray-500">
-            <svg class="mx-auto h-10 w-10 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div v-else-if="todaySchedule.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-400">
+            <svg class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             <p class="text-sm">No classes today</p>
@@ -152,18 +152,18 @@
               :key="item.id"
               :class="[
                 'p-3 rounded-lg border-l-4 transition-colors',
-                item.isNow ? 'bg-green-50 border-green-500' : 'bg-gray-50 border-gray-300'
+                item.isNow ? 'bg-green-50 dark:bg-green-900/20 border-green-500' : 'bg-gray-50 dark:bg-slate-700/50 border-gray-300 dark:border-slate-600'
               ]"
             >
               <div class="flex items-center justify-between">
                 <div>
-                  <p class="font-medium text-gray-900">{{ item.courseCode }}</p>
-                  <p class="text-xs text-gray-500">{{ item.courseName }}</p>
+                  <p class="font-medium text-gray-900 dark:text-white">{{ item.courseCode }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ item.courseName }}</p>
                 </div>
                 <div class="text-right">
-                  <p class="text-sm font-medium text-gray-700">{{ item.time }}</p>
-                  <p v-if="item.isNow" class="text-xs text-green-600 font-medium">In progress</p>
-                  <p v-else-if="item.isNext" class="text-xs text-blue-600 font-medium">Up next</p>
+                  <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ item.time }}</p>
+                  <p v-if="item.isNow" class="text-xs text-green-600 dark:text-green-400 font-medium">In progress</p>
+                  <p v-else-if="item.isNext" class="text-xs text-blue-600 dark:text-blue-400 font-medium">Up next</p>
                 </div>
               </div>
             </div>
@@ -175,17 +175,17 @@
     <!-- Second Row -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
       <!-- Upcoming Deadlines -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <h2 class="text-lg font-semibold text-gray-900">Upcoming Deadlines</h2>
-          <router-link to="/student/assignments" class="text-sm text-blue-600 hover:text-blue-700">View all</router-link>
+      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Upcoming Deadlines</h2>
+          <router-link to="/student/assignments" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">View all</router-link>
         </div>
         <div class="p-4 max-h-[350px] overflow-y-auto">
           <div v-if="loading" class="space-y-3">
-            <div v-for="n in 4" :key="n" class="h-16 bg-gray-100 rounded-lg animate-pulse"></div>
+            <div v-for="n in 4" :key="n" class="h-16 bg-gray-100 dark:bg-slate-700 rounded-lg animate-pulse"></div>
           </div>
-          <div v-else-if="upcomingDeadlines.length === 0" class="text-center py-8 text-gray-500">
-            <svg class="mx-auto h-10 w-10 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div v-else-if="upcomingDeadlines.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-400">
+            <svg class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <p class="text-sm">No upcoming deadlines</p>
@@ -194,13 +194,13 @@
             <div
               v-for="deadline in upcomingDeadlines"
               :key="deadline.id"
-              class="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+              class="p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
               @click="$router.push(`/student/assignments/${deadline.id}/submit`)"
             >
               <div class="flex items-start justify-between">
                 <div class="flex-1">
-                  <p class="font-medium text-gray-900">{{ deadline.title }}</p>
-                  <p class="text-xs text-gray-500 mt-1">{{ deadline.courseName }}</p>
+                  <p class="font-medium text-gray-900 dark:text-white">{{ deadline.title }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ deadline.courseName }}</p>
                 </div>
                 <div class="text-right">
                   <span
@@ -211,7 +211,7 @@
                   >
                     {{ deadline.daysLeft <= 0 ? 'Overdue' : deadline.daysLeft === 1 ? 'Tomorrow' : `${deadline.daysLeft} days` }}
                   </span>
-                  <p class="text-xs text-gray-500 mt-1">{{ formatDate(deadline.dueDate) }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ formatDate(deadline.dueDate) }}</p>
                 </div>
               </div>
             </div>
@@ -220,17 +220,17 @@
       </div>
 
       <!-- Recent Grades -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <h2 class="text-lg font-semibold text-gray-900">Recent Grades</h2>
-          <router-link to="/student/grades" class="text-sm text-blue-600 hover:text-blue-700">View all</router-link>
+      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Grades</h2>
+          <router-link to="/student/grades" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">View all</router-link>
         </div>
         <div class="p-4 max-h-[350px] overflow-y-auto">
           <div v-if="loading" class="space-y-3">
-            <div v-for="n in 4" :key="n" class="h-14 bg-gray-100 rounded-lg animate-pulse"></div>
+            <div v-for="n in 4" :key="n" class="h-14 bg-gray-100 dark:bg-slate-700 rounded-lg animate-pulse"></div>
           </div>
-          <div v-else-if="recentGrades.length === 0" class="text-center py-8 text-gray-500">
-            <svg class="mx-auto h-10 w-10 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div v-else-if="recentGrades.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-400">
+            <svg class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
             <p class="text-sm">No grades yet</p>
@@ -239,11 +239,11 @@
             <div
               v-for="grade in recentGrades"
               :key="grade.id"
-              class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+              class="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg"
             >
               <div class="flex-1">
-                <p class="font-medium text-gray-900">{{ grade.courseName }}</p>
-                <p class="text-xs text-gray-500">{{ grade.type || 'Course Grade' }}</p>
+                <p class="font-medium text-gray-900 dark:text-white">{{ grade.courseName }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ grade.type || 'Course Grade' }}</p>
               </div>
               <div class="text-right">
                 <p
@@ -254,7 +254,7 @@
                 >
                   {{ grade.letterGrade || grade.grade }}
                 </p>
-                <p class="text-xs text-gray-500">{{ grade.grade }}/{{ grade.maxGrade || 100 }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ grade.grade }}/{{ grade.maxGrade || 100 }}</p>
               </div>
             </div>
           </div>
@@ -265,18 +265,18 @@
     <!-- Third Row -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
       <!-- My Courses -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <h2 class="text-lg font-semibold text-gray-900">My Courses</h2>
-          <router-link to="/student/courses" class="text-sm text-blue-600 hover:text-blue-700">View all</router-link>
+      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">My Courses</h2>
+          <router-link to="/student/courses" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">View all</router-link>
         </div>
         <div class="p-4 max-h-[300px] overflow-y-auto">
           <div v-if="loading" class="space-y-3">
-            <div v-for="n in 3" :key="n" class="h-16 bg-gray-100 rounded-lg animate-pulse"></div>
+            <div v-for="n in 3" :key="n" class="h-16 bg-gray-100 dark:bg-slate-700 rounded-lg animate-pulse"></div>
           </div>
-          <div v-else-if="enrollments.length === 0" class="text-center py-8 text-gray-500">
+          <div v-else-if="enrollments.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-400">
             <p class="text-sm">No courses enrolled</p>
-            <router-link to="/student/courses/browse" class="mt-2 inline-block text-sm text-blue-600 hover:text-blue-700">
+            <router-link to="/student/courses/browse" class="mt-2 inline-block text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
               Browse courses
             </router-link>
           </div>
@@ -284,17 +284,17 @@
             <div
               v-for="enrollment in enrollments.slice(0, 5)"
               :key="enrollment.id"
-              class="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+              class="p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
             >
               <div class="flex items-center justify-between">
                 <div>
-                  <p class="font-medium text-gray-900">{{ enrollment.course?.courseCode || enrollment.courseCode }}</p>
-                  <p class="text-xs text-gray-500 truncate max-w-[150px]">{{ enrollment.course?.courseName || enrollment.courseName }}</p>
+                  <p class="font-medium text-gray-900 dark:text-white">{{ enrollment.course?.courseCode || enrollment.courseCode }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">{{ enrollment.course?.courseName || enrollment.courseName }}</p>
                 </div>
                 <span
                   :class="[
                     'px-2 py-0.5 text-xs font-medium rounded-full',
-                    enrollment.status === 'ACTIVE' || enrollment.status === 'ENROLLED' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+                    enrollment.status === 'ACTIVE' || enrollment.status === 'ENROLLED' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-slate-600 text-gray-700 dark:text-gray-300'
                   ]"
                 >
                   {{ enrollment.status }}
@@ -306,17 +306,17 @@
       </div>
 
       <!-- Attendance Overview -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <h2 class="text-lg font-semibold text-gray-900">Attendance</h2>
-          <router-link to="/student/attendance" class="text-sm text-blue-600 hover:text-blue-700">Details</router-link>
+      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Attendance</h2>
+          <router-link to="/student/attendance" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">Details</router-link>
         </div>
         <div class="p-6">
           <div class="flex items-center justify-center mb-4">
             <!-- Circular Progress -->
             <div class="relative w-32 h-32">
               <svg class="w-full h-full transform -rotate-90">
-                <circle cx="64" cy="64" r="56" stroke="#e5e7eb" stroke-width="8" fill="none" />
+                <circle cx="64" cy="64" r="56" class="stroke-gray-200 dark:stroke-slate-600" stroke-width="8" fill="none" />
                 <circle
                   cx="64"
                   cy="64"
@@ -331,44 +331,44 @@
                 />
               </svg>
               <div class="absolute inset-0 flex flex-col items-center justify-center">
-                <span class="text-2xl font-bold text-gray-900">{{ attendanceRate }}%</span>
-                <span class="text-xs text-gray-500">Attendance</span>
+                <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ attendanceRate }}%</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400">Attendance</span>
               </div>
             </div>
           </div>
           <div class="grid grid-cols-3 gap-2 text-center text-sm">
             <div>
-              <p class="font-semibold text-green-600">{{ attendanceStats.present }}</p>
-              <p class="text-xs text-gray-500">Present</p>
+              <p class="font-semibold text-green-600 dark:text-green-400">{{ attendanceStats.present }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Present</p>
             </div>
             <div>
-              <p class="font-semibold text-red-600">{{ attendanceStats.absent }}</p>
-              <p class="text-xs text-gray-500">Absent</p>
+              <p class="font-semibold text-red-600 dark:text-red-400">{{ attendanceStats.absent }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Absent</p>
             </div>
             <div>
-              <p class="font-semibold text-yellow-600">{{ attendanceStats.late }}</p>
-              <p class="text-xs text-gray-500">Late</p>
+              <p class="font-semibold text-yellow-600 dark:text-yellow-400">{{ attendanceStats.late }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Late</p>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Study Groups -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <h2 class="text-lg font-semibold text-gray-900">Study Groups</h2>
-          <router-link to="/studygroups" class="text-sm text-blue-600 hover:text-blue-700">Browse</router-link>
+      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Study Groups</h2>
+          <router-link to="/studygroups" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">Browse</router-link>
         </div>
         <div class="p-4 max-h-[300px] overflow-y-auto">
           <div v-if="loading" class="space-y-3">
-            <div v-for="n in 3" :key="n" class="h-16 bg-gray-100 rounded-lg animate-pulse"></div>
+            <div v-for="n in 3" :key="n" class="h-16 bg-gray-100 dark:bg-slate-700 rounded-lg animate-pulse"></div>
           </div>
-          <div v-else-if="studyGroups.length === 0" class="text-center py-8 text-gray-500">
-            <svg class="mx-auto h-10 w-10 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div v-else-if="studyGroups.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-400">
+            <svg class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
             <p class="text-sm">No groups joined</p>
-            <router-link to="/studygroups" class="mt-2 inline-block text-sm text-blue-600 hover:text-blue-700">
+            <router-link to="/studygroups" class="mt-2 inline-block text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
               Find groups
             </router-link>
           </div>
@@ -376,18 +376,18 @@
             <div
               v-for="group in studyGroups.slice(0, 4)"
               :key="group.id"
-              class="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+              class="p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
               @click="$router.push(`/studygroups/${group.groupId || group.id}`)"
             >
-              <p class="font-medium text-gray-900">{{ group.groupName || group.name || 'Unnamed Group' }}</p>
-              <div class="flex items-center gap-3 mt-1 text-xs text-gray-500">
+              <p class="font-medium text-gray-900 dark:text-white">{{ group.groupName || group.name || 'Unnamed Group' }}</p>
+              <div class="flex items-center gap-3 mt-1 text-xs text-gray-500 dark:text-gray-400">
                 <span class="flex items-center gap-1">
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                   </svg>
                   {{ group.memberCount || 0 }}
                 </span>
-                <span v-if="group.unreadMessages" class="px-1.5 py-0.5 bg-red-100 text-red-600 rounded-full">
+                <span v-if="group.unreadMessages" class="px-1.5 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full">
                   {{ group.unreadMessages }} new
                 </span>
               </div>

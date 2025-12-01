@@ -279,8 +279,13 @@ async function checkExistingAttendance() {
   if (!selectedDate.value || !selectedCourseId.value || roster.value.length === 0) return
 
   try {
-    // Get existing attendance for this date
-    const response = await api.get(`/attendance/date/${selectedDate.value}`)
+    // Get existing attendance for this course and date
+    const response = await api.get(`/attendance/course/${selectedCourseId.value}`, {
+      params: {
+        startDate: selectedDate.value,
+        endDate: selectedDate.value
+      }
+    })
     const existingRecords = response.data
 
     // Update roster with existing attendance data
@@ -291,7 +296,7 @@ async function checkExistingAttendance() {
 
       if (existingRecord) {
         student.attendanceStatus = existingRecord.status
-        student.remarks = existingRecord.remarks || ''
+        student.remarks = existingRecord.notes || ''
         student.attendanceId = existingRecord.id
       }
     })
@@ -310,16 +315,17 @@ async function saveAttendance() {
   submitting.value = true
 
   try {
-    // Prepare bulk attendance data
+    // Prepare bulk attendance data - wrap in expected format
     const attendanceRecords = roster.value.map(student => ({
       userId: student.student.id,
       date: selectedDate.value,
       status: student.attendanceStatus,
-      remarks: student.remarks || null
+      courseId: parseInt(selectedCourseId.value),
+      notes: student.remarks || null
     }))
 
-    // Use bulk mark endpoint
-    await api.post('/attendance/mark-bulk', attendanceRecords)
+    // Use bulk mark endpoint with correct request format
+    await api.post('/attendance/mark-bulk', { attendanceRecords })
 
     hasChanges.value = false
     showNotification(`Attendance saved successfully for ${roster.value.length} students`, 'success')

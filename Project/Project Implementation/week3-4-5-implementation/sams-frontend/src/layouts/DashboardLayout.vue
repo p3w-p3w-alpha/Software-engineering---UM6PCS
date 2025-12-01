@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard-layout min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+  <div class="dashboard-layout min-h-screen" style="background: #f8fafc;">
     <!-- Toast for notifications -->
     <Toast position="top-right" />
 
@@ -7,93 +7,185 @@
     <div
       v-if="!sidebarCollapsed && isMobile"
       @click="sidebarCollapsed = true"
-      class="fixed inset-0 bg-black/50 z-30 md:hidden transition-opacity"
+      class="fixed inset-0 bg-black/70 backdrop-blur-sm z-30 md:hidden transition-all duration-300"
     ></div>
 
-    <!-- Modern Sidebar -->
+    <!-- Glassmorphic Floating Sidebar -->
     <div
       :class="[
-        'sidebar fixed left-0 top-0 h-full z-40 transition-all duration-300 ease-in-out',
-        sidebarCollapsed ? '-translate-x-full md:translate-x-0 md:w-20' : 'translate-x-0 w-64'
+        'sidebar-wrapper fixed z-40 transition-all duration-500 ease-out',
+        sidebarCollapsed ? '-translate-x-full md:translate-x-0' : 'translate-x-0'
       ]"
+      :style="{
+        left: '12px',
+        top: '12px',
+        height: 'calc(100vh - 24px)',
+        width: sidebarCollapsed ? '76px' : '280px'
+      }"
     >
-      <div class="h-full bg-gradient-to-b from-indigo-900 via-purple-900 to-pink-900 shadow-2xl">
+      <!-- Glass Container - Dark Theme matching Login Page -->
+      <div
+        class="glass-sidebar h-full relative overflow-hidden"
+        style="
+          background: linear-gradient(180deg, #050510 0%, #0a0a1f 50%, #12122f 100%);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(99, 102, 241, 0.2);
+          border-radius: 24px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 60px rgba(99, 102, 241, 0.1);
+        "
+      >
+        <!-- Animated Background Gradient -->
+        <div class="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
+          <div class="sidebar-glow-1"></div>
+          <div class="sidebar-glow-2"></div>
+        </div>
+
         <!-- Logo Section -->
-        <div class="p-6 border-b border-white/10">
+        <div class="relative p-5 border-b border-white/5">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <div class="relative">
-                <div class="absolute inset-0 bg-white/20 rounded-xl blur-xl"></div>
-                <div class="relative w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-xl">
+              <!-- Animated Logo -->
+              <div class="logo-container relative">
+                <div class="logo-glow absolute inset-0 rounded-2xl"></div>
+                <div
+                  class="relative w-11 h-11 rounded-2xl flex items-center justify-center transition-transform duration-300 hover:scale-110"
+                  style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(139, 92, 246, 0.3) 100%); border: 1px solid rgba(255, 255, 255, 0.15);"
+                >
                   <i class="pi pi-graduation-cap text-white text-xl"></i>
                 </div>
               </div>
-              <Transition name="fade">
-                <span v-if="!sidebarCollapsed" class="text-white font-bold text-xl">SAMS</span>
+              <Transition name="fade-slide">
+                <div v-if="!sidebarCollapsed" class="flex flex-col">
+                  <span class="text-white font-bold text-xl tracking-wide">SAMS</span>
+                  <span class="text-white/40 text-xs">Academic Portal</span>
+                </div>
               </Transition>
             </div>
-            <Button
-              icon="pi pi-bars"
-              class="p-button-text p-button-rounded text-white hover:bg-white/10"
+            <button
               @click="sidebarCollapsed = !sidebarCollapsed"
-            />
+              class="collapse-btn w-9 h-9 rounded-xl flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all duration-300"
+              :class="{ 'rotate-180': sidebarCollapsed }"
+            >
+              <i class="pi pi-angle-double-left text-sm"></i>
+            </button>
           </div>
         </div>
 
-        <!-- User Profile Section -->
-        <div class="p-4 border-b border-white/10">
-          <div class="flex items-center gap-3">
-            <Avatar
-              :label="userInitials"
-              :image="userAvatar"
-              class="bg-gradient-to-br from-indigo-400 to-purple-500"
-              size="large"
-              shape="circle"
-            />
-            <Transition name="slide-left">
-              <div v-if="!sidebarCollapsed" class="flex-1">
-                <p class="text-white font-semibold">{{ userName }}</p>
-                <p class="text-white/70 text-sm">{{ userRole }}</p>
-              </div>
-            </Transition>
-          </div>
-        </div>
+        <!-- User Profile Section with 3D Card Effect -->
+        <div class="relative p-4 border-b border-white/5">
+          <div
+            class="user-card relative p-3 rounded-2xl transition-all duration-300 overflow-hidden"
+            style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.12) 50%, rgba(236, 72, 153, 0.08) 100%); border: 1px solid rgba(255, 255, 255, 0.1);"
+            @mouseenter="handleUserCardHover"
+            @mouseleave="handleUserCardLeave"
+            @mousemove="handleUserCardMove"
+            ref="userCardRef"
+          >
+            <!-- Subtle shimmer effect -->
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full user-card-shimmer"></div>
 
-        <!-- Navigation Menu -->
-        <nav class="p-4 overflow-y-auto custom-scrollbar" style="max-height: calc(100vh - 240px)">
-          <ul class="space-y-2">
-            <li v-for="(item, index) in menuItems" :key="item.path">
-              <!-- Item with children -->
-              <div v-if="item.children">
-                <div
-                  @click="toggleSubmenu(item.path)"
-                  :class="[
-                    'flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-300',
-                    isMenuActive(item) ? 'bg-white/20 text-white shadow-lg backdrop-blur-xl' : 'text-white/70 hover:bg-white/10 hover:text-white'
-                  ]"
-                  :style="{ animationDelay: `${index * 0.05}s` }"
-                  class="animate-slide-in-left"
-                >
-                  <i :class="[item.icon, 'text-xl']"></i>
-                  <Transition name="slide-left">
-                    <span v-if="!sidebarCollapsed" class="font-medium">{{ item.label }}</span>
-                  </Transition>
-                  <i v-if="!sidebarCollapsed" :class="['pi', expandedMenus.includes(item.path) ? 'pi-chevron-down' : 'pi-chevron-right', 'ml-auto text-sm']"></i>
+            <div class="flex items-center gap-3 relative z-10">
+              <!-- Floating Avatar -->
+              <div class="avatar-wrapper relative">
+                <div class="avatar-glow absolute inset-0 rounded-full"></div>
+                <Avatar
+                  :label="userInitials"
+                  :image="userAvatar"
+                  class="relative z-10 ring-2 ring-white/20"
+                  size="large"
+                  shape="circle"
+                  :style="{ background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)' }"
+                />
+                <!-- Online indicator -->
+                <div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full border-2 border-[#0a0a1f] z-20">
+                  <div class="absolute inset-0 bg-emerald-400 rounded-full animate-ping opacity-75"></div>
                 </div>
-                <!-- Submenu -->
-                <Transition name="slide-down">
-                  <ul v-if="expandedMenus.includes(item.path) && !sidebarCollapsed" class="mt-2 ml-4 space-y-1">
-                    <li v-for="child in item.children" :key="child.path">
-                      <router-link
-                        :to="child.path"
-                        v-slot="{ isActive }"
-                        custom
-                      >
+              </div>
+              <Transition name="fade-slide">
+                <div v-if="!sidebarCollapsed" class="flex-1 min-w-0">
+                  <p class="text-white font-semibold truncate">{{ userName }}</p>
+                  <p class="text-white/60 text-sm flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+                    {{ userRole }}
+                  </p>
+                </div>
+              </Transition>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Menu with 3D Tilt Effect -->
+        <nav class="relative p-3 overflow-y-auto custom-scrollbar flex-1" :style="{ maxHeight: 'calc(100% - 240px)' }">
+          <ul class="space-y-1.5">
+            <li
+              v-for="(item, index) in menuItems"
+              :key="item.path"
+              :style="{ '--item-index': index }"
+              class="menu-item-wrapper"
+            >
+              <!-- Item with children (submenu) -->
+              <div v-if="item.children">
+                <!-- Parent Item with 3D Tilt -->
+                <div
+                  :ref="el => setItemRef(el, 'parent-' + item.path)"
+                  @click="toggleSubmenu(item.path)"
+                  @mouseenter="handleMenuItemEnter($event, 'parent-' + item.path, index)"
+                  @mouseleave="handleMenuItemLeave('parent-' + item.path)"
+                  @mousemove="handleMenuItemMove($event, 'parent-' + item.path)"
+                  :class="[
+                    'menu-item relative flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-300',
+                    isMenuActive(item) ? 'active-item' : ''
+                  ]"
+                  :style="getMenuItemStyle('parent-' + item.path, isMenuActive(item))"
+                >
+                  <!-- Active indicator glow -->
+                  <div v-if="isMenuActive(item)" class="active-glow"></div>
+
+                  <!-- Hover glow that follows cursor -->
+                  <div
+                    class="item-hover-glow"
+                    :style="getHoverGlowStyle('parent-' + item.path)"
+                  ></div>
+
+                  <!-- Icon with dock magnification in collapsed mode -->
+                  <div
+                    :class="['icon-wrapper relative z-10 transition-all duration-300', { 'mx-auto': sidebarCollapsed }]"
+                    :style="getDockItemStyle(index)"
+                  >
+                    <i :class="[item.icon, 'text-xl transition-colors duration-300']"
+                       :style="{ color: isMenuActive(item) ? '#fff' : 'rgba(255,255,255,0.7)' }"></i>
+                  </div>
+
+                  <Transition name="fade-slide">
+                    <span v-if="!sidebarCollapsed" class="relative z-10 font-medium text-white/90">{{ item.label }}</span>
+                  </Transition>
+
+                  <i v-if="!sidebarCollapsed"
+                     :class="['pi relative z-10 ml-auto text-xs text-white/50 transition-transform duration-300', expandedMenus.includes(item.path) ? 'pi-chevron-down rotate-0' : 'pi-chevron-right']">
+                  </i>
+
+                  <!-- Tooltip for collapsed mode -->
+                  <div v-if="sidebarCollapsed" class="dock-tooltip">
+                    {{ item.label }}
+                  </div>
+                </div>
+
+                <!-- Animated Submenu -->
+                <Transition name="submenu-expand">
+                  <ul v-if="expandedMenus.includes(item.path) && !sidebarCollapsed" class="submenu mt-1.5 ml-3 pl-4 space-y-1 border-l border-white/10">
+                    <li
+                      v-for="(child, childIndex) in item.children"
+                      :key="child.path"
+                      :style="{ '--child-index': childIndex, animationDelay: `${childIndex * 0.05}s` }"
+                      class="submenu-item"
+                    >
+                      <router-link :to="child.path" v-slot="{ isActive }" custom>
                         <div
                           @click="navigateTo(child.path)"
                           :class="[
-                            'flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200',
-                            isActive ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'
+                            'flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-200',
+                            isActive ? 'bg-white/10 text-white' : 'text-white/50 hover:bg-white/5 hover:text-white/80'
                           ]"
                         >
                           <i :class="[child.icon, 'text-sm']"></i>
@@ -104,36 +196,56 @@
                   </ul>
                 </Transition>
               </div>
+
               <!-- Regular item without children -->
-              <router-link
-                v-else
-                :to="item.path"
-                v-slot="{ isActive }"
-                custom
-              >
+              <router-link v-else :to="item.path" v-slot="{ isActive }" custom>
                 <div
+                  :ref="el => setItemRef(el, item.path)"
                   @click="navigateTo(item.path)"
+                  @mouseenter="handleMenuItemEnter($event, item.path, index)"
+                  @mouseleave="handleMenuItemLeave(item.path)"
+                  @mousemove="handleMenuItemMove($event, item.path)"
                   :class="[
-                    'flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-300',
-                    isActive
-                      ? 'bg-white/20 text-white shadow-lg backdrop-blur-xl'
-                      : 'text-white/70 hover:bg-white/10 hover:text-white'
+                    'menu-item relative flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-300',
+                    isActive ? 'active-item' : ''
                   ]"
-                  :style="{ animationDelay: `${index * 0.05}s` }"
-                  class="animate-slide-in-left"
+                  :style="getMenuItemStyle(item.path, isActive)"
                 >
-                  <i :class="[item.icon, 'text-xl']"></i>
-                  <Transition name="slide-left">
-                    <span v-if="!sidebarCollapsed" class="font-medium">{{ item.label }}</span>
+                  <!-- Active indicator glow -->
+                  <div v-if="isActive" class="active-glow"></div>
+
+                  <!-- Hover glow that follows cursor -->
+                  <div
+                    class="item-hover-glow"
+                    :style="getHoverGlowStyle(item.path)"
+                  ></div>
+
+                  <!-- Icon with dock magnification -->
+                  <div
+                    :class="['icon-wrapper relative z-10 transition-all duration-300', { 'mx-auto': sidebarCollapsed }]"
+                    :style="getDockItemStyle(index)"
+                  >
+                    <i :class="[item.icon, 'text-xl transition-colors duration-300']"
+                       :style="{ color: isActive ? '#fff' : 'rgba(255,255,255,0.7)' }"></i>
+                  </div>
+
+                  <Transition name="fade-slide">
+                    <span v-if="!sidebarCollapsed" class="relative z-10 font-medium text-white/90">{{ item.label }}</span>
                   </Transition>
-                  <Transition name="fade">
-                    <Badge
-                      v-if="item.badge && !sidebarCollapsed"
-                      :value="item.badge"
-                      severity="danger"
-                      class="ml-auto"
-                    />
+
+                  <!-- Redesigned Badge with glow -->
+                  <Transition name="badge-pop">
+                    <div v-if="item.badge" class="badge-wrapper relative z-10" :class="{ 'ml-auto': !sidebarCollapsed }">
+                      <div class="badge-glow"></div>
+                      <span class="badge-pill">{{ item.badge }}</span>
+                    </div>
                   </Transition>
+
+                  <!-- Tooltip for collapsed mode -->
+                  <div v-if="sidebarCollapsed" class="dock-tooltip">
+                    {{ item.label }}
+                    <span v-if="item.badge" class="tooltip-badge">{{ item.badge }}</span>
+                  </div>
                 </div>
               </router-link>
             </li>
@@ -141,25 +253,16 @@
         </nav>
 
         <!-- Bottom Actions -->
-        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
-          <div class="space-y-2">
-            <button
-              @click="toggleDarkMode"
-              class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:bg-white/10 hover:text-white transition-all duration-300"
-            >
-              <i :class="darkMode ? 'pi pi-sun' : 'pi pi-moon'" class="text-xl"></i>
-              <Transition name="slide-left">
-                <span v-if="!sidebarCollapsed" class="font-medium">
-                  {{ darkMode ? 'Light Mode' : 'Dark Mode' }}
-                </span>
-              </Transition>
-            </button>
+        <div class="absolute bottom-0 left-0 right-0 p-3 border-t border-white/5">
+          <div class="space-y-1.5">
+            <!-- Logout Button -->
             <button
               @click="handleLogout"
-              class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:bg-red-500/20 hover:text-red-300 transition-all duration-300"
+              class="logout-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-all duration-300 group"
+              :class="{ 'justify-center': sidebarCollapsed }"
             >
-              <i class="pi pi-sign-out text-xl"></i>
-              <Transition name="slide-left">
+              <i class="pi pi-sign-out text-xl group-hover:scale-110 transition-transform duration-300"></i>
+              <Transition name="fade-slide">
                 <span v-if="!sidebarCollapsed" class="font-medium">Logout</span>
               </Transition>
             </button>
@@ -171,21 +274,35 @@
     <!-- Main Content Area -->
     <div
       :class="[
-        'main-content transition-all duration-300 min-h-screen',
-        sidebarCollapsed ? 'md:ml-20' : 'md:ml-64'
+        'main-content transition-all duration-500 min-h-screen',
+        sidebarCollapsed ? 'md:ml-[100px]' : 'md:ml-[304px]'
       ]"
+      style="background: #ffffff; color: #1e293b;"
     >
-      <!-- Top Navbar -->
-      <nav class="navbar sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-gray-200 shadow-sm">
+      <!-- Top Navbar with Glassmorphism -->
+      <nav
+        class="navbar sticky top-0 z-30 mx-3 mt-3 rounded-2xl transition-all duration-300"
+        style="
+          background: rgba(255, 255, 255, 0.9);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(0, 0, 0, 0.08);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        "
+      >
         <div class="px-6 py-4">
           <div class="flex items-center justify-between">
             <!-- Breadcrumb -->
-            <Breadcrumb :model="breadcrumbItems" class="text-sm">
+            <Breadcrumb :model="breadcrumbItems" class="text-sm breadcrumb-glass">
               <template #item="{ item }">
-                <router-link v-if="item.route" :to="item.route" class="text-gray-600 hover:text-indigo-600 transition-colors">
+                <router-link
+                  v-if="item.route"
+                  :to="item.route"
+                  class="text-gray-500 hover:text-gray-800 transition-colors"
+                >
                   {{ item.label }}
                 </router-link>
-                <span v-else class="text-gray-900 font-medium">{{ item.label }}</span>
+                <span v-else class="text-gray-800 font-medium">{{ item.label }}</span>
               </template>
               <template #separator>
                 <i class="pi pi-angle-right text-gray-400"></i>
@@ -199,7 +316,7 @@
                 <InputText
                   v-model="searchQuery"
                   placeholder="Search users, courses..."
-                  class="pl-10 pr-10 py-2 w-48 lg:w-72 rounded-xl border-gray-200 focus:border-indigo-500"
+                  class="pl-10 pr-10 py-2 w-48 lg:w-72 rounded-xl transition-all duration-300 search-input-light"
                   @keyup.enter="performSearch"
                   @focus="searchQuery.length >= 2 && searchResults.totalResults > 0 ? showSearchResults = true : null"
                 />
@@ -207,16 +324,17 @@
                 <button
                   v-if="searchQuery"
                   @click="clearSearch"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 transition-colors text-gray-400 hover:text-gray-600"
                 >
                   <i class="pi pi-times text-sm"></i>
                 </button>
 
-                <!-- Search Results Dropdown -->
+                <!-- Search Results Dropdown - Light Theme -->
                 <Transition name="scale">
                   <div
                     v-if="showSearchResults"
-                    class="absolute top-12 left-0 w-80 lg:w-96 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50 search-results-panel"
+                    class="absolute top-12 left-0 w-80 lg:w-96 rounded-xl overflow-hidden z-50 search-results-panel"
+                    style="background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(20px); border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 8px 32px rgba(0,0,0,0.12);"
                   >
                     <!-- Loading State -->
                     <div v-if="searchLoading" class="p-6 text-center">
@@ -225,26 +343,26 @@
                     </div>
 
                     <!-- Results -->
-                    <div v-else-if="searchResults.totalResults > 0" class="max-h-96 overflow-y-auto">
+                    <div v-else-if="searchResults.totalResults > 0" class="max-h-96 overflow-y-auto custom-scrollbar-light">
                       <!-- Users Section -->
                       <div v-if="searchResults.users && searchResults.users.length > 0">
-                        <div class="px-4 py-2 bg-gray-50 border-b border-gray-100">
-                          <span class="text-xs font-semibold text-gray-500 uppercase">Users</span>
+                        <div class="px-4 py-2 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-purple-50">
+                          <span class="text-xs font-semibold text-gray-600 uppercase">Users</span>
                         </div>
                         <div
                           v-for="user in searchResults.users"
                           :key="'user-' + user.id"
                           @click="navigateToSearchResult('user', user)"
-                          class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 flex items-center gap-3 transition-colors"
+                          class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 flex items-center gap-3 transition-colors"
                         >
                           <Avatar
                             :label="user.username ? user.username.substring(0, 2).toUpperCase() : '?'"
                             size="small"
                             shape="circle"
-                            class="bg-gradient-to-br from-indigo-400 to-purple-500"
+                            :style="{ background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)' }"
                           />
                           <div class="flex-1 min-w-0">
-                            <p class="font-medium text-gray-900 truncate">{{ user.username }}</p>
+                            <p class="font-medium text-gray-800 truncate">{{ user.username }}</p>
                             <p class="text-sm text-gray-500 truncate">{{ user.email }}</p>
                           </div>
                           <Badge :value="user.role" severity="info" class="text-xs" />
@@ -253,27 +371,27 @@
 
                       <!-- Courses Section -->
                       <div v-if="searchResults.courses && searchResults.courses.length > 0">
-                        <div class="px-4 py-2 bg-gray-50 border-b border-gray-100">
-                          <span class="text-xs font-semibold text-gray-500 uppercase">Courses</span>
+                        <div class="px-4 py-2 border-b border-gray-100 bg-gradient-to-r from-emerald-50 to-teal-50">
+                          <span class="text-xs font-semibold text-gray-600 uppercase">Courses</span>
                         </div>
                         <div
                           v-for="course in searchResults.courses"
                           :key="'course-' + course.id"
                           @click="navigateToSearchResult('course', course)"
-                          class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 flex items-center gap-3 transition-colors"
+                          class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 flex items-center gap-3 transition-colors"
                         >
-                          <div class="w-10 h-10 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center">
+                          <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center">
                             <i class="pi pi-book text-white"></i>
                           </div>
                           <div class="flex-1 min-w-0">
-                            <p class="font-medium text-gray-900 truncate">{{ course.name }}</p>
+                            <p class="font-medium text-gray-800 truncate">{{ course.name }}</p>
                             <p class="text-sm text-gray-500">{{ course.code }} - {{ course.credits }} credits</p>
                           </div>
                         </div>
                       </div>
 
                       <!-- Total Results Footer -->
-                      <div class="px-4 py-2 bg-gray-50 text-center">
+                      <div class="px-4 py-2 text-center bg-gray-50">
                         <span class="text-xs text-gray-500">Found {{ searchResults.totalResults }} result(s)</span>
                       </div>
                     </div>
@@ -291,16 +409,8 @@
               <!-- Search button for mobile -->
               <Button
                 icon="pi pi-search"
-                class="p-button-rounded p-button-text hover:bg-indigo-50 md:hidden"
+                class="p-button-rounded p-button-text md:hidden transition-colors text-gray-600 hover:text-gray-800 hover:bg-gray-100"
                 @click="performSearch"
-              />
-
-              <!-- Quick Actions -->
-              <Button
-                icon="pi pi-plus"
-                class="p-button-rounded p-button-text hover:bg-indigo-50"
-                v-tooltip="'Quick Add'"
-                @click="showQuickAdd = true"
               />
 
               <!-- Notifications -->
@@ -308,13 +418,14 @@
                 <Button
                   icon="pi pi-bell"
                   :badge="unreadNotifications > 0 ? unreadNotifications.toString() : null"
-                  class="p-button-rounded p-button-text hover:bg-indigo-50 notification-btn"
+                  class="p-button-rounded p-button-text notification-btn transition-colors text-gray-600 hover:text-gray-800 hover:bg-gray-100"
                   @click="toggleNotifications"
                 />
                 <Transition name="scale">
                   <div
                     v-if="showNotifications"
-                    class="absolute right-0 top-12 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden notification-panel"
+                    class="absolute right-0 top-12 w-80 rounded-xl overflow-hidden notification-panel"
+                    style="background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(20px); border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 8px 32px rgba(0,0,0,0.12);"
                   >
                     <NotificationPanel
                       :notifications="notifications"
@@ -330,53 +441,71 @@
               </div>
 
               <!-- User Menu -->
-              <div class="relative">
+              <div class="relative user-menu-container">
                 <button
-                  @click="showUserMenu = !showUserMenu"
-                  class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-100 transition-colors"
+                  @click.stop="showUserMenu = !showUserMenu"
+                  class="user-menu-btn flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200 hover:bg-gray-100 hover:scale-105"
                 >
                   <Avatar
                     :label="userInitials"
                     :image="userAvatar"
                     size="small"
                     shape="circle"
-                    class="bg-gradient-to-br from-indigo-400 to-purple-500"
+                    :style="{ background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)' }"
                   />
-                  <i class="pi pi-angle-down text-gray-600"></i>
+                  <i class="pi pi-angle-down text-gray-500 transition-transform duration-200" :class="{ 'rotate-180': showUserMenu }"></i>
                 </button>
                 <Transition name="scale">
                   <div
                     v-if="showUserMenu"
-                    class="absolute right-0 top-12 w-56 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden"
+                    class="user-menu-panel absolute right-0 top-12 w-56 rounded-xl overflow-hidden z-50"
+                    style="background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(20px); border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 8px 32px rgba(0,0,0,0.12);"
                   >
-                    <div class="p-4 border-b border-gray-100">
-                      <p class="font-semibold text-gray-900">{{ userName }}</p>
-                      <p class="text-sm text-gray-600">{{ userEmail }}</p>
+                    <div class="p-4 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-purple-50">
+                      <p class="font-semibold text-gray-800">{{ userName }}</p>
+                      <p class="text-sm text-gray-500">{{ userEmail }}</p>
                     </div>
                     <div class="p-2">
                       <router-link
-                        to="/profile"
-                        class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                        :to="`/profile/${authStore.userId}`"
+                        class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-gray-50 hover:translate-x-1"
                         @click="showUserMenu = false"
                       >
-                        <i class="pi pi-user text-gray-600"></i>
-                        <span class="text-gray-700">Profile</span>
+                        <i class="pi pi-user text-gray-500"></i>
+                        <span class="text-gray-700">View Profile</span>
                       </router-link>
                       <router-link
-                        to="/settings"
-                        class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                        to="/connections"
+                        class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-gray-50 hover:translate-x-1"
                         @click="showUserMenu = false"
                       >
-                        <i class="pi pi-cog text-gray-600"></i>
+                        <i class="pi pi-users text-gray-500"></i>
+                        <span class="text-gray-700">My Connections</span>
+                      </router-link>
+                      <router-link
+                        to="/messages"
+                        class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-gray-50 hover:translate-x-1"
+                        @click="showUserMenu = false"
+                      >
+                        <i class="pi pi-envelope text-gray-500"></i>
+                        <span class="text-gray-700">Messages</span>
+                      </router-link>
+                      <Divider class="my-2 border-gray-100" />
+                      <router-link
+                        to="/settings"
+                        class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-gray-50 hover:translate-x-1"
+                        @click="showUserMenu = false"
+                      >
+                        <i class="pi pi-cog text-gray-500"></i>
                         <span class="text-gray-700">Settings</span>
                       </router-link>
-                      <Divider class="my-2" />
+                      <Divider class="my-2 border-gray-100" />
                       <button
                         @click="handleLogout"
-                        class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 text-red-600 transition-colors"
+                        class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 text-red-500 transition-all duration-200 hover:translate-x-1"
                       >
                         <i class="pi pi-sign-out"></i>
-                        <span>Logout</span>
+                        <span>Sign Out</span>
                       </button>
                     </div>
                   </div>
@@ -387,55 +516,17 @@
         </div>
       </nav>
 
-      <!-- Page Content with Animation -->
+      <!-- Page Content -->
       <main class="p-6">
-        <router-view v-slot="{ Component }">
-          <Transition name="page" mode="out-in">
-            <component :is="Component" />
-          </Transition>
-        </router-view>
+        <router-view />
       </main>
 
-      <!-- Floating Action Button -->
-      <div class="fixed bottom-6 right-6 z-20">
-        <SpeedDial
-          :model="speedDialItems"
-          direction="up"
-          :transitionDelay="50"
-          showIcon="pi pi-plus"
-          hideIcon="pi pi-times"
-          class="speeddial-custom"
-        />
-      </div>
     </div>
-
-    <!-- Quick Add Dialog -->
-    <Dialog
-      v-model:visible="showQuickAdd"
-      header="Quick Add"
-      modal
-      class="w-full max-w-lg"
-      :pt="{
-        header: { class: 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white' }
-      }"
-    >
-      <div class="grid grid-cols-2 gap-4 p-4">
-        <button
-          v-for="action in quickAddActions"
-          :key="action.label"
-          @click="handleQuickAction(action)"
-          class="p-6 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-purple-50 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
-        >
-          <i :class="[action.icon, 'text-3xl mb-3']" :style="{ color: action.color }"></i>
-          <p class="font-medium text-gray-800">{{ action.label }}</p>
-        </button>
-      </div>
-    </Dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, reactive, onErrorCaptured } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useNotificationStore } from '../stores/notifications'
@@ -446,8 +537,6 @@ import Badge from 'primevue/badge'
 import Button from 'primevue/button'
 import Breadcrumb from 'primevue/breadcrumb'
 import InputText from 'primevue/inputtext'
-import SpeedDial from 'primevue/speeddial'
-import Dialog from 'primevue/dialog'
 import Divider from 'primevue/divider'
 import Toast from 'primevue/toast'
 import NotificationPanel from '../components/NotificationPanel.vue'
@@ -458,18 +547,167 @@ const authStore = useAuthStore()
 const notificationStore = useNotificationStore()
 const toast = useToast()
 
+// Error boundary for async component loading
+onErrorCaptured((error, instance, info) => {
+  console.error('Component error captured:', error, info)
+  toast.add({
+    severity: 'error',
+    summary: 'Page Load Error',
+    detail: 'Failed to load the page. Please try refreshing.',
+    life: 5000
+  })
+  // Return false to prevent error propagation
+  return false
+})
+
 // State
 const sidebarCollapsed = ref(false)
-const darkMode = ref(false)
 const showNotifications = ref(false)
 const showUserMenu = ref(false)
-const showQuickAdd = ref(false)
 const searchQuery = ref('')
 const isMobile = ref(window.innerWidth < 768)
 const expandedMenus = ref(['/admin/users']) // Keep Users menu expanded by default
 const showSearchResults = ref(false)
 const searchLoading = ref(false)
 const searchResults = ref({ users: [], courses: [], totalResults: 0 })
+
+// 3D Tilt & Dock Effect State
+const menuItemRefs = ref({})
+const menuItemTilts = reactive({})
+const menuItemHoverGlows = reactive({})
+const hoveredItemIndex = ref(-1)
+const userCardRef = ref(null)
+const userCardTilt = ref({ rotateX: 0, rotateY: 0 })
+
+// Set item ref for 3D tilt tracking
+const setItemRef = (el, path) => {
+  if (el) {
+    menuItemRefs.value[path] = el
+  }
+}
+
+// 3D Tilt Effect Handlers
+const handleMenuItemEnter = (event, path, index) => {
+  hoveredItemIndex.value = index
+  if (!menuItemTilts[path]) {
+    menuItemTilts[path] = { rotateX: 0, rotateY: 0, isHovered: false }
+  }
+  menuItemTilts[path].isHovered = true
+}
+
+const handleMenuItemLeave = (path) => {
+  hoveredItemIndex.value = -1
+  if (menuItemTilts[path]) {
+    menuItemTilts[path] = { rotateX: 0, rotateY: 0, isHovered: false }
+  }
+  if (menuItemHoverGlows[path]) {
+    menuItemHoverGlows[path] = { x: 50, y: 50, opacity: 0 }
+  }
+}
+
+const handleMenuItemMove = (event, path) => {
+  const el = menuItemRefs.value[path]
+  if (!el || sidebarCollapsed.value) return
+
+  const rect = el.getBoundingClientRect()
+  const x = event.clientX - rect.left
+  const y = event.clientY - rect.top
+  const centerX = rect.width / 2
+  const centerY = rect.height / 2
+
+  // Calculate tilt angles (max ±12 degrees)
+  const rotateX = ((y - centerY) / centerY) * -12
+  const rotateY = ((x - centerX) / centerX) * 12
+
+  menuItemTilts[path] = { rotateX, rotateY, isHovered: true }
+
+  // Update hover glow position
+  const glowX = (x / rect.width) * 100
+  const glowY = (y / rect.height) * 100
+  menuItemHoverGlows[path] = { x: glowX, y: glowY, opacity: 1 }
+}
+
+// Get menu item style with 3D transform
+const getMenuItemStyle = (path, isActive) => {
+  const tilt = menuItemTilts[path]
+  if (!tilt || !tilt.isHovered || sidebarCollapsed.value) {
+    return {
+      transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)',
+      transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+      background: isActive ? 'rgba(255, 255, 255, 0.12)' : 'transparent'
+    }
+  }
+
+  return {
+    transform: `perspective(1000px) rotateX(${tilt.rotateX}deg) rotateY(${tilt.rotateY}deg) translateZ(8px)`,
+    transition: 'transform 0.1s ease-out',
+    background: isActive ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.08)'
+  }
+}
+
+// Get hover glow style
+const getHoverGlowStyle = (path) => {
+  const glow = menuItemHoverGlows[path]
+  if (!glow || glow.opacity === 0) {
+    return { opacity: 0 }
+  }
+
+  return {
+    opacity: glow.opacity,
+    background: `radial-gradient(circle at ${glow.x}% ${glow.y}%, rgba(99, 102, 241, 0.3) 0%, transparent 60%)`,
+    transition: 'opacity 0.3s ease'
+  }
+}
+
+// Dock Magnification Effect
+const getDockItemStyle = (index) => {
+  if (!sidebarCollapsed.value || hoveredItemIndex.value === -1) {
+    return { transform: 'scale(1) translateY(0)', transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)' }
+  }
+
+  const distance = Math.abs(hoveredItemIndex.value - index)
+  let scale = 1
+  let translateY = 0
+
+  if (distance === 0) {
+    scale = 1.4
+    translateY = -4
+  } else if (distance === 1) {
+    scale = 1.15
+    translateY = -2
+  } else if (distance === 2) {
+    scale = 1.05
+  }
+
+  return {
+    transform: `scale(${scale}) translateY(${translateY}px)`,
+    transition: 'all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)'
+  }
+}
+
+// User Card 3D Effect
+const handleUserCardHover = () => {
+  // Initialize hover state
+}
+
+const handleUserCardLeave = () => {
+  userCardTilt.value = { rotateX: 0, rotateY: 0 }
+}
+
+const handleUserCardMove = (event) => {
+  if (!userCardRef.value || sidebarCollapsed.value) return
+
+  const rect = userCardRef.value.getBoundingClientRect()
+  const x = event.clientX - rect.left
+  const y = event.clientY - rect.top
+  const centerX = rect.width / 2
+  const centerY = rect.height / 2
+
+  userCardTilt.value = {
+    rotateX: ((y - centerY) / centerY) * -8,
+    rotateY: ((x - centerX) / centerX) * 8
+  }
+}
 
 // Computed notifications from store
 const unreadNotifications = computed(() => notificationStore.unreadCount)
@@ -521,10 +759,10 @@ const menuItems = computed(() => {
       { label: 'Fees', icon: 'pi pi-dollar', path: '/admin/fees', badge: '5' },
       { label: 'Payments', icon: 'pi pi-wallet', path: '/admin/payments', badge: '3' },
       { label: 'Attendance', icon: 'pi pi-calendar-check', path: '/admin/attendance' },
+      { label: 'Messages', icon: 'pi pi-envelope', path: '/admin/messages' },
       { label: 'Analytics', icon: 'pi pi-chart-bar', path: '/admin/analytics' },
       { label: 'Reports', icon: 'pi pi-chart-line', path: '/admin/reports' },
-      { label: 'System', icon: 'pi pi-server', path: '/admin/system-health' },
-      { label: 'Settings', icon: 'pi pi-cog', path: '/admin/settings' }
+      { label: 'System', icon: 'pi pi-server', path: '/admin/system-health' }
     ]
   }
 
@@ -574,46 +812,30 @@ const breadcrumbItems = computed(() => {
   return items
 })
 
-// Speed Dial Items
-const speedDialItems = ref([
-  {
-    label: 'Add User',
-    icon: 'pi pi-user-plus',
-    command: () => toast.add({ severity: 'info', summary: 'Add User', life: 3000 })
-  },
-  {
-    label: 'Create Course',
-    icon: 'pi pi-book',
-    command: () => toast.add({ severity: 'info', summary: 'Create Course', life: 3000 })
-  },
-  {
-    label: 'New Assignment',
-    icon: 'pi pi-file-edit',
-    command: () => toast.add({ severity: 'info', summary: 'New Assignment', life: 3000 })
-  },
-  {
-    label: 'Send Message',
-    icon: 'pi pi-envelope',
-    command: () => toast.add({ severity: 'info', summary: 'Send Message', life: 3000 })
-  }
-])
-
-// Quick Add Actions
-const quickAddActions = ref([
-  { label: 'New User', icon: 'pi pi-user-plus', color: '#6366f1' },
-  { label: 'New Course', icon: 'pi pi-book', color: '#10b981' },
-  { label: 'New Assignment', icon: 'pi pi-file-edit', color: '#f59e0b' },
-  { label: 'New Event', icon: 'pi pi-calendar-plus', color: '#ef4444' },
-  { label: 'New Announcement', icon: 'pi pi-megaphone', color: '#8b5cf6' },
-  { label: 'New Report', icon: 'pi pi-chart-line', color: '#3b82f6' }
-])
-
 // Notification refresh interval
 let notificationRefreshInterval = null
 
 // Methods
-const navigateTo = (path) => {
-  router.push(path)
+const navigateTo = async (path) => {
+  // Close mobile sidebar if open
+  if (isMobile.value) {
+    sidebarCollapsed.value = true
+  }
+
+  // Close any open dropdowns
+  showNotifications.value = false
+  showUserMenu.value = false
+  showSearchResults.value = false
+
+  // Navigate and wait for route change
+  try {
+    await router.push(path)
+  } catch (error) {
+    // Navigation cancelled or redirected - this is normal behavior
+    if (error.name !== 'NavigationDuplicated') {
+      console.warn('Navigation error:', error)
+    }
+  }
 }
 
 const toggleSubmenu = (path) => {
@@ -631,16 +853,6 @@ const isMenuActive = (item) => {
     return item.children.some(child => route.path === child.path)
   }
   return false
-}
-
-const toggleDarkMode = () => {
-  darkMode.value = !darkMode.value
-  document.documentElement.classList.toggle('dark-mode')
-  toast.add({
-    severity: 'info',
-    summary: darkMode.value ? 'Dark Mode Enabled' : 'Light Mode Enabled',
-    life: 2000
-  })
 }
 
 const toggleNotifications = () => {
@@ -748,16 +960,6 @@ const navigateToSearchResult = (type, item) => {
   }
 }
 
-const handleQuickAction = (action) => {
-  showQuickAdd.value = false
-  toast.add({
-    severity: 'success',
-    summary: action.label,
-    detail: `Opening ${action.label} form...`,
-    life: 3000
-  })
-}
-
 const handleLogout = async () => {
   try {
     await authStore.logout()
@@ -782,12 +984,9 @@ const handleLogout = async () => {
 
 // Lifecycle
 onMounted(async () => {
-  // Initialize dark mode from local storage
-  const savedDarkMode = localStorage.getItem('darkMode')
-  if (savedDarkMode === 'true') {
-    darkMode.value = true
-    document.documentElement.classList.add('dark-mode')
-  }
+  // Ensure light mode is always active (remove any dark mode classes)
+  document.documentElement.classList.remove('dark-mode')
+  document.documentElement.classList.remove('dark')
 
   // Initialize sidebar state for mobile
   if (window.innerWidth < 768) {
@@ -836,71 +1035,280 @@ onUnmounted(() => {
   }
   notificationStore.unsubscribeFromRealTime()
 })
-
-// Watch dark mode changes
-watch(darkMode, (newValue) => {
-  localStorage.setItem('darkMode', newValue)
-})
 </script>
 
 <style scoped>
-/* Custom scrollbar for sidebar */
+/* Custom scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
   border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.25);
 }
 
-/* Speed Dial Custom Styles */
-:deep(.speeddial-custom .p-speeddial-button) {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+/* Light scrollbar for search results */
+.custom-scrollbar-light::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar-light::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.custom-scrollbar-light::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar-light::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Sidebar animated background glows */
+.sidebar-glow-1 {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.15) 0%, transparent 50%);
+  animation: glow-rotate 20s linear infinite;
+}
+
+.sidebar-glow-2 {
+  position: absolute;
+  bottom: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 70% 70%, rgba(236, 72, 153, 0.1) 0%, transparent 50%);
+  animation: glow-rotate 25s linear infinite reverse;
+}
+
+@keyframes glow-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Logo glow effect */
+.logo-glow {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.4) 0%, rgba(139, 92, 246, 0.3) 100%);
+  filter: blur(12px);
+  animation: logo-pulse 3s ease-in-out infinite;
+}
+
+@keyframes logo-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+/* Avatar glow */
+.avatar-glow {
+  background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+  filter: blur(15px);
+  opacity: 0.4;
+  animation: avatar-pulse 4s ease-in-out infinite;
+}
+
+@keyframes avatar-pulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.05); }
+}
+
+/* User card shimmer effect */
+.user-card-shimmer {
+  animation: user-card-shimmer 3s ease-in-out infinite;
+}
+
+@keyframes user-card-shimmer {
+  0% { transform: translateX(-100%); }
+  50%, 100% { transform: translateX(200%); }
+}
+
+/* User card hover enhancement */
+.user-card:hover {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15);
+}
+
+/* Menu item hover glow that follows cursor */
+.item-hover-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Active menu item glow */
+.active-glow {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: linear-gradient(180deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+  border-radius: 0 4px 4px 0;
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.6), 0 0 24px rgba(99, 102, 241, 0.3);
+  animation: glow-pulse-indicator 2s ease-in-out infinite;
+}
+
+@keyframes glow-pulse-indicator {
+  0%, 100% { opacity: 1; box-shadow: 0 0 12px rgba(99, 102, 241, 0.6), 0 0 24px rgba(99, 102, 241, 0.3); }
+  50% { opacity: 0.8; box-shadow: 0 0 20px rgba(99, 102, 241, 0.8), 0 0 40px rgba(99, 102, 241, 0.4); }
+}
+
+/* Badge redesign */
+.badge-wrapper {
+  position: relative;
+}
+
+.badge-glow {
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+  border-radius: 999px;
+  filter: blur(6px);
+  opacity: 0.5;
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
+@keyframes badge-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+.badge-pill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+  border-radius: 999px;
+}
+
+/* Dock tooltip */
+.dock-tooltip {
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%) scale(0.9);
+  padding: 8px 14px;
+  background: rgba(15, 15, 30, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 500;
+  color: white;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+}
+
+.dock-tooltip .tooltip-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: 8px;
+  padding: 0 5px;
+  font-size: 10px;
+  background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+  border-radius: 999px;
+}
+
+.menu-item:hover .dock-tooltip {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+}
+
+/* Bottom action buttons */
+.bottom-action-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.logout-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+/* Collapse button rotation */
+.collapse-btn {
+  transition: transform 0.3s ease;
+}
+
+.collapse-btn.rotate-180 {
+  transform: rotate(180deg);
+}
+
+/* Search input glass style */
+.search-input-glass {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+.search-input-glass::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.search-input-glass:focus {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(99, 102, 241, 0.5) !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+}
+
+/* Search input light mode */
+.search-input-light {
+  background: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #1e293b !important;
+}
+
+.search-input-light::placeholder {
+  color: #94a3b8 !important;
+}
+
+.search-input-light:focus {
+  background: #ffffff !important;
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+}
+
+/* Breadcrumb glass style */
+:deep(.breadcrumb-glass .p-breadcrumb) {
+  background: transparent;
   border: none;
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
-}
-
-:deep(.speeddial-custom .p-speeddial-button:hover) {
-  transform: scale(1.1);
+  padding: 0;
 }
 
 /* Notification Badge Animation */
 .notification-btn {
   position: relative;
-}
-
-.notification-btn::after {
-  content: '';
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 8px;
-  height: 8px;
-  background: #ef4444;
-  border-radius: 50%;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-  }
 }
 
 /* Transition Animations */
@@ -914,24 +1322,24 @@ watch(darkMode, (newValue) => {
   opacity: 0;
 }
 
-.slide-left-enter-active,
-.slide-left-leave-active {
-  transition: all 0.3s;
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.slide-left-enter-from {
-  transform: translateX(-10px);
+.fade-slide-enter-from {
+  transform: translateX(-12px);
   opacity: 0;
 }
 
-.slide-left-leave-to {
-  transform: translateX(-10px);
+.fade-slide-leave-to {
+  transform: translateX(-12px);
   opacity: 0;
 }
 
 .scale-enter-active,
 .scale-leave-active {
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .scale-enter-from,
@@ -940,38 +1348,228 @@ watch(darkMode, (newValue) => {
   opacity: 0;
 }
 
-.page-enter-active,
+/* Enhanced Page Transitions with Creative Effects */
+.page-enter-active {
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
 .page-leave-active {
-  transition: all 0.3s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .page-enter-from {
   opacity: 0;
-  transform: translateX(30px);
+  transform: translateY(20px) scale(0.98);
+  filter: blur(4px);
 }
 
 .page-leave-to {
   opacity: 0;
-  transform: translateX(-30px);
+  transform: translateY(-10px) scale(0.99);
+  filter: blur(2px);
 }
 
-.slide-down-enter-active,
-.slide-down-leave-active {
-  transition: all 0.3s ease;
+/* Navbar entrance animation */
+.navbar {
+  animation: navbar-slide-down 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-.slide-down-enter-from,
-.slide-down-leave-to {
+@keyframes navbar-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Button hover micro-interactions */
+.p-button-rounded {
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.p-button-rounded:hover {
+  transform: scale(1.08);
+}
+
+.p-button-rounded:active {
+  transform: scale(0.95);
+}
+
+/* Card hover lift effect */
+.card-hover-lift {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.card-hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(99, 102, 241, 0.15);
+}
+
+/* Ripple effect for interactive elements */
+.ripple-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple-effect::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, transparent 70%);
+  transform: scale(0);
   opacity: 0;
-  transform: translateY(-10px);
+  transition: transform 0.5s ease, opacity 0.5s ease;
 }
 
-/* Animation for slide in left */
-.animate-slide-in-left {
-  animation: slideInLeft 0.3s ease-out forwards;
+.ripple-effect:active::after {
+  transform: scale(2);
+  opacity: 1;
+  transition: transform 0s, opacity 0s;
 }
 
-@keyframes slideInLeft {
+/* Floating animation for interactive elements */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Shimmer loading effect */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer-loading {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Notification bell shake animation */
+@keyframes bell-shake {
+  0%, 100% { transform: rotate(0); }
+  10%, 30%, 50%, 70%, 90% { transform: rotate(-8deg); }
+  20%, 40%, 60%, 80% { transform: rotate(8deg); }
+}
+
+.notification-btn:has(.p-badge):hover i {
+  animation: bell-shake 0.5s ease-in-out;
+}
+
+/* User avatar pulse on hover */
+.user-menu-btn:hover .p-avatar {
+  animation: avatar-hover-pulse 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes avatar-hover-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* Search input focus animation */
+.search-input-light:focus {
+  animation: search-focus 0.3s ease-out forwards;
+}
+
+@keyframes search-focus {
+  0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+  100% { box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15); }
+}
+
+/* Main content entrance animation */
+.main-content {
+  animation: main-content-fade-in 0.6s ease-out forwards;
+}
+
+@keyframes main-content-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Submenu expand animation */
+.submenu-expand-enter-active,
+.submenu-expand-leave-active {
+  transition: all 0.3s ease-out;
+  overflow: hidden;
+}
+
+.submenu-expand-enter-from,
+.submenu-expand-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+  max-height: 0;
+}
+
+.submenu-expand-enter-to,
+.submenu-expand-leave-from {
+  max-height: 500px;
+}
+
+/* Submenu item stagger animation */
+.submenu-item {
+  animation: submenu-item-enter 0.3s ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes submenu-item-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Badge pop animation */
+.badge-pop-enter-active {
+  animation: badge-pop-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.badge-pop-leave-active {
+  animation: badge-pop-out 0.2s ease-out;
+}
+
+@keyframes badge-pop-in {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes badge-pop-out {
+  from { transform: scale(1); opacity: 1; }
+  to { transform: scale(0); opacity: 0; }
+}
+
+/* Menu item wrapper entrance animation */
+.menu-item-wrapper {
+  animation: menu-item-slide-in 0.4s ease-out forwards;
+  animation-delay: calc(var(--item-index, 0) * 0.05s);
+  opacity: 0;
+}
+
+@keyframes menu-item-slide-in {
   from {
     opacity: 0;
     transform: translateX(-20px);
@@ -979,6 +1577,42 @@ watch(darkMode, (newValue) => {
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+/* Sidebar entrance animation */
+.sidebar-wrapper {
+  animation: sidebar-entrance 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes sidebar-entrance {
+  from {
+    opacity: 0;
+    transform: translateX(-30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .sidebar-glow-1,
+  .sidebar-glow-2,
+  .logo-glow,
+  .avatar-glow,
+  .active-glow,
+  .badge-glow {
+    animation: none;
   }
 }
 </style>

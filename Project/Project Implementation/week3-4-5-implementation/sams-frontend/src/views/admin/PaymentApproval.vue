@@ -102,7 +102,7 @@
       v-model="showDetailsModal"
       title="Payment Details"
       size="lg"
-      :show-footer="selectedPayment?.status === 'PAID'"
+      :show-footer="selectedPayment?.status === 'PAID' || (selectedPayment?.status === 'PENDING' && selectedPayment?.transactionReference)"
       :show-cancel="true"
       :show-confirm="false"
     >
@@ -204,7 +204,7 @@
         </div>
 
         <!-- Approval Actions -->
-        <div v-if="selectedPayment.status === 'PAID'" class="flex space-x-3">
+        <div v-if="selectedPayment.status === 'PAID' || (selectedPayment.status === 'PENDING' && selectedPayment.transactionReference)" class="flex space-x-3">
           <button
             @click="approvePayment"
             :disabled="processing"
@@ -275,7 +275,8 @@ function showNotification(message, type = 'success') {
 }
 
 const tabs = computed(() => [
-  { label: 'Pending Review', value: 'pending', count: payments.value.filter(p => p.status === 'PAID').length },
+  // Pending Review = PAID (submitted) or PENDING with a transaction reference (submitted for review)
+  { label: 'Pending Review', value: 'pending', count: payments.value.filter(p => p.status === 'PAID' || (p.status === 'PENDING' && p.transactionReference)).length },
   { label: 'Approved', value: 'approved', count: payments.value.filter(p => p.status === 'APPROVED').length },
   { label: 'Rejected', value: 'rejected', count: payments.value.filter(p => p.status === 'REJECTED').length },
   { label: 'All', value: 'all', count: 0 }
@@ -293,8 +294,12 @@ const columns = [
 const filteredPayments = computed(() => {
   if (activeTab.value === 'all') return payments.value
 
+  if (activeTab.value === 'pending') {
+    // Pending Review = PAID (submitted) or PENDING with a transaction reference (submitted for review)
+    return payments.value.filter(p => p.status === 'PAID' || (p.status === 'PENDING' && p.transactionReference))
+  }
+
   const statusMap = {
-    'pending': 'PAID',
     'approved': 'APPROVED',
     'rejected': 'REJECTED'
   }

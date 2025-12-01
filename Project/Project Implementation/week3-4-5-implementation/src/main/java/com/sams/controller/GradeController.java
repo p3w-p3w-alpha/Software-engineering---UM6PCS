@@ -3,7 +3,10 @@ package com.sams.controller;
 import com.sams.dto.GradeRequest;
 import com.sams.dto.GradeResponse;
 import com.sams.entity.Grade;
+import com.sams.entity.User;
+import com.sams.security.JwtUtil;
 import com.sams.service.GradeService;
+import com.sams.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,18 +20,28 @@ import java.util.stream.Collectors;
 public class GradeController {
 
     private final GradeService gradeService;
+    private final UserService userService;
+    private final JwtUtil jwtUtil;
 
     // constructor injection
-    public GradeController(GradeService gradeService) {
+    public GradeController(GradeService gradeService, UserService userService, JwtUtil jwtUtil) {
         this.gradeService = gradeService;
+        this.userService = userService;
+        this.jwtUtil = jwtUtil;
     }
 
     // assign grade to enrollment - POST /api/grades
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public GradeResponse assignGrade(@Valid @RequestBody GradeRequest request) {
-        // TODO: Get current user ID from security context instead of using null
-        Grade grade = gradeService.assignGrade(request.getEnrollmentId(), request.getGradeValue(), null);
+    public GradeResponse assignGrade(@Valid @RequestBody GradeRequest request,
+                                     @RequestHeader("Authorization") String authHeader) {
+        // Extract current user ID from JWT token
+        String token = authHeader.substring(7);
+        String username = jwtUtil.getUsernameFromToken(token);
+        User currentUser = userService.getUserByUsername(username);
+        Long modifiedBy = currentUser.getId();
+
+        Grade grade = gradeService.assignGrade(request.getEnrollmentId(), request.getGradeValue(), modifiedBy);
         return convertToResponse(grade);
     }
 
@@ -82,9 +95,15 @@ public class GradeController {
 
     // update grade - PUT /api/grades/{id}
     @PutMapping("/{id}")
-    public GradeResponse updateGrade(@PathVariable Long id, @RequestParam String gradeValue) {
-        // TODO: Get current user ID from security context instead of using null
-        Grade grade = gradeService.updateGrade(id, gradeValue, null, "Grade updated");
+    public GradeResponse updateGrade(@PathVariable Long id, @RequestParam String gradeValue,
+                                     @RequestHeader("Authorization") String authHeader) {
+        // Extract current user ID from JWT token
+        String token = authHeader.substring(7);
+        String username = jwtUtil.getUsernameFromToken(token);
+        User currentUser = userService.getUserByUsername(username);
+        Long modifiedBy = currentUser.getId();
+
+        Grade grade = gradeService.updateGrade(id, gradeValue, modifiedBy, "Grade updated");
         return convertToResponse(grade);
     }
 
@@ -93,6 +112,33 @@ public class GradeController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteGrade(@PathVariable Long id) {
         gradeService.deleteGrade(id);
+    }
+
+    // finalize grade - POST /api/grades/{id}/finalize
+    @PostMapping("/{id}/finalize")
+    public GradeResponse finalizeGrade(@PathVariable Long id,
+                                       @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        String username = jwtUtil.getUsernameFromToken(token);
+        User currentUser = userService.getUserByUsername(username);
+        Long finalizedBy = currentUser.getId();
+
+        Grade grade = gradeService.finalizeGrade(id, finalizedBy);
+        return convertToResponse(grade);
+    }
+
+    // unfinalize grade - POST /api/grades/{id}/unfinalize
+    @PostMapping("/{id}/unfinalize")
+    public GradeResponse unfinalizeGrade(@PathVariable Long id,
+                                         @RequestParam(required = false, defaultValue = "Admin override") String reason,
+                                         @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        String username = jwtUtil.getUsernameFromToken(token);
+        User currentUser = userService.getUserByUsername(username);
+        Long unfinalizedBy = currentUser.getId();
+
+        Grade grade = gradeService.unfinalizeGrade(id, unfinalizedBy, reason);
+        return convertToResponse(grade);
     }
 
     // get grade scale - GET /api/grades/scale
@@ -198,6 +244,8 @@ public class GradeController {
         response.setGradeValue(grade.getGradeValue());
         response.setGradePoints(grade.getGradePoints());
         response.setCreatedAt(grade.getCreatedAt());
+        response.setFinalized(grade.getFinalized());
+        response.setFinalizedAt(grade.getFinalizedAt());
 
         return response;
     }

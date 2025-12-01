@@ -4,7 +4,7 @@
     <div v-if="showToast" class="fixed top-4 right-4 z-50 max-w-sm">
       <div :class="[
         'rounded-lg px-4 py-3 shadow-lg',
-        toastType === 'success' ? 'bg-green-100 border border-green-400 text-green-700' : 'bg-red-100 border border-red-400 text-red-700'
+        toastType === 'success' ? 'bg-green-100 border border-green-400 text-green-700 dark:bg-green-900/30 dark:border-green-700 dark:text-green-400' : 'bg-red-100 border border-red-400 text-red-700 dark:bg-red-900/30 dark:border-red-700 dark:text-red-400'
       ]">
         <div class="flex items-center justify-between">
           <span>{{ toastMessage }}</span>
@@ -20,8 +20,8 @@
     <!-- Header -->
     <div class="mb-8 flex items-center justify-between">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900">Course Management</h1>
-        <p class="mt-2 text-gray-600">Manage all courses in the system</p>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Course Management</h1>
+        <p class="mt-2 text-gray-600 dark:text-gray-400">Manage all courses in the system</p>
       </div>
       <button
         @click="openCreateModal"
@@ -35,22 +35,22 @@
     </div>
 
     <!-- Filters and Search -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+    <div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 p-6 mb-6">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search</label>
           <input
             v-model="searchQuery"
             type="text"
             placeholder="Search by code or name..."
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+            class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Department</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Department</label>
           <select
             v-model="filterDepartment"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+            class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
           >
             <option value="">All Departments</option>
             <option value="Computer Science">Computer Science</option>
@@ -61,10 +61,10 @@
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Semester</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Semester</label>
           <select
             v-model="filterSemester"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+            class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
           >
             <option value="">All Semesters</option>
             <option value="Fall 2024">Fall 2024</option>
@@ -75,7 +75,7 @@
         <div class="flex items-end">
           <button
             @click="resetFilters"
-            class="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+            class="w-full px-4 py-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
           >
             Reset Filters
           </button>
@@ -89,65 +89,65 @@
     </div>
 
     <!-- Courses Table -->
-    <div v-else class="bg-white rounded-lg shadow overflow-hidden">
+    <div v-else class="bg-white dark:bg-slate-800 rounded-lg shadow overflow-hidden border border-gray-200 dark:border-slate-700">
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+          <thead class="bg-gray-50 dark:bg-slate-900/50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Course Code
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Course Name
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Department
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Credits
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Instructor
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Enrollment
               </th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
+          <tbody class="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
             <tr v-if="filteredCourses.length === 0">
-              <td colspan="7" class="px-6 py-12 text-center text-gray-500">
-                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <td colspan="7" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
                 <p class="mt-4">No courses found</p>
               </td>
             </tr>
-            <tr v-for="course in filteredCourses" :key="course.id" class="hover:bg-gray-50">
+            <tr v-for="course in filteredCourses" :key="course.id" class="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-semibold text-blue-600">{{ course.courseCode }}</div>
+                <div class="text-sm font-semibold text-blue-600 dark:text-blue-400">{{ course.courseCode }}</div>
               </td>
               <td class="px-6 py-4">
-                <div class="text-sm font-medium text-gray-900">{{ course.courseName }}</div>
-                <div class="text-xs text-gray-500">{{ course.description?.substring(0, 50) }}...</div>
+                <div class="text-sm font-medium text-gray-900 dark:text-white">{{ course.courseName }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ course.description?.substring(0, 50) }}...</div>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                 {{ course.department || 'N/A' }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                 {{ course.credits || course.creditHours }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">{{ course.instructor?.username || course.instructorName || 'Not Assigned' }}</div>
+                <div class="text-sm text-gray-900 dark:text-white">{{ course.instructor?.username || course.instructorName || 'Not Assigned' }}</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">
+                <div class="text-sm text-gray-900 dark:text-white">
                   {{ course.enrolledCount || 0 }} / {{ course.capacity }}
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+                <div class="w-full bg-gray-200 dark:bg-slate-600 rounded-full h-1.5 mt-1">
                   <div
                     class="bg-blue-600 h-1.5 rounded-full"
                     :style="{ width: `${getEnrollmentPercentage(course)}%` }"
@@ -157,19 +157,19 @@
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
                 <button
                   @click="viewCourse(course)"
-                  class="text-blue-600 hover:text-blue-900"
+                  class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                 >
                   View
                 </button>
                 <button
                   @click="editCourse(course)"
-                  class="text-indigo-600 hover:text-indigo-900"
+                  class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                 >
                   Edit
                 </button>
                 <button
                   @click="confirmDelete(course)"
-                  class="text-red-600 hover:text-red-900"
+                  class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                 >
                   Delete
                 </button>
@@ -183,15 +183,15 @@
     <!-- Create/Edit Course Modal -->
     <div
       v-if="showModal"
-      class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+      class="fixed inset-0 bg-gray-600/50 dark:bg-black/60 overflow-y-auto h-full w-full z-50"
       @click.self="closeModal"
     >
-      <div class="relative top-20 mx-auto p-8 border w-full max-w-3xl shadow-lg rounded-lg bg-white">
+      <div class="relative top-20 mx-auto p-8 border w-full max-w-3xl shadow-lg rounded-lg bg-white dark:bg-slate-800 dark:border-slate-700">
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-bold text-gray-900">
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
             {{ editingCourse ? 'Edit Course' : 'Create New Course' }}
           </h2>
-          <button @click="closeModal" class="text-gray-400 hover:text-gray-600">
+          <button @click="closeModal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -202,21 +202,21 @@
           <div class="grid grid-cols-2 gap-4">
             <!-- Course Code -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Course Code <span class="text-red-500">*</span>
               </label>
               <input
                 v-model="courseForm.courseCode"
                 type="text"
                 required
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
                 placeholder="e.g., CS101"
               />
             </div>
 
             <!-- Credits -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Credits <span class="text-red-500">*</span>
               </label>
               <input
@@ -225,7 +225,7 @@
                 min="1"
                 max="6"
                 required
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
                 placeholder="3"
               />
             </div>
@@ -233,25 +233,25 @@
 
           <!-- Course Name -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Course Name <span class="text-red-500">*</span>
             </label>
             <input
               v-model="courseForm.courseName"
               type="text"
               required
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
               placeholder="e.g., Introduction to Computer Science"
             />
           </div>
 
           <!-- Description -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
             <textarea
               v-model="courseForm.description"
               rows="3"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
               placeholder="Course description..."
             ></textarea>
           </div>
@@ -259,10 +259,10 @@
           <div class="grid grid-cols-2 gap-4">
             <!-- Department -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Department</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Department</label>
               <select
                 v-model="courseForm.department"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
               >
                 <option value="">Select Department</option>
                 <option value="Computer Science">Computer Science</option>
@@ -275,7 +275,7 @@
 
             <!-- Capacity -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Capacity <span class="text-red-500">*</span>
               </label>
               <input
@@ -283,7 +283,7 @@
                 type="number"
                 min="1"
                 required
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
                 placeholder="30"
               />
             </div>
@@ -292,32 +292,32 @@
           <div class="grid grid-cols-3 gap-4">
             <!-- Days of Week -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Days</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Days</label>
               <input
                 v-model="courseForm.daysOfWeek"
                 type="text"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
                 placeholder="e.g., MWF"
               />
             </div>
 
             <!-- Start Time -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Start Time</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Start Time</label>
               <input
                 v-model="courseForm.startTime"
                 type="time"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
               />
             </div>
 
             <!-- End Time -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">End Time</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">End Time</label>
               <input
                 v-model="courseForm.endTime"
                 type="time"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
               />
             </div>
           </div>
@@ -325,10 +325,10 @@
           <div class="grid grid-cols-2 gap-4">
             <!-- Semester -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Semester</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Semester</label>
               <select
                 v-model="courseForm.semester"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
               >
                 <option value="">Select Semester</option>
                 <option value="Fall 2024">Fall 2024</option>
@@ -339,14 +339,14 @@
 
             <!-- Instructor -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Instructor</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Instructor</label>
               <select
                 v-model="courseForm.instructorId"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
               >
                 <option :value="null">Select Instructor</option>
-                <option v-for="instructor in instructors" :key="instructor.id" :value="Number(instructor.id)">
-                  {{ instructor.firstName }} {{ instructor.lastName }}
+                <option v-for="instructor in activeInstructors" :key="instructor.id" :value="Number(instructor.id)">
+                  {{ instructor.firstName || instructor.username }} {{ instructor.lastName || '' }}
                 </option>
               </select>
             </div>
@@ -354,24 +354,24 @@
 
           <!-- Course Fee -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Course Fee ($)</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Course Fee ($)</label>
             <input
               v-model.number="courseForm.courseFee"
               type="number"
               min="0"
               step="0.01"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
               placeholder="0.00"
             />
-            <p class="text-xs text-gray-500 mt-1">Fee that students must pay to enroll in this course</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Fee that students must pay to enroll in this course</p>
           </div>
 
           <!-- Form Actions -->
-          <div class="flex justify-end space-x-3 pt-4 border-t">
+          <div class="flex justify-end space-x-3 pt-4 border-t dark:border-slate-700">
             <button
               type="button"
               @click="closeModal"
-              class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              class="px-6 py-2 border border-gray-300 dark:border-slate-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
             >
               Cancel
             </button>
@@ -390,13 +390,13 @@
     <!-- View Course Modal with Enrollments & Waitlist -->
     <div
       v-if="showViewModal && selectedCourse"
-      class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+      class="fixed inset-0 bg-gray-600/50 dark:bg-black/60 overflow-y-auto h-full w-full z-50"
       @click.self="showViewModal = false"
     >
-      <div class="relative top-10 mx-auto p-8 border w-full max-w-4xl shadow-lg rounded-lg bg-white mb-10">
+      <div class="relative top-10 mx-auto p-8 border w-full max-w-4xl shadow-lg rounded-lg bg-white dark:bg-slate-800 dark:border-slate-700 mb-10">
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-bold text-gray-900">Course Details</h2>
-          <button @click="showViewModal = false" class="text-gray-400 hover:text-gray-600">
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Course Details</h2>
+          <button @click="showViewModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -407,63 +407,63 @@
           <!-- Basic Info -->
           <div class="grid grid-cols-3 gap-4">
             <div>
-              <label class="text-sm font-medium text-gray-500">Course Code</label>
-              <p class="text-lg font-semibold text-gray-900">{{ selectedCourse.courseCode }}</p>
+              <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Course Code</label>
+              <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ selectedCourse.courseCode }}</p>
             </div>
             <div>
-              <label class="text-sm font-medium text-gray-500">Credits</label>
-              <p class="text-lg font-semibold text-gray-900">{{ selectedCourse.credits || selectedCourse.creditHours }}</p>
+              <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Credits</label>
+              <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ selectedCourse.credits || selectedCourse.creditHours }}</p>
             </div>
             <div>
-              <label class="text-sm font-medium text-gray-500">Course Fee</label>
-              <p class="text-lg font-semibold text-green-600">${{ selectedCourse.courseFee || '0.00' }}</p>
+              <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Course Fee</label>
+              <p class="text-lg font-semibold text-green-600 dark:text-green-400">${{ selectedCourse.courseFee || '0.00' }}</p>
             </div>
           </div>
 
           <div>
-            <label class="text-sm font-medium text-gray-500">Course Name</label>
-            <p class="text-lg font-semibold text-gray-900">{{ selectedCourse.courseName }}</p>
+            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Course Name</label>
+            <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ selectedCourse.courseName }}</p>
           </div>
 
           <div>
-            <label class="text-sm font-medium text-gray-500">Description</label>
-            <p class="text-gray-700">{{ selectedCourse.description || 'No description provided' }}</p>
+            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Description</label>
+            <p class="text-gray-700 dark:text-gray-300">{{ selectedCourse.description || 'No description provided' }}</p>
           </div>
 
           <div class="grid grid-cols-3 gap-4">
             <div>
-              <label class="text-sm font-medium text-gray-500">Department</label>
-              <p class="text-gray-900">{{ selectedCourse.department || 'N/A' }}</p>
+              <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Department</label>
+              <p class="text-gray-900 dark:text-white">{{ selectedCourse.department || 'N/A' }}</p>
             </div>
             <div>
-              <label class="text-sm font-medium text-gray-500">Semester</label>
-              <p class="text-gray-900">{{ selectedCourse.semester || 'N/A' }}</p>
+              <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Semester</label>
+              <p class="text-gray-900 dark:text-white">{{ selectedCourse.semester || 'N/A' }}</p>
             </div>
             <div>
-              <label class="text-sm font-medium text-gray-500">Capacity</label>
-              <p class="text-gray-900">{{ selectedCourse.enrolledCount || 0 }} / {{ selectedCourse.capacity }}</p>
+              <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Capacity</label>
+              <p class="text-gray-900 dark:text-white">{{ selectedCourse.enrolledCount || 0 }} / {{ selectedCourse.capacity }}</p>
             </div>
           </div>
 
           <!-- Instructor Management Section -->
-          <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-            <h3 class="text-sm font-semibold text-gray-700 mb-3">Instructor Assignment</h3>
+          <div class="bg-gray-50 dark:bg-slate-900/50 rounded-lg p-4 border border-gray-200 dark:border-slate-700">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Instructor Assignment</h3>
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm text-gray-500">Current Instructor:</p>
-                <p v-if="selectedCourse.instructor" class="text-gray-900 font-medium">
+                <p class="text-sm text-gray-500 dark:text-gray-400">Current Instructor:</p>
+                <p v-if="selectedCourse.instructor" class="text-gray-900 dark:text-white font-medium">
                   {{ selectedCourse.instructor.username || selectedCourse.instructorName }}
-                  <span class="text-sm text-gray-500">({{ selectedCourse.instructor.email || '' }})</span>
+                  <span class="text-sm text-gray-500 dark:text-gray-400">({{ selectedCourse.instructor.email || '' }})</span>
                 </p>
-                <p v-else class="text-gray-500 italic">Not assigned</p>
+                <p v-else class="text-gray-500 dark:text-gray-400 italic">Not assigned</p>
               </div>
               <div class="flex items-center gap-2">
                 <select
                   v-model="selectedInstructorId"
-                  class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  class="px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
                 >
                   <option :value="null">Select instructor...</option>
-                  <option v-for="inst in instructors" :key="inst.id" :value="Number(inst.id)">
+                  <option v-for="inst in activeInstructors" :key="inst.id" :value="Number(inst.id)">
                     {{ inst.firstName || inst.username }} {{ inst.lastName || '' }}
                   </option>
                 </select>
@@ -478,7 +478,7 @@
                   v-if="selectedCourse.instructor"
                   @click="removeInstructorFromCourse"
                   :disabled="removingInstructor"
-                  class="px-3 py-2 bg-red-100 text-red-700 text-sm rounded-lg hover:bg-red-200 disabled:opacity-50"
+                  class="px-3 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-sm rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 disabled:opacity-50"
                 >
                   {{ removingInstructor ? 'Removing...' : 'Remove' }}
                 </button>
@@ -487,15 +487,15 @@
           </div>
 
           <!-- Tabs for Enrollments and Waitlist -->
-          <div class="border-t pt-6">
-            <div class="flex space-x-4 border-b border-gray-200 mb-4">
+          <div class="border-t dark:border-slate-700 pt-6">
+            <div class="flex space-x-4 border-b border-gray-200 dark:border-slate-700 mb-4">
               <button
                 @click="activeViewTab = 'enrollments'"
                 :class="[
                   'px-4 py-2 text-sm font-medium border-b-2 -mb-px',
                   activeViewTab === 'enrollments'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                 ]"
               >
                 Enrolled Students ({{ courseEnrollments.length }})
@@ -505,8 +505,8 @@
                 :class="[
                   'px-4 py-2 text-sm font-medium border-b-2 -mb-px',
                   activeViewTab === 'waitlist'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                 ]"
               >
                 Waiting List ({{ courseWaitlist.length }})
@@ -518,22 +518,22 @@
               <div v-if="loadingEnrollments" class="text-center py-4">
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
               </div>
-              <div v-else-if="courseEnrollments.length === 0" class="text-center py-8 text-gray-500">
+              <div v-else-if="courseEnrollments.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-400">
                 <p>No students enrolled yet</p>
               </div>
-              <table v-else class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+              <table v-else class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                <thead class="bg-gray-50 dark:bg-slate-900/50">
                   <tr>
-                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Student</th>
-                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Student</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Email</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Actions</th>
                   </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody class="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
                   <tr v-for="enrollment in courseEnrollments" :key="enrollment.id">
-                    <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ enrollment.student?.username }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-600">{{ enrollment.student?.email }}</td>
+                    <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{{ enrollment.student?.username }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{{ enrollment.student?.email }}</td>
                     <td class="px-4 py-3">
                       <span
                         class="px-2 py-1 text-xs font-semibold rounded-full"
@@ -543,7 +543,7 @@
                     <td class="px-4 py-3 text-right">
                       <button
                         @click="removeEnrollment(enrollment.id)"
-                        class="text-red-600 hover:text-red-800 text-sm"
+                        class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm"
                       >Remove</button>
                     </td>
                   </tr>
@@ -556,34 +556,34 @@
               <div v-if="loadingWaitlist" class="text-center py-4">
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
               </div>
-              <div v-else-if="courseWaitlist.length === 0" class="text-center py-8 text-gray-500">
+              <div v-else-if="courseWaitlist.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-400">
                 <p>No students on waiting list</p>
               </div>
-              <table v-else class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+              <table v-else class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                <thead class="bg-gray-50 dark:bg-slate-900/50">
                   <tr>
-                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Position</th>
-                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Student</th>
-                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date Added</th>
-                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Position</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Student</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Email</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Date Added</th>
+                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Actions</th>
                   </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody class="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
                   <tr v-for="(student, index) in courseWaitlist" :key="student.studentId">
-                    <td class="px-4 py-3 text-sm font-bold text-gray-900">#{{ student.position || index + 1 }}</td>
-                    <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ student.username }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-600">{{ student.email }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-500">{{ formatDate(student.enrollmentDate) }}</td>
+                    <td class="px-4 py-3 text-sm font-bold text-gray-900 dark:text-white">#{{ student.position || index + 1 }}</td>
+                    <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{{ student.username }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{{ student.email }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{{ formatDate(student.enrollmentDate) }}</td>
                     <td class="px-4 py-3 text-right space-x-2">
                       <button
                         @click="promoteFromWaitlist(student)"
-                        class="text-green-600 hover:text-green-800 text-sm"
+                        class="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 text-sm"
                         :disabled="selectedCourse.enrolledCount >= selectedCourse.capacity"
                       >Promote</button>
                       <button
                         @click="removeFromWaitlist(student.studentId)"
-                        class="text-red-600 hover:text-red-800 text-sm"
+                        class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm"
                       >Remove</button>
                     </td>
                   </tr>
@@ -593,12 +593,12 @@
           </div>
 
           <!-- Add Student to Course -->
-          <div class="border-t pt-4">
-            <h3 class="text-sm font-semibold text-gray-700 mb-3">Add Student to Course</h3>
+          <div class="border-t dark:border-slate-700 pt-4">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Add Student to Course</h3>
             <div class="flex gap-3">
               <select
                 v-model="selectedStudentToAdd"
-                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                class="flex-1 px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
               >
                 <option value="">Select a student...</option>
                 <option v-for="student in availableStudents" :key="student.id" :value="student.id">
@@ -621,19 +621,19 @@
     <!-- Delete Confirmation Modal -->
     <div
       v-if="showDeleteModal"
-      class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+      class="fixed inset-0 bg-gray-600/50 dark:bg-black/60 overflow-y-auto h-full w-full z-50"
       @click.self="showDeleteModal = false"
     >
-      <div class="relative top-20 mx-auto p-6 border w-full max-w-md shadow-lg rounded-lg bg-white">
-        <h2 class="text-xl font-bold text-gray-900 mb-4">Confirm Deletion</h2>
-        <p class="text-gray-600 mb-6">
-          Are you sure you want to delete <strong>{{ courseToDelete?.courseCode }} - {{ courseToDelete?.courseName }}</strong>?
+      <div class="relative top-20 mx-auto p-6 border w-full max-w-md shadow-lg rounded-lg bg-white dark:bg-slate-800 dark:border-slate-700">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Confirm Deletion</h2>
+        <p class="text-gray-600 dark:text-gray-300 mb-6">
+          Are you sure you want to delete <strong class="dark:text-white">{{ courseToDelete?.courseCode }} - {{ courseToDelete?.courseName }}</strong>?
           This action cannot be undone.
         </p>
         <div class="flex justify-end space-x-3">
           <button
             @click="showDeleteModal = false"
-            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            class="px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700"
           >
             Cancel
           </button>
@@ -737,6 +737,11 @@ const filteredCourses = computed(() => {
   return filtered
 })
 
+// Filter only active instructors for dropdowns
+const activeInstructors = computed(() => {
+  return instructors.value.filter(inst => inst.active !== false)
+})
+
 onMounted(async () => {
   await loadCourses()
   await loadInstructors()
@@ -768,10 +773,20 @@ async function loadCourses() {
 
 async function loadInstructors() {
   try {
-    const response = await api.get('/users')
-    instructors.value = response.data.filter(user => user.role === 'FACULTY')
+    // Use the dedicated role endpoint for better performance
+    const response = await api.get('/users/role/FACULTY')
+    instructors.value = response.data
+    console.log('Loaded instructors:', instructors.value.length)
   } catch (error) {
     console.error('Error loading instructors:', error)
+    // Fallback to getting all users if role endpoint fails
+    try {
+      const allUsersResponse = await api.get('/users')
+      instructors.value = allUsersResponse.data.filter(user => user.role === 'FACULTY')
+    } catch (fallbackError) {
+      console.error('Fallback also failed:', fallbackError)
+      instructors.value = []
+    }
   }
 }
 

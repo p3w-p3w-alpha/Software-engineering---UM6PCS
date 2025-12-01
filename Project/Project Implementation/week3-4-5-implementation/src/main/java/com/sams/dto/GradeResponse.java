@@ -10,6 +10,8 @@ public class GradeResponse {
     private String gradeValue;
     private Double gradePoints;
     private LocalDateTime createdAt;
+    private Boolean finalized;
+    private LocalDateTime finalizedAt;
 
     public GradeResponse() {
     }
@@ -111,5 +113,21 @@ public class GradeResponse {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Boolean getFinalized() {
+        return finalized;
+    }
+
+    public void setFinalized(Boolean finalized) {
+        this.finalized = finalized;
+    }
+
+    public LocalDateTime getFinalizedAt() {
+        return finalizedAt;
+    }
+
+    public void setFinalizedAt(LocalDateTime finalizedAt) {
+        this.finalizedAt = finalizedAt;
     }
 }

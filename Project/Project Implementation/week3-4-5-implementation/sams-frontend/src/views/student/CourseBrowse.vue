@@ -79,7 +79,7 @@
               <p class="text-sm text-gray-600">{{ course.courseName }}</p>
             </div>
             <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-              {{ course.creditHours }} Credits
+              {{ course.credits || course.creditHours }} Credits
             </span>
           </div>
 
@@ -154,7 +154,7 @@
         </p>
         <div class="bg-gray-50 rounded-lg p-4 mb-4">
           <h4 class="font-semibold text-gray-900">{{ selectedCourse.courseCode }} - {{ selectedCourse.courseName }}</h4>
-          <p class="text-sm text-gray-600 mt-2">{{ selectedCourse.creditHours }} Credits • Fee: ${{ selectedCourse.courseFee }}</p>
+          <p class="text-sm text-gray-600 mt-2">{{ selectedCourse.credits || selectedCourse.creditHours }} Credits • Fee: ${{ selectedCourse.courseFee }}</p>
           <p v-if="selectedCourse.daysOfWeek" class="text-sm text-gray-600">
             {{ selectedCourse.daysOfWeek }} {{ selectedCourse.startTime }}-{{ selectedCourse.endTime }}
           </p>
@@ -220,11 +220,15 @@ const filteredCourses = computed(() => {
       course.courseCode.toLowerCase().includes(filters.value.search.toLowerCase()) ||
       course.courseName.toLowerCase().includes(filters.value.search.toLowerCase())
 
+    // Department filter - only apply if course has department field
     const matchesDepartment = !filters.value.department ||
+      !course.department ||
       course.department === filters.value.department
 
+    // Credits filter - check both possible field names
+    const courseCredits = course.credits || course.creditHours
     const matchesCredits = !filters.value.credits ||
-      course.creditHours === parseInt(filters.value.credits)
+      courseCredits === parseInt(filters.value.credits)
 
     return matchesSearch && matchesDepartment && matchesCredits
   })

@@ -79,6 +79,31 @@ public class User {
     @Column(name = "gender")
     private String gender;
 
+    // Enhanced profile fields
+    @Column(name = "skills", columnDefinition = "TEXT")
+    private String skills; // JSON array of skills ["Java", "Python", "SQL"]
+
+    @Column(name = "interests", columnDefinition = "TEXT")
+    private String interests; // JSON array of interests ["Machine Learning", "Web Dev"]
+
+    @Column(name = "office_location")
+    private String officeLocation; // For faculty: "Building A, Room 301"
+
+    @Column(name = "department")
+    private String department; // Computer Science, Mathematics, etc.
+
+    @Column(name = "linkedin_url")
+    private String linkedinUrl;
+
+    @Column(name = "github_url")
+    private String githubUrl;
+
+    @Column(name = "website_url")
+    private String websiteUrl;
+
+    @Column(name = "cover_picture")
+    private String coverPicture; // Cover image for profile page
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -243,6 +268,70 @@ public class User {
 
     public void setGender(String gender) {
         this.gender = gender;
+    }
+
+    public String getSkills() {
+        return skills;
+    }
+
+    public void setSkills(String skills) {
+        this.skills = skills;
+    }
+
+    public String getInterests() {
+        return interests;
+    }
+
+    public void setInterests(String interests) {
+        this.interests = interests;
+    }
+
+    public String getOfficeLocation() {
+        return officeLocation;
+    }
+
+    public void setOfficeLocation(String officeLocation) {
+        this.officeLocation = officeLocation;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    public String getLinkedinUrl() {
+        return linkedinUrl;
+    }
+
+    public void setLinkedinUrl(String linkedinUrl) {
+        this.linkedinUrl = linkedinUrl;
+    }
+
+    public String getGithubUrl() {
+        return githubUrl;
+    }
+
+    public void setGithubUrl(String githubUrl) {
+        this.githubUrl = githubUrl;
+    }
+
+    public String getWebsiteUrl() {
+        return websiteUrl;
+    }
+
+    public void setWebsiteUrl(String websiteUrl) {
+        this.websiteUrl = websiteUrl;
+    }
+
+    public String getCoverPicture() {
+        return coverPicture;
+    }
+
+    public void setCoverPicture(String coverPicture) {
+        this.coverPicture = coverPicture;
     }
 
     @Override

@@ -299,7 +299,7 @@
           </div>
 
           <!-- Submit Payment Button -->
-          <div v-if="currentPayment.status === 'PENDING'" class="flex gap-4">
+          <div v-if="currentPayment.status === 'PENDING' || currentPayment.status === 'DUE'" class="flex gap-4">
             <button
               @click="showPaymentModal = true"
               class="flex-1 md:flex-none px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
@@ -762,23 +762,30 @@ const progressOffset = computed(() => {
 
 const financialSummary = computed(() => {
   const approved = paymentHistory.value.filter(p => p.status === 'APPROVED')
-  const pending = paymentHistory.value.filter(p => p.status === 'PAID')
-  const due = paymentHistory.value.filter(p => p.status === 'PENDING')
+  const pending = paymentHistory.value.filter(p => p.status === 'PAID') // Submitted, awaiting approval
+  const due = paymentHistory.value.filter(p => p.status === 'DUE' || p.status === 'PENDING') // Not yet paid
 
   const totalPaid = approved.reduce((sum, p) => sum + (p.paidAmount || 0), 0) +
                     pending.reduce((sum, p) => sum + (p.paidAmount || 0), 0)
-  const totalDue = due.reduce((sum, p) => sum + (p.remainingAmount || p.amount || 0), 0)
+  // Calculate total due from DUE payments (amount - paidAmount)
+  const totalDue = due.reduce((sum, p) => {
+    const remaining = (p.amount || 0) - (p.paidAmount || 0)
+    return sum + (remaining > 0 ? remaining : 0)
+  }, 0)
   const totalFees = paymentHistory.value.reduce((sum, p) => sum + (p.amount || 0), 0)
   const pendingApproval = pending.reduce((sum, p) => sum + (p.paidAmount || 0), 0)
 
-  // Find next due date
+  // Find next due date from DUE payments
   const upcomingPayments = due.filter(p => p.dueDate && new Date(p.dueDate) > new Date())
   upcomingPayments.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
   const nextDue = upcomingPayments[0]
 
-  // Calculate overdue
+  // Calculate overdue amount from DUE payments past their due date
   const overdue = due.filter(p => p.dueDate && new Date(p.dueDate) < new Date())
-    .reduce((sum, p) => sum + (p.remainingAmount || p.amount || 0), 0)
+    .reduce((sum, p) => {
+      const remaining = (p.amount || 0) - (p.paidAmount || 0)
+      return sum + (remaining > 0 ? remaining : 0)
+    }, 0)
 
   return {
     totalFees: totalFees,
@@ -830,14 +837,14 @@ const feeCategories = computed(() => {
 const historyTabs = computed(() => [
   { id: 'all', label: 'All', count: paymentHistory.value.length },
   { id: 'approved', label: 'Approved', count: paymentHistory.value.filter(p => p.status === 'APPROVED').length },
-  { id: 'pending', label: 'Pending', count: paymentHistory.value.filter(p => p.status === 'PENDING' || p.status === 'PAID').length },
+  { id: 'pending', label: 'Pending', count: paymentHistory.value.filter(p => p.status === 'PENDING' || p.status === 'PAID' || p.status === 'DUE').length },
   { id: 'rejected', label: 'Rejected', count: paymentHistory.value.filter(p => p.status === 'REJECTED').length }
 ])
 
 const filteredPaymentHistory = computed(() => {
   if (activeHistoryTab.value === 'all') return paymentHistory.value
   if (activeHistoryTab.value === 'approved') return paymentHistory.value.filter(p => p.status === 'APPROVED')
-  if (activeHistoryTab.value === 'pending') return paymentHistory.value.filter(p => p.status === 'PENDING' || p.status === 'PAID')
+  if (activeHistoryTab.value === 'pending') return paymentHistory.value.filter(p => p.status === 'PENDING' || p.status === 'PAID' || p.status === 'DUE')
   if (activeHistoryTab.value === 'rejected') return paymentHistory.value.filter(p => p.status === 'REJECTED')
   return paymentHistory.value
 })
@@ -927,9 +934,9 @@ const loadCurrentPayment = async () => {
     const response = await api.getStudentPayments(authStore.userId)
     const payments = response.data || []
 
-    // Find a pending or awaiting approval payment
+    // Find a pending, due, or awaiting approval payment
     currentPayment.value = payments.find(p =>
-      p.status === 'PENDING' || p.status === 'PAID'
+      p.status === 'PENDING' || p.status === 'PAID' || p.status === 'DUE'
     ) || null
 
     if (currentPayment.value) {
@@ -1142,6 +1149,7 @@ const initFeeBreakdownChart = () => {
 const getPaymentStatusClass = (status) => {
   const classes = {
     'PENDING': 'bg-gray-100 text-gray-800',
+    'DUE': 'bg-orange-100 text-orange-800',
     'PAID': 'bg-yellow-100 text-yellow-800',
     'APPROVED': 'bg-green-100 text-green-800',
     'REJECTED': 'bg-red-100 text-red-800',
@@ -1153,6 +1161,7 @@ const getPaymentStatusClass = (status) => {
 const getTimelineDotColor = (status) => {
   const colors = {
     'PENDING': 'bg-gray-400',
+    'DUE': 'bg-orange-400',
     'PAID': 'bg-yellow-400',
     'APPROVED': 'bg-green-500',
     'REJECTED': 'bg-red-500',

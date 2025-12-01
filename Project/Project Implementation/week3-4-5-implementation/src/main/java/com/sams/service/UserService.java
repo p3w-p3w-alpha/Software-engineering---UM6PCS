@@ -145,4 +145,111 @@ public class UserService {
         userRepository.save(user);
         return true;
     }
+
+    // update user profile (firstName, lastName, bio, etc. - not role or password)
+    @Transactional
+    public User updateProfile(Long id, java.util.Map<String, Object> profileData) {
+        User user = getUserById(id);
+
+        if (profileData.containsKey("firstName")) {
+            Object value = profileData.get("firstName");
+            user.setFirstName(value != null ? String.valueOf(value) : null);
+        }
+        if (profileData.containsKey("lastName")) {
+            Object value = profileData.get("lastName");
+            user.setLastName(value != null ? String.valueOf(value) : null);
+        }
+        if (profileData.containsKey("email")) {
+            Object value = profileData.get("email");
+            if (value != null) {
+                String email = String.valueOf(value);
+                if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+                    throw new IllegalArgumentException("Invalid email format");
+                }
+                // Check for duplicate email
+                if (!user.getEmail().equals(email) && userRepository.existsByEmail(email)) {
+                    throw new DuplicateEmailException(email);
+                }
+                user.setEmail(email);
+            }
+        }
+        if (profileData.containsKey("phone")) {
+            Object value = profileData.get("phone");
+            user.setPhone(value != null ? String.valueOf(value) : null);
+        }
+        if (profileData.containsKey("bio")) {
+            Object value = profileData.get("bio");
+            user.setBio(value != null ? String.valueOf(value) : null);
+        }
+        if (profileData.containsKey("profilePicture")) {
+            Object value = profileData.get("profilePicture");
+            user.setProfilePicture(value != null ? String.valueOf(value) : null);
+        }
+        if (profileData.containsKey("coverPicture")) {
+            Object value = profileData.get("coverPicture");
+            user.setCoverPicture(value != null ? String.valueOf(value) : null);
+        }
+        if (profileData.containsKey("gender")) {
+            Object value = profileData.get("gender");
+            user.setGender(value != null ? String.valueOf(value) : null);
+        }
+        if (profileData.containsKey("department")) {
+            Object value = profileData.get("department");
+            user.setDepartment(value != null ? String.valueOf(value) : null);
+        }
+        if (profileData.containsKey("officeLocation")) {
+            Object value = profileData.get("officeLocation");
+            user.setOfficeLocation(value != null ? String.valueOf(value) : null);
+        }
+        if (profileData.containsKey("linkedinUrl")) {
+            Object value = profileData.get("linkedinUrl");
+            user.setLinkedinUrl(value != null ? String.valueOf(value) : null);
+        }
+        if (profileData.containsKey("githubUrl")) {
+            Object value = profileData.get("githubUrl");
+            user.setGithubUrl(value != null ? String.valueOf(value) : null);
+        }
+        if (profileData.containsKey("websiteUrl")) {
+            Object value = profileData.get("websiteUrl");
+            user.setWebsiteUrl(value != null ? String.valueOf(value) : null);
+        }
+        // Handle skills as JSON array
+        if (profileData.containsKey("skills")) {
+            Object value = profileData.get("skills");
+            if (value != null) {
+                try {
+                    com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                    if (value instanceof java.util.List) {
+                        user.setSkills(mapper.writeValueAsString(value));
+                    } else if (value instanceof String) {
+                        user.setSkills((String) value);
+                    }
+                } catch (Exception e) {
+                    user.setSkills(null);
+                }
+            } else {
+                user.setSkills(null);
+            }
+        }
+        // Handle interests as JSON array
+        if (profileData.containsKey("interests")) {
+            Object value = profileData.get("interests");
+            if (value != null) {
+                try {
+                    com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                    if (value instanceof java.util.List) {
+                        user.setInterests(mapper.writeValueAsString(value));
+                    } else if (value instanceof String) {
+                        user.setInterests((String) value);
+                    }
+                } catch (Exception e) {
+                    user.setInterests(null);
+                }
+            } else {
+                user.setInterests(null);
+            }
+        }
+
+        return userRepository.save(user);
+    }
 }

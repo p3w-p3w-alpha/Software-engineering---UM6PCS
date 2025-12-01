@@ -206,12 +206,20 @@
           >
             <div class="flex items-center justify-between">
               <div class="flex items-center space-x-4">
-                <div class="h-12 w-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold">
-                  {{ getInitials(request.senderName) }}
+                <div
+                  class="h-12 w-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold cursor-pointer hover:scale-105 transition-transform"
+                  @click="viewProfile(request.userId)"
+                >
+                  {{ getInitials(request.name) }}
                 </div>
                 <div>
-                  <h3 class="text-sm font-semibold text-gray-900">{{ request.senderName }}</h3>
-                  <p class="text-xs text-gray-500">{{ request.senderEmail }}</p>
+                  <h3
+                    class="text-sm font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors"
+                    @click="viewProfile(request.userId)"
+                  >
+                    {{ request.name || 'Unknown User' }}
+                  </h3>
+                  <p class="text-xs text-gray-500">{{ request.email || 'No email' }}</p>
                   <p class="text-xs text-gray-400 mt-1">{{ formatRelativeTime(request.createdAt) }}</p>
                 </div>
               </div>

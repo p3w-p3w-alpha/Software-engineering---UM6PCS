@@ -246,6 +246,50 @@ public class ConnectionController {
         return ResponseEntity.ok(responses);
     }
 
+    /**
+     * Get mutual connections between two users
+     * GET /api/connections/mutual?user1Id=1&user2Id=2
+     */
+    @GetMapping("/mutual")
+    public ResponseEntity<Map<String, Object>> getMutualConnections(
+            @RequestParam Long user1Id,
+            @RequestParam Long user2Id) {
+
+        List<User> mutualConnections = connectionService.getMutualConnections(user1Id, user2Id);
+        List<Map<String, Object>> users = mutualConnections.stream()
+                .map(user -> {
+                    Map<String, Object> userMap = new HashMap<>();
+                    userMap.put("id", user.getId());
+                    userMap.put("firstName", user.getFirstName());
+                    userMap.put("lastName", user.getLastName());
+                    userMap.put("email", user.getEmail());
+                    userMap.put("role", user.getRole());
+                    userMap.put("profilePicture", user.getProfilePicture());
+                    return userMap;
+                })
+                .collect(Collectors.toList());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("count", mutualConnections.size());
+        response.put("users", users);
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Get connection status between two users
+     * GET /api/connections/status?user1Id=1&user2Id=2
+     * Returns: NOT_CONNECTED, PENDING_SENT, PENDING_RECEIVED, CONNECTED, BLOCKED
+     */
+    @GetMapping("/status")
+    public ResponseEntity<Map<String, Object>> getConnectionStatus(
+            @RequestParam Long user1Id,
+            @RequestParam Long user2Id) {
+
+        Map<String, Object> status = connectionService.getConnectionStatus(user1Id, user2Id);
+        return ResponseEntity.ok(status);
+    }
+
     // ========== HELPER METHODS FOR DTO CONVERSION ==========
 
     // convert Connection entity to ConnectionResponse

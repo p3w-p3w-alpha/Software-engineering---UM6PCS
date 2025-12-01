@@ -259,6 +259,11 @@ const routes = [
         path: 'system/performance',
         name: 'SystemPerformance',
         component: () => import('../views/admin/system/SystemPerformance.vue')
+      },
+      {
+        path: 'messages',
+        name: 'AdminMessages',
+        component: () => import('../views/messages/MessagesInbox.vue')
       }
     ]
   },
