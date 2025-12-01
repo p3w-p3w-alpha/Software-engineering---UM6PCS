@@ -1,0 +1,44 @@
+package com.sams.repository;
+
+import com.sams.entity.ActivityLog;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+/**
+ * repository for activity log data access
+ * tracks all user actions in teh system
+ * needed this becuase we need audit trail for compliance
+ */
+@Repository
+public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> {
+
+    // Find recent activities (ordered by creation time descending) - used in activity feed
+    List<ActivityLog> findAllByOrderByCreatedAtDesc();
+
+    // Find activities with pagination
+    Page<ActivityLog> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
+    // Find activities by type
+    List<ActivityLog> findByActivityTypeOrderByCreatedAtDesc(String activityType);
+
+    // Find activities by entity type
+    List<ActivityLog> findByEntityTypeOrderByCreatedAtDesc(String entityType);
+
+    // Find activities by user
+    List<ActivityLog> findByPerformedByIdOrderByCreatedAtDesc(Long userId);
+
+    // custom query for finding activities in date range - for reports
+    @Query("SELECT a FROM ActivityLog a WHERE a.createdAt >= :startDate AND a.createdAt <= :endDate ORDER BY a.createdAt DESC")
+    List<ActivityLog> findByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    // custom query for finding recent activities with limit - might need to optimize performace
+    @Query("SELECT a FROM ActivityLog a ORDER BY a.createdAt DESC")
+    List<ActivityLog> findRecentActivities(Pageable pageable);
+}

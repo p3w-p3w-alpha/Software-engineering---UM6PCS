@@ -1,0 +1,114 @@
+package com.sams.dto;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import java.util.List;
+
+/**
+ * request object for admin user creation
+ * admins use this to create new user accounts - more complete than RegisterRequest
+ */
+public class CreateUserRequest {
+
+    // username for login
+    @NotBlank(message = "Username is required")
+    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
+    private String username;
+
+    // first name (required)
+    @NotBlank(message = "First name is required")
+    private String firstName;
+
+    // last name (required)
+    @NotBlank(message = "Last name is required")
+    private String lastName;
+
+    // email address
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email should be valid")
+    private String email;
+
+    // initial password
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, message = "Password must be at least 6 characters")
+    private String password;
+
+    // user role - STUDENT, FACULTY, ADMIN, SUPER_ADMIN
+    @NotBlank(message = "Role is required")
+    private String role;
+
+    // granular permissions list (especially for ADMIN role)
+    private List<String> permissions;
+
+    // Constructors
+    public CreateUserRequest() {
+    }
+
+    public CreateUserRequest(String username, String firstName, String lastName, String email, String password, String role, List<String> permissions) {
+        this.username = username;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+        this.permissions = permissions;
+    }
+
+    // Getters and setters
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public List<String> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(List<String> permissions) {
+        this.permissions = permissions;
+    }
+}
